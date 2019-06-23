@@ -43,11 +43,11 @@ static void add(unordered_map<string, string> &pass_store)
         return;
     }
 
-    cout << "Enter password (leave empty to randomly generate): ";
+    cout << "Enter password: ";
     getline(cin, password);
 
     if (password.length() > MAX_PASSWORD_SIZE) {
-        cout << "Password must be between " << to_string(MIN_PASSWORD_SIZE) << " and " << to_string(MAX_PASSWORD_SIZE) << " bytes in length" << endl;
+        cout << "Password length must not exceed " << to_string(MAX_PASSWORD_SIZE) << " characters" << endl;
         return;
     }
 
@@ -90,6 +90,18 @@ static void remove(unordered_map<string, string> &pass_store)
         return;
     }
 
+    while (true) {
+        cout << "Are you sure you want to remove the key \"" << key << "\" ? Y/n ";
+        string s;
+        getline(cin, s);
+
+        if (s == "Y") {
+            break;
+        } else if (s == "n") {
+            return;
+        }
+    }
+
     pass_store.erase(key);
     int ret = save_password_store(pass_store);
 
@@ -128,7 +140,7 @@ static void generate(void)
     string input;
     int size = 0;
 
-    while (size < MIN_PASSWORD_SIZE || size > MAX_PASSWORD_SIZE) {
+    while (true) {
         cout << "Enter password length: ";
         getline(cin, input);
 
@@ -140,9 +152,11 @@ static void generate(void)
             continue;
         }
 
-        if (size < MIN_PASSWORD_SIZE || size > MAX_PASSWORD_SIZE) {
-            cout << "Password must be between " << to_string(MIN_PASSWORD_SIZE) << " and " << to_string(MAX_PASSWORD_SIZE) << " characters in length" << endl;
+        if (size >= MIN_PASSWORD_SIZE && size < MAX_PASSWORD_SIZE) {
+            break;
         }
+
+        cout << "Password must be between " << to_string(MIN_PASSWORD_SIZE) << " and " << to_string(MAX_PASSWORD_SIZE) << " characters in length" << endl;
     }
 
     string pass = random_password(size);

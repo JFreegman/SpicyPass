@@ -33,6 +33,6 @@
  * - At least one punctuation character
  * - No duplicate characters
  */
-std::string random_password(int size);
+std::string random_password(unsigned int size);
 
 #endif

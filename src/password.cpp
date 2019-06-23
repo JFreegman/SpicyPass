@@ -26,8 +26,6 @@
 #include <algorithm>
 #include <time.h>
 
-#include "load.hpp"
-
 using namespace std;
 
 /*
@@ -48,7 +46,7 @@ static void init_char_vector(vector<char> &vec)
  * Removes the first character in `in_vec` between the range `start` and `end` inclusive
  * and puts it in `out_vec`.
  */
-static void get_char_range(vector<char> &in_vec, vector<char> &out_vec, int start, int end)
+static void get_char_range(vector<char> &in_vec, vector<char> &out_vec, char start, char end)
 {
     for (unsigned int i = 0; i < in_vec.size(); ++i) {
         char c = in_vec[i];
@@ -85,7 +83,7 @@ static void get_char_punctuation(vector<char> &in_vec, vector<char> &out_vec)
  * - At least one punctuation character
  * - No duplicate characters
  */
-string random_password(int size)
+string random_password(unsigned int size)
 {
     if (size <= 4) {
         cout << "random_password() error: invalid size value" << endl;
@@ -103,7 +101,7 @@ string random_password(int size)
     get_char_range(char_vec, res_vec, '0', '9');
     get_char_punctuation(char_vec, res_vec);
 
-    for (int i = 0; i < (size - 4); ++i) {
+    for (unsigned int i = 0; i < (size - 4); ++i) {
         char c = char_vec[i];
         char_vec.erase(char_vec.begin() + i);
         res_vec.push_back(c);
