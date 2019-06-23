@@ -57,7 +57,7 @@ int load_password_store(unordered_map<string, string> &pass_store)
     try {
         fp.open(path);
     }
-    catch (fstream::failure) {
+    catch (const fstream::failure &) {
         return -2;
     }
 
@@ -85,7 +85,7 @@ int save_password_store(unordered_map<string, string> &pass_store)
     try {
         fp.open(path);
     }
-    catch (ofstream::failure) {
+    catch (const ofstream::failure &) {
         return -2;
     }
 
