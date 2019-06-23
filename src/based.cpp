@@ -135,7 +135,7 @@ static void generate(void)
         try {
             size = stoi(input);
         }
-        catch (invalid_argument) {
+        catch (const invalid_argument &) {
             cout << "Invalid input" << endl;
             continue;
         }
@@ -210,7 +210,7 @@ static int prompt(void)
     try {
         return stoi(prompt);
     }
-    catch (invalid_argument) {
+    catch (const invalid_argument &) {
         return -1;
     }
 }
