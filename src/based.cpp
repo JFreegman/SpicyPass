@@ -43,6 +43,11 @@ static void add(unordered_map<string, string> &pass_store)
         return;
     }
 
+    if (key.find(DELIMITER) != string::npos) {
+        cout << "Key may not contain the \"" << DELIMITER << "\" character" << endl;
+        return;
+    }
+
     cout << "Enter password: ";
     getline(cin, password);
 
@@ -217,7 +222,6 @@ static bool execute(const int option, unordered_map<string, string> &pass_store)
 static int prompt(void)
 {
     cout << ">> ";
-
     string prompt;
     getline(cin, prompt);
 

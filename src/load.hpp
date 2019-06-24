@@ -26,6 +26,8 @@
 #include <iostream>
 #include <unordered_map>
 
+#define DELIMITER ":"
+
 int load_password_store(std::unordered_map<std::string, std::string> &pass_store);
 int save_password_store(std::unordered_map<std::string, std::string> &pass_store);
 

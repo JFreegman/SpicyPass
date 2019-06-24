@@ -61,9 +61,19 @@ int load_password_store(unordered_map<string, string> &pass_store)
         return -2;
     }
 
-    string key, pass;
+    string line, key, pass;
 
-    while (fp >> key >> pass) {
+    while (getline(fp, line)) {
+        unsigned int d = line.find(DELIMITER);
+
+        if (d == string::npos) {
+            continue;
+        }
+
+        int length = line.length();
+
+        key = line.substr(0, d);
+        pass = line.substr(d + 1, length);
         pass_store.insert({key, pass});
     }
 
@@ -90,7 +100,7 @@ int save_password_store(unordered_map<string, string> &pass_store)
     }
 
     for (auto &p: pass_store) {
-        string entry = p.first + ' ' + p.second + '\n';
+        string entry = p.first + DELIMITER + p.second + '\n';
         fp << entry;
     }
 
