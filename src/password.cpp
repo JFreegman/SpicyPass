@@ -24,9 +24,34 @@
 #include <string>
 #include <vector>
 #include <algorithm>
-#include <time.h>
+#include <fstream>
 
 using namespace std;
+
+/* Seeds random number generator. Call once on init.
+ *
+ * Returns 0 on success.
+ * Returns -1 on failure.
+ */
+int init_rand(void)
+{
+    ifstream fp;
+
+    try {
+        fp.open("/dev/urandom", ios::binary);
+    }
+    catch (const fstream::failure &) {
+        return -1;
+    }
+
+    char byte;
+    fp.read(&byte, sizeof(byte));
+    fp.close();
+
+    srand(byte);
+
+    return 0;
+}
 
 /*
  * Adds all characters from the `chars` string to `vec` and shuffles the resulting vector.
@@ -89,8 +114,6 @@ string random_password(unsigned int size)
         cout << "random_password() error: invalid size value" << endl;
         return "";
     }
-
-    srand(time(NULL));
 
     vector<char> char_vec;
     vector<char> res_vec;

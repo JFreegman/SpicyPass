@@ -70,10 +70,8 @@ int load_password_store(unordered_map<string, string> &pass_store)
             continue;
         }
 
-        int length = line.length();
-
         key = line.substr(0, d);
-        pass = line.substr(d + 1, length);
+        pass = line.substr(d + 1, line.length());
         pass_store.insert({key, pass});
     }
 

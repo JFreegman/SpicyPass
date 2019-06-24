@@ -251,6 +251,11 @@ static void menu_loop(unordered_map<string, string> &pass_store)
 
 int main(void)
 {
+    if (init_rand() != 0) {
+        cout << "init_rand() failed. Exiting." << endl;
+        return -1;
+    }
+
     unordered_map<string, string> pass_store;
 
     int ret = load_password_store(pass_store);

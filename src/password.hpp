@@ -35,4 +35,11 @@
  */
 std::string random_password(unsigned int size);
 
+/* Seeds random number generator. Call once on init.
+ *
+ * Returns 0 on success.
+ * Returns -1 on failure.
+ */
+int init_rand(void);
+
 #endif
