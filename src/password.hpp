@@ -23,8 +23,6 @@
 #ifndef PASSWORD
 #define PASSWORD
 
-#include <iostream>
-
 /* Returns a randomly generated password.
  *
  * Password is guaranteed to meet minimum requirements as follows:

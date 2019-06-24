@@ -21,6 +21,8 @@
  */
 
 #include <string>
+#include <iostream>
+
 #include "load.hpp"
 #include "password.hpp"
 
@@ -31,7 +33,7 @@ using namespace std;
 
 #define MAX_KEY_SIZE 32
 
-static void add(unordered_map<string, string> &pass_store)
+static void add(map<string, string> &pass_store)
 {
     string key, password;
 
@@ -84,7 +86,7 @@ static void add(unordered_map<string, string> &pass_store)
     }
 }
 
-static void remove(unordered_map<string, string> &pass_store)
+static void remove(map<string, string> &pass_store)
 {
     string key;
     cout << "Enter key: ";
@@ -117,7 +119,7 @@ static void remove(unordered_map<string, string> &pass_store)
     }
 }
 
-static void fetch(unordered_map<string, string> &pass_store)
+static void fetch(map<string, string> &pass_store)
 {
     string key;
     cout << "Enter key: ";
@@ -133,7 +135,7 @@ static void fetch(unordered_map<string, string> &pass_store)
     cout << result->second << endl;
 }
 
-static void list(unordered_map<string, string> &pass_store)
+static void list(map<string, string> &pass_store)
 {
     for (auto &p: pass_store) {
         cout << p.first << ": " << p.second << endl;
@@ -180,7 +182,7 @@ static void print_menu(void)
     cout << "[7] Exit" << endl;
 }
 
-static bool execute(const int option, unordered_map<string, string> &pass_store)
+static bool execute(const int option, map<string, string> &pass_store)
 {
     switch (option) {
         case 1: {
@@ -233,7 +235,7 @@ static int prompt(void)
     }
 }
 
-static void menu_loop(unordered_map<string, string> &pass_store)
+static void menu_loop(map<string, string> &pass_store)
 {
     int option = -1;
 
@@ -256,7 +258,7 @@ int main(void)
         return -1;
     }
 
-    unordered_map<string, string> pass_store;
+    map<string, string> pass_store;
 
     int ret = load_password_store(pass_store);
 

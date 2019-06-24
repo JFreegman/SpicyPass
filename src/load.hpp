@@ -23,12 +23,10 @@
 #ifndef LOAD
 #define LOAD
 
-#include <iostream>
-#include <unordered_map>
-
+#include <map>
 #define DELIMITER ":"
 
-int load_password_store(std::unordered_map<std::string, std::string> &pass_store);
-int save_password_store(std::unordered_map<std::string, std::string> &pass_store);
+int load_password_store(std::map<std::string, std::string> &pass_store);
+int save_password_store(std::map<std::string, std::string> &pass_store);
 
 #endif

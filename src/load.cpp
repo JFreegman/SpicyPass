@@ -44,7 +44,7 @@ static const string get_store_path(void)
     return path;
 }
 
-int load_password_store(unordered_map<string, string> &pass_store)
+int load_password_store(map<string, string> &pass_store)
 {
     const string path = get_store_path();
 
@@ -80,7 +80,7 @@ int load_password_store(unordered_map<string, string> &pass_store)
     return 0;
 }
 
-int save_password_store(unordered_map<string, string> &pass_store)
+int save_password_store(map<string, string> &pass_store)
 {
     const string path = get_store_path();
 
