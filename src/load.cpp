@@ -22,9 +22,9 @@
 
 #include <unistd.h>
 #include <pwd.h>
-#include <fstream>
 
 #include "load.hpp"
+#include "based.hpp"
 
 using namespace std;
 
@@ -44,7 +44,7 @@ static const string get_store_path(void)
     return path;
 }
 
-int load_password_store(map<string, string> &pass_store)
+int load_password_store(Pass_Store &p)
 {
     const string path = get_store_path();
 
@@ -61,26 +61,13 @@ int load_password_store(map<string, string> &pass_store)
         return -2;
     }
 
-    string line, key, pass;
-
-    while (getline(fp, line)) {
-        unsigned int d = line.find(DELIMITER);
-
-        if (d == string::npos) {
-            continue;
-        }
-
-        key = line.substr(0, d);
-        pass = line.substr(d + 1, line.length());
-        pass_store.insert({key, pass});
-    }
-
+    p.load(fp);
     fp.close();
 
     return 0;
 }
 
-int save_password_store(map<string, string> &pass_store)
+int save_password_store(Pass_Store &p)
 {
     const string path = get_store_path();
 
@@ -97,11 +84,7 @@ int save_password_store(map<string, string> &pass_store)
         return -2;
     }
 
-    for (auto &p: pass_store) {
-        string entry = p.first + DELIMITER + p.second + '\n';
-        fp << entry;
-    }
-
+    p.save(fp);
     fp.close();
 
     return 0;

@@ -1,4 +1,4 @@
-/*  load.hpp
+/*  util.cpp
  *
  *
  *  Copyright (C) 2019 Jfreegman <Jfreegman@gmail.com>
@@ -20,12 +20,12 @@
  *
  */
 
-#ifndef LOAD
-#define LOAD
+#include "util.hpp"
 
-#include "based.hpp"
-
-int load_password_store(Pass_Store &p);
-int save_password_store(Pass_Store &p);
-
-#endif
+/*
+ * Returns true if `s` contains `c`.
+ */
+bool string_contains(std::string s, std::string c)
+{
+    return s.find(c) != std::string::npos;
+}

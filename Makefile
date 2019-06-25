@@ -1,5 +1,5 @@
 CPPFLAGS = -std=c++17 -Wall -Werror -g
-OBJ = based.o load.o password.o
+OBJ = based.o load.o password.o util.o
 SRC_DIR = ./src
 
 all: $(OBJ)

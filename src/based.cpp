@@ -20,11 +20,10 @@
  *
  */
 
-#include <string>
-#include <iostream>
-
 #include "load.hpp"
 #include "password.hpp"
+#include "based.hpp"
+#include "util.hpp"
 
 using namespace std;
 
@@ -33,7 +32,7 @@ using namespace std;
 
 #define MAX_KEY_SIZE 32
 
-static void add(map<string, string> &pass_store)
+static void add(Pass_Store &p)
 {
     string key, password;
 
@@ -45,7 +44,7 @@ static void add(map<string, string> &pass_store)
         return;
     }
 
-    if (key.find(DELIMITER) != string::npos) {
+    if (string_contains(key, DELIMITER)) {
         cout << "Key may not contain the \"" << DELIMITER << "\" character" << endl;
         return;
     }
@@ -62,7 +61,7 @@ static void add(map<string, string> &pass_store)
         password = random_password(16);
     }
 
-    if (pass_store.find(key) != pass_store.end()) {
+    if (p.key_exists(key)) {
         while (true) {
             string s;
             cout << "Key \"" << key << "\" already exists. Overwrite? Y/n ";
@@ -76,8 +75,8 @@ static void add(map<string, string> &pass_store)
         }
     }
 
-    pass_store.insert_or_assign(key, password);
-    int ret = save_password_store(pass_store);
+    p.insert(key, password);
+    int ret = save_password_store(p);
 
     if (ret != 0) {
         cout << "Failed to save password store (" << to_string(ret) << ")" << endl;
@@ -86,13 +85,13 @@ static void add(map<string, string> &pass_store)
     }
 }
 
-static void remove(map<string, string> &pass_store)
+static void remove(Pass_Store &p)
 {
     string key;
     cout << "Enter key: ";
     getline(cin, key);
 
-    if (pass_store.find(key) == pass_store.end()) {
+    if (!p.key_exists(key)) {
         cout << "Key not found" << endl;
         return;
     }
@@ -109,8 +108,8 @@ static void remove(map<string, string> &pass_store)
         }
     }
 
-    pass_store.erase(key);
-    int ret = save_password_store(pass_store);
+    p.remove(key);
+    int ret = save_password_store(p);
 
     if (ret != 0) {
         cout << "Failed to save password store (" << to_string(ret) << ")" << endl;
@@ -119,27 +118,20 @@ static void remove(map<string, string> &pass_store)
     }
 }
 
-static void fetch(map<string, string> &pass_store)
+static void fetch(Pass_Store &p)
 {
     string key;
     cout << "Enter key: ";
     getline(cin, key);
 
-    auto result = pass_store.find(key);
-
-    if (result == pass_store.end()) {
+    if (!p.print_value(key)) {
         cout << "Key not found" << endl;
-        return;
     }
-
-    cout << result->second << endl;
 }
 
-static void list(map<string, string> &pass_store)
+static void list(Pass_Store &p)
 {
-    for (auto &p: pass_store) {
-        cout << p.first << ": " << p.second << endl;
-    }
+    p.print_all();
 }
 
 static void generate(void)
@@ -182,23 +174,23 @@ static void print_menu(void)
     cout << "[7] Exit" << endl;
 }
 
-static bool execute(const int option, map<string, string> &pass_store)
+static bool execute(const int option, Pass_Store &p)
 {
     switch (option) {
         case 1: {
-            add(pass_store);
+            add(p);
             break;
         }
         case 2: {
-            remove(pass_store);
+            remove(p);
             break;
         }
         case 3: {
-            fetch(pass_store);
+            fetch(p);
             break;
         }
         case 4: {
-            list(pass_store);
+            list(p);
             break;
         }
         case 5: {
@@ -235,7 +227,7 @@ static int prompt(void)
     }
 }
 
-static void menu_loop(map<string, string> &pass_store)
+static void menu_loop(Pass_Store &p)
 {
     int option = -1;
 
@@ -244,11 +236,24 @@ static void menu_loop(map<string, string> &pass_store)
     while (true) {
         option = prompt();
 
-        if (!execute(option, pass_store)) {
+        if (!execute(option, p)) {
             cout << "Goodbye :)" << endl;
             break;
         }
     }
+}
+
+
+int init_pass_store(Pass_Store &p)
+{
+    int ret = load_password_store(p);
+
+    if (ret != 0) {
+        cout << "Failed to load password store (" + to_string(ret) + ")" << endl;
+        return -1;
+    }
+
+    return 0;
 }
 
 int main(void)
@@ -258,16 +263,15 @@ int main(void)
         return -1;
     }
 
-    map<string, string> pass_store;
-
-    int ret = load_password_store(pass_store);
+    Pass_Store p;
+    int ret = init_pass_store(p);
 
     if (ret != 0) {
-        cout << "Failed to load password store (" + to_string(ret) + ")" << endl;
+        cout << "Failed to init pass store object" << endl;
         return -1;
     }
 
-    menu_loop(pass_store);
+    menu_loop(p);
 
     return 0;
 }

@@ -1,4 +1,4 @@
-/*  load.hpp
+/*  util.hpp
  *
  *
  *  Copyright (C) 2019 Jfreegman <Jfreegman@gmail.com>
@@ -20,12 +20,14 @@
  *
  */
 
-#ifndef LOAD
-#define LOAD
+#ifndef UTIL
+#define UTIL
 
-#include "based.hpp"
+#include <string>
 
-int load_password_store(Pass_Store &p);
-int save_password_store(Pass_Store &p);
+/*
+ * Returns true if `s` contains `c`.
+ */
+bool string_contains(std::string s, std::string c);
 
 #endif
