@@ -57,7 +57,7 @@ int load_password_store(Pass_Store &p)
     try {
         fp.open(path);
     }
-    catch (const fstream::failure &) {
+    catch (const exception &) {
         return -2;
     }
 
@@ -80,7 +80,7 @@ int save_password_store(Pass_Store &p)
     try {
         fp.open(path);
     }
-    catch (const ofstream::failure &) {
+    catch (const exception &) {
         return -2;
     }
 

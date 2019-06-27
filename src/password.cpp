@@ -40,7 +40,7 @@ int init_rand(void)
     try {
         fp.open("/dev/urandom", ios::binary);
     }
-    catch (const fstream::failure &) {
+    catch (const exception &) {
         return -1;
     }
 

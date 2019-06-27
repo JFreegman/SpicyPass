@@ -20,6 +20,9 @@
  *
  */
 
+#include <sys/types.h>
+#include <sys/stat.h>
+
 #include "load.hpp"
 #include "password.hpp"
 #include "based.hpp"
@@ -146,12 +149,12 @@ static void generate(void)
         try {
             size = stoi(input);
         }
-        catch (const invalid_argument &) {
+        catch (const exception &) {
             cout << "Invalid input" << endl;
             continue;
         }
 
-        if (size >= MIN_PASSWORD_SIZE && size < MAX_PASSWORD_SIZE) {
+        if (size >= MIN_PASSWORD_SIZE && size <= MAX_PASSWORD_SIZE) {
             break;
         }
 
@@ -215,14 +218,14 @@ static bool execute(const int option, Pass_Store &p)
 
 static int prompt(void)
 {
-    cout << ">> ";
+    cout << "> ";
     string prompt;
     getline(cin, prompt);
 
     try {
         return stoi(prompt);
     }
-    catch (const invalid_argument &) {
+    catch (const exception &) {
         return -1;
     }
 }
@@ -258,6 +261,8 @@ int init_pass_store(Pass_Store &p)
 
 int main(void)
 {
+    umask(S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+
     if (init_rand() != 0) {
         cout << "init_rand() failed. Exiting." << endl;
         return -1;
