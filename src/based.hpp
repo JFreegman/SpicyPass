@@ -50,21 +50,17 @@ public:
         return store.find(key) != store.end();
     }
 
-    bool print_value(string key) {
-        if (!key_exists(key)) {
-            return false;
-        }
+    bool print_matches(string key) {
+        bool match = false;
 
-        auto result = store.find(key);
-        cout << result->second << endl;
-
-        return true;
-    }
-
-    void print_all(void) {
         for (auto &item: store) {
-            cout << item.first << ": " << item.second << endl;
+            if (key.compare(0, key.length(), item.first, 0, key.length()) == 0) {
+                cout << item.first << ": " << item.second << endl;
+                match = true;
+            }
         }
+
+        return match;
     }
 
     void load(ifstream &fp) {

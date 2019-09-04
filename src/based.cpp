@@ -127,14 +127,14 @@ static void fetch(Pass_Store &p)
     cout << "Enter key: ";
     getline(cin, key);
 
-    if (!p.print_value(key)) {
+    if (!p.print_matches(key)) {
         cout << "Key not found" << endl;
     }
 }
 
 static void list(Pass_Store &p)
 {
-    p.print_all();
+    p.print_matches("");
 }
 
 static void generate(void)
