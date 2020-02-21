@@ -115,14 +115,55 @@ static void read_header(ifstream &fp, unsigned char *magic_number, unsigned char
 }
 
 /*
+ * Saves encrypted contents of pass store to disk.
+ *
+ * Return 0 on success.
+ * Return -1 if path is invalid.
+ * Return -2 if file encryption fails.
+ */
+int save_password_store(Pass_Store &p)
+{
+    const string path = get_store_path();
+
+    if (path == "") {
+        return -1;
+    }
+
+    ofstream fp;
+
+    try {
+        fp.open(path);
+    }
+    catch (const exception &) {
+        return -1;
+    }
+
+    unsigned char salt[CRYPTO_SALT_SIZE];
+    p.get_key_salt(salt);
+
+    unsigned char hash[CRYPTO_HASH_SIZE];
+    p.get_password_hash(hash);
+
+    write_header(fp, hash, salt);
+
+    if (p.save(fp) != 0) {
+        fp.close();
+        return -2;
+    }
+
+    fp.close();
+
+    return 0;
+}
+
+/*
  * Attempts to validate password, decrypt password store, and load it to memory.
  *
  * Return 0 on success.
  * Return -1 on file related error.
  * Return -2 if password is invalid.
  * Return -3 on crypto related error.
- * Return -4 if memory lock fails.
- * Return -5 if magic number is wrong.
+ * Return -4 if magic number is wrong.
  */
 int load_password_store(Pass_Store &p, const unsigned char *password, size_t length)
 {
@@ -139,7 +180,7 @@ int load_password_store(Pass_Store &p, const unsigned char *password, size_t len
 
     if (magic_number != MAGIC_NUMBER) {
         fp.close();
-        return -5;
+        return -4;
     }
 
     if (!crypto_verify_pass_hash(hash, password, length)) {
@@ -155,20 +196,10 @@ int load_password_store(Pass_Store &p, const unsigned char *password, size_t len
         return -3;
     }
 
-    if (crypto_memlock(encryption_key, CRYPTO_KEY_SIZE) != 0) {
-        cout << "crypto_memlock() failed in load_password_store()" << endl;
-        fp.close();
-        return -4;
-    }
-
     if (p.init_crypto(encryption_key, salt, hash) != 0) {
         cout << "crypto_memlock() failed in init_crypto()" << endl;
         fp.close();
         return -4;
-    }
-
-    if (crypto_memunlock(encryption_key, CRYPTO_KEY_SIZE) != 0) {
-        cout << "Warning: crypto_memunlock() failed in load_password_store()" << endl;
     }
 
     const string path = get_store_path();
@@ -245,43 +276,42 @@ int init_pass_hash(const unsigned char *password, size_t length)
 }
 
 /*
- * Saves encrypted contents of pass store to disk.
+ * Initializes `p` with a new encryption key derived from `password`, as well as a
+ * new key salt and password hash. Changes are written to file.
  *
- * Return 0 on success.
- * Return -1 if path is invalid.
- * Return -2 if file encryption fails.
+ * Return 0 on sucess.
+ * Return -1 on crypto related error.
+ * Return -2 if `p` fails to update.
+ * Return -3 if on save failure.
  */
-int save_password_store(Pass_Store &p)
+int update_crypto(Pass_Store &p, const unsigned char *password, size_t length)
 {
-    const string path = get_store_path();
-
-    if (path == "") {
-        return -1;
-    }
-
-    ofstream fp;
-
-    try {
-        fp.open(path);
-    }
-    catch (const exception &) {
-        return -1;
-    }
-
+    unsigned char encryption_key[CRYPTO_KEY_SIZE];
     unsigned char salt[CRYPTO_SALT_SIZE];
-    p.get_key_salt(salt);
-
     unsigned char hash[CRYPTO_HASH_SIZE];
-    p.get_password_hash(hash);
 
-    write_header(fp, hash, salt);
+    if (crypto_make_pass_hash(hash, password, length) != 0) {
+        cout << "crypto_make_pass_hash() failed." << endl;
+        return -1;
+    }
 
-    if (p.save(fp) != 0) {
-        fp.close();
+    crypto_gen_salt(salt, CRYPTO_SALT_SIZE);
+
+    if (crypto_derive_key_from_pass(encryption_key, CRYPTO_KEY_SIZE, password, length, salt) != 0) {
+        cout << "crypto_derive_key_from_pass() failed" << endl;
+        return -1;
+    }
+
+    if (p.init_crypto(encryption_key, salt, hash) !=0) {
+        crypto_memwipe(encryption_key, sizeof(encryption_key));
         return -2;
     }
 
-    fp.close();
+    crypto_memwipe(encryption_key, sizeof(encryption_key));
+
+    if (save_password_store(p) != 0) {
+        return -3;
+    }
 
     return 0;
 }

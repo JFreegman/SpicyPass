@@ -53,3 +53,23 @@ off_t file_size(const char *path)
 
     return st.st_size;
 }
+
+int disable_terminal_echo(struct termios *oflags)
+{
+    struct termios nflags;
+    tcgetattr(fileno(stdin), oflags);
+    nflags = *oflags;
+    nflags.c_lflag &= ~ECHO;
+    nflags.c_lflag |= ECHONL;
+
+    if (tcsetattr(fileno(stdin), TCSANOW, &nflags) != 0) {
+        return -1;
+    }
+
+    return 0;
+}
+
+void enable_terminal_echo(struct termios *oflags)
+{
+    tcsetattr(fileno(stdin), TCSANOW, oflags);
+}

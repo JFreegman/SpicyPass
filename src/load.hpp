@@ -35,8 +35,7 @@
  * Return -1 on file related error.
  * Return -2 if password is invalid.
  * Return -3 on crypto related error.
- * Return -4 if memory lock fails.
- * Return -5 if magic number is wrong.
+ * Return -4 if magic number is wrong.
  */
 int load_password_store(Pass_Store &p, const unsigned char *password, size_t length);
 
@@ -64,5 +63,16 @@ int first_time_run(void);
  * Return -1 on failure.
  */
 int init_pass_hash(const unsigned char *password, size_t length);
+
+/*
+ * Initializes `p` with a new encryption key derived from `password`, as well as a
+ * new key salt and password hash. Changes are written to file.
+ *
+ * Return 0 on sucess.
+ * Return -1 on crypto related error.
+ * Return -2 if `p` fails to update.
+ * Return -3 if on save failure.
+ */
+int update_crypto(Pass_Store &p, const unsigned char *password, size_t length);
 
 #endif

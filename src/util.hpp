@@ -27,7 +27,7 @@
 #include <fstream>
 
 #include <string.h>
-
+#include <termios.h>
 
 /*
  * Returns true if `s` contains `c`.
@@ -41,5 +41,9 @@ bool file_is_empty(std::ifstream &fp);
 
 /* Returns the size of the file pointed to by `path`. */
 off_t file_size(const char *path);
+
+int disable_terminal_echo(struct termios *oflags);
+
+void enable_terminal_echo(struct termios *oflags);
 
 #endif

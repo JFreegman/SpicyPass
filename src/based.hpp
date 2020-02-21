@@ -71,10 +71,20 @@ public:
         return match;
     }
 
+    /*
+     * Puts key salt in `buf`.
+     *
+     * buf must have room for at least CRYPTO_SALT_SIZE bytes.
+     */
     void get_key_salt(unsigned char *buf) {
         memcpy(buf, key_salt, CRYPTO_SALT_SIZE);
     }
 
+    /*
+     * Puts password hash in `buf`.
+     *
+     * buf must have room for at least CRYPTO_HASH_SIZE bytes.
+     */
     void get_password_hash(unsigned char *buf) {
         memcpy(buf, password_hash, CRYPTO_HASH_SIZE);
     }

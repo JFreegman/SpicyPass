@@ -22,7 +22,6 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <termios.h>
 
 #include "load.hpp"
 #include "password.hpp"
@@ -35,6 +34,156 @@ using namespace std;
 #define MAX_PASSWORD_SIZE 32
 #define MIN_PASSWORD_SIZE 8
 #define MAX_ENTRY_KEY_SIZE 32
+
+/* Promps password and puts it in `password` array.
+ *
+ * Return 0 on success.
+ * Return -1 input is invalid.
+ */
+static int prompt_password(unsigned char *password, size_t max_length)
+{
+    cout << "Enter password: ";
+
+    char pass_buf[max_length + 1];
+    const char *input = fgets(pass_buf, sizeof(pass_buf), stdin);
+
+    if (input == NULL) {
+        cout << "Invalid input." << endl;
+        return -1;
+    }
+
+    size_t pass_length = strlen(pass_buf);
+
+    if (pass_length > max_length) {
+        return -1;
+    }
+
+    memcpy(password, pass_buf, pass_length);
+    password[pass_length] = 0;
+
+    crypto_memwipe((unsigned char *) pass_buf, sizeof(pass_buf));
+
+    return 0;
+}
+
+static void new_password_prompt(unsigned char *password, size_t max_length)
+{
+    while (true) {
+        cout << "Enter password: ";
+
+        char pass1[max_length + 1];
+        char pass2[max_length + 1];
+
+        const char *input1 = fgets(pass1, sizeof(pass1), stdin);
+
+        if (input1 == NULL) {
+            cout << "Invalid input." << endl;
+            continue;
+        }
+
+        size_t pass_length = strlen(pass1);
+
+        if (pass_length < MIN_PASSWORD_SIZE || pass_length > max_length) {
+            cout << "Password must be between " << MIN_PASSWORD_SIZE  << " and " << max_length << " characters long." << endl;
+            continue;
+        }
+
+        cout << "Enter password again: ";
+
+        const char *input2 = fgets(pass2, sizeof(pass2), stdin);
+
+        if (input2 == NULL) {
+            cout << "Invalid input." << endl;
+            continue;
+        }
+
+        if (strcmp(pass1, pass2) != 0) {
+            cout << "Passwords don't match. Try again." << endl;
+            continue;
+        }
+
+        memcpy(password, pass1, pass_length);
+        password[pass_length] = 0;
+
+        crypto_memwipe((unsigned char *) pass1, pass_length);
+        crypto_memwipe((unsigned char *) pass2, pass_length);
+
+        return;
+    }
+}
+
+/*
+ * Initializes pass store file with password hash on first run. Puts new password in
+ * the `password` buffer.
+ *
+ * Returns 0 on success.
+ * Returns -1 on failure.
+ */
+static int init_new_password(unsigned char *password, size_t max_length)
+{
+    new_password_prompt(password, max_length);
+
+    if (init_pass_hash(password, strlen((char *) password)) != 0) {
+        cout << "init_pass_hash() failed." << endl;
+        return -1;
+    }
+
+    return 0;
+}
+
+/*
+ * Prompts user to update password for pass store file.
+ *
+ * Return 0 on success.
+ * Return -1 on failure.
+ */
+static int change_password_prompt(Pass_Store &p)
+{
+    unsigned char new_password[MAX_PASSWORD_SIZE + 1];
+    unsigned char hash[CRYPTO_HASH_SIZE];
+    p.get_password_hash(hash);
+
+    cout << "Changing master password. Enter q to go back." << endl;
+
+    while (true) {
+        cout << "Enter old password: ";
+
+        char old_pass[MAX_PASSWORD_SIZE + 1];
+        const char *input1 = fgets(old_pass, sizeof(old_pass), stdin);
+
+        if (input1 == NULL) {
+            cout << "Invalid input" << endl;
+            continue;
+        }
+
+        if (strcmp(old_pass, "q\n") == 0) {
+            return -1;
+        }
+
+        size_t pass_length = strlen(old_pass);
+
+        if (!crypto_verify_pass_hash(hash, (unsigned char *) old_pass, pass_length)) {
+            cout << "Invalid password" << endl;
+            continue;
+        }
+
+        break;
+    }
+
+    new_password_prompt(new_password, MAX_PASSWORD_SIZE);
+    int ret = update_crypto(p, new_password, strlen((char *) new_password));
+
+    if (ret < 0) {
+        cout << "Failed to update password with error: " << to_string(ret) << endl;
+        return -1;
+    }
+
+    cout << "Successfully updated password" << endl;
+
+    crypto_memwipe(new_password, sizeof(new_password));
+
+    return 0;
+}
 
 static void add(Pass_Store &p)
 {
@@ -183,13 +332,14 @@ static void generate(void)
 static void print_menu(void)
 {
     cout << "Menu:" << endl;
-    cout << "[1] Add" << endl;
-    cout << "[2] Remove" << endl;
-    cout << "[3] Fetch" << endl;
-    cout << "[4] List" << endl;
-    cout << "[5] Generate" << endl;
-    cout << "[6] Menu" << endl;
-    cout << "[7] Exit" << endl;
+    cout << "[1] Add entry" << endl;
+    cout << "[2] Remove entry" << endl;
+    cout << "[3] Fetch entry" << endl;
+    cout << "[4] List all entries" << endl;
+    cout << "[5] Generate password" << endl;
+    cout << "[6] Change master password" << endl;
+    cout << "[7] Print menu" << endl;
+    cout << "[8] Exit" << endl;
 }
 
 static bool execute(const int option, Pass_Store &p)
@@ -216,10 +366,25 @@ static bool execute(const int option, Pass_Store &p)
             break;
         }
         case 6: {
+            struct termios oflags;
+            if (disable_terminal_echo(&oflags) != 0) {
+                cout << "Warning: failed to disable terminal echo" << endl;
+            }
+
+            int ret = change_password_prompt(p);
+            enable_terminal_echo(&oflags);
+
+            if (ret == 0) {
+                return false;
+            }
+
+            break;
+        }
+        case 7: {
             print_menu();
             break;
         }
-        case 7: {  // exit program
+        case 8: {  // exit program
             return false;
         }
         default: {
@@ -262,132 +427,6 @@ static void menu_loop(Pass_Store &p)
     }
 }
 
-/* Promps password and puts it in `password` array.
- *
- * Return 0 on success.
- * Return -1 input is invalid.
- */
-static int prompt_password(unsigned char *password, size_t max_length)
-{
-    /* disable terminal echo */
-    struct termios oflags, nflags;
-    tcgetattr(fileno(stdin), &oflags);
-    nflags = oflags;
-    nflags.c_lflag &= ~ECHO;
-    nflags.c_lflag |= ECHONL;
-
-    if (tcsetattr(fileno(stdin), TCSANOW, &nflags) != 0) {
-        cout << "Warning: tcsetattr() failed to disable terminal echo" << endl;
-    }
-
-    cout << "Enter password: ";
-
-    char pass_buf[max_length + 1];
-    const char *input = fgets(pass_buf, sizeof(pass_buf), stdin);
-
-    if (input == NULL) {
-        cout << "Invalid input." << endl;
-        return -1;
-    }
-
-    size_t pass_length = strlen(pass_buf);
-
-    /* re-enable terminal echo */
-    tcsetattr(fileno(stdin), TCSANOW, &oflags);
-
-    if (pass_length > max_length) {
-        return -1;
-    }
-
-    memcpy(password, pass_buf, pass_length);
-    password[pass_length] = 0;
-
-    crypto_memwipe((unsigned char *) pass_buf, sizeof(pass_buf));
-
-    return 0;
-}
-
-static void new_password_prompt(unsigned char *password, size_t max_length)
-{
-    cout << "Creating a new profile. ";
-
-    /* disable terminal echo */
-    struct termios oflags, nflags;
-    tcgetattr(fileno(stdin), &oflags);
-    nflags = oflags;
-    nflags.c_lflag &= ~ECHO;
-    nflags.c_lflag |= ECHONL;
-
-    if (tcsetattr(fileno(stdin), TCSANOW, &nflags) != 0) {
-        cout << "Warning: tcsetattr() failed to disable terminal echo." << endl;
-    }
-
-    while (true) {
-        cout << "Enter password: ";
-
-        char pass1[max_length + 1];
-        char pass2[max_length + 1];
-
-        const char *input1 = fgets(pass1, sizeof(pass1), stdin);
-
-        if (input1 == NULL) {
-            cout << "Invalid input." << endl;
-            continue;
-        }
-
-        size_t pass_length = strlen(pass1);
-
-        if (pass_length < MIN_PASSWORD_SIZE || pass_length > max_length) {
-            cout << "Password must be between " << MIN_PASSWORD_SIZE  << " and " << max_length << " characters long." << endl;
-            continue;
-        }
-
-        cout << "Enter password again: ";
-
-        const char *input2 = fgets(pass2, sizeof(pass2), stdin);
-
-        if (input2 == NULL) {
-            cout << "Invalid input." << endl;
-            continue;
-        }
-
-        if (strcmp(pass1, pass2) != 0) {
-            cout << "Passwords don't match. Try again." << endl;
-            continue;
-        }
-
-        /* re-enable terminal echo */
-        tcsetattr(fileno(stdin), TCSANOW, &oflags);
-
-        memcpy(password, pass1, pass_length);
-        password[pass_length] = 0;
-
-        crypto_memwipe((unsigned char *) pass1, pass_length);
-        crypto_memwipe((unsigned char *) pass2, pass_length);
-
-        return;
-    }
-}
-
-/*
- * Initializes pass store file with password hash on first run. Puts new password in
- * the `password` buffer.
- *
- * Returns 0 on success.
- * Returns -1 on failure.
- */
-static int init_new_password(unsigned char *password, size_t max_length)
-{
-    new_password_prompt(password, max_length);
-
-    if (init_pass_hash(password, strlen((char *) password)) != 0) {
-        cout << "init_pass_hash() failed." << endl;
-        return -1;
-    }
-
-    return 0;
-}
-
 /*
  * Initializes a new `Pass_Store` object and prompts user for password.
  *
@@ -403,11 +442,23 @@ int new_pass_store(Pass_Store &p)
     unsigned char password[MAX_PASSWORD_SIZE + 1];
 
     if (first_time_run()) {
+        cout << "Creating a new profile. ";
+
         if (init_new_password(password, MAX_PASSWORD_SIZE) != 0) {
             return -1;
         }
-    } else if (prompt_password(password, MAX_PASSWORD_SIZE) != 0) {
-        return -1;
+    } else {
+        struct termios oflags;
+        if (disable_terminal_echo(&oflags) != 0) {
+            cout << "Warning: failed to disable terminal echo" << endl;
+        }
+
+        int pw_ret = prompt_password(password, MAX_PASSWORD_SIZE);
+        enable_terminal_echo(&oflags);
+
+        if (pw_ret != 0) {
+            return -1;
+        }
     }
 
     if (crypto_memlock(password, sizeof(password)) != 0) {
@@ -421,6 +472,9 @@ int new_pass_store(Pass_Store &p)
     }
 
     switch (ret) {
+        case 0: {
+            break;
+        }
         case -1: {
             return -3;
         }
@@ -429,6 +483,12 @@ int new_pass_store(Pass_Store &p)
         }
         case -3: {
             return -5;
+        }
+        case -4: {
+            return -3;
+        }
+        default: {
+            return -3;
         }
     }
 
