@@ -23,9 +23,46 @@
 #ifndef LOAD
 #define LOAD
 
+#include <unistd.h>
+#include <pwd.h>
+
 #include "based.hpp"
 
-int load_password_store(Pass_Store &p);
+/*
+ * Attempts to validate password, decrypt password store, and load it to memory.
+ *
+ * Return 0 on success.
+ * Return -1 on file related error.
+ * Return -2 if password is invalid.
+ * Return -3 on crypto related error.
+ * Return -4 if memory lock fails.
+ * Return -5 if magic number is wrong.
+ */
+int load_password_store(Pass_Store &p, const char *password, size_t length);
+
+/*
+ * Saves encrypted contents of pass store to disk.
+ *
+ * Return 0 on success.
+ * Return -1 if path is invalid.
+ * Return -2 if file encryption fails.
+ */
 int save_password_store(Pass_Store &p);
+
+/*
+ * Return 1 if pass_store file does not exist or is empty.
+ * Return 0 if pass_store file exists.
+ * Return -1 if invalid path.
+ * Return -2 if file cannot be opened.
+ */
+int first_time_run(void);
+
+/*
+ * Puts hash of `password` at the beginning of based store file.
+ *
+ * Return 0 on success.
+ * Return -1 on failure.
+ */
+int init_pass_hash(const char *password, size_t length);
 
 #endif

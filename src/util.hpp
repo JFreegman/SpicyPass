@@ -24,10 +24,22 @@
 #define UTIL
 
 #include <string>
+#include <fstream>
+
+#include <string.h>
+
 
 /*
  * Returns true if `s` contains `c`.
  */
 bool string_contains(std::string s, std::string c);
+
+/*
+ * Returns true if file pointed to by `fp` is empty.
+ */
+bool file_is_empty(std::ifstream &fp);
+
+/* Returns the size of the file pointed to by `path`. */
+off_t file_size(const char *path);
 
 #endif

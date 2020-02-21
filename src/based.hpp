@@ -28,7 +28,11 @@
 #include <fstream>
 #include <map>
 
+#include <string.h>
+
 #include "load.hpp"
+#include "util.hpp"
+#include "crypto.hpp"
 
 #define DELIMITER ":"
 
@@ -36,6 +40,10 @@ using namespace std;
 
 class Pass_Store {
     map<string, string> store;
+
+    unsigned char encryption_key[CRYPTO_KEY_SIZE];
+    unsigned char key_salt[CRYPTO_SALT_SIZE];
+    unsigned char password_hash[CRYPTO_HASH_SIZE];
 
 public:
     void insert(string key, string value) {
@@ -63,27 +71,136 @@ public:
         return match;
     }
 
-    void load(ifstream &fp) {
-        string line, key, pass;
+    /*
+     * Decrypts file pointed to by `fp` and loads conents to pass store.
+     *
+     * Return -1 on out of memory error.
+     * Return -2 on decryption error.
+     */
+    int load(ifstream &fp, size_t file_size) {
+        unsigned char *plaintext = (unsigned char *) malloc(file_size + 1);
+        unsigned long long plain_length;
 
-        while (getline(fp, line)) {
-            unsigned int d = line.find(DELIMITER);
+        int ret = crypto_decrypt_file(fp, file_size, plaintext, &plain_length, encryption_key);
 
-            if (d == string::npos) {
-                continue;
+        if (ret != 0) {
+            free(plaintext);
+
+            switch (ret) {
+                case -1: {
+                    cout << "Decryption failed: Out of memory" << endl;
+                    return -2;
+                }
+                case -2: {
+                    cout << "Decryption failed: Corrupt file or bad key" << endl;
+                    return -2;
+                }
+                case -3: {
+                    cout << "Decryption failed: File corrupt" << endl;
+                    return -2;
+                }
+                default: {
+                    return -2;
+                }
+            }
+        }
+
+        plaintext[plain_length] = 0;
+
+        char *tok = strtok((char *) plaintext, "\n");
+
+        while (tok) {
+            string entry = tok;
+            unsigned int d = entry.find(DELIMITER);
+
+            if (d != string::npos) {
+                string key = entry.substr(0, d);
+                string pass = entry.substr(d + 1, entry.length());
+                insert(key, pass);
             }
 
-            key = line.substr(0, d);
-            pass = line.substr(d + 1, line.length());
-            insert(key, pass);
+            tok = strtok(NULL, "\n");
         }
+
+        crypto_memwipe((char *) plaintext, plain_length);
+
+        free(plaintext);
+
+        return 0;
     }
 
-    void save(ofstream &fp) {
+    /*
+     * Encrypts pass store data and saves result to file pointed to by `fp`.
+     * fp should be offset to after the plaintext header.
+     *
+     * Return 0 on success.
+     * Return -1 on memory related error.
+     * Return -2 if encryption fails.
+     */
+    int save(ofstream &fp) {
+        size_t file_size = 0;
+
         for (auto &item: store) {
             string entry = item.first + DELIMITER + item.second + '\n';
-            fp << entry;
+            file_size += entry.length();
         }
+
+        if (file_size == 0) {
+            return 0;
+        }
+
+        unsigned char *buf_in = (unsigned char *) malloc(file_size);
+
+        if (buf_in == NULL) {
+            return -1;
+        }
+
+        size_t pos = 0;
+
+        for (auto &item: store) {
+            string entry = item.first + DELIMITER + item.second + '\n';
+            memcpy(buf_in + pos, entry.c_str(), entry.length());
+            pos += entry.length();
+        }
+
+        unsigned long long out_len;
+        int ret = crypto_encrypt_file(fp, buf_in, file_size, &out_len, encryption_key);
+
+        if (ret < 0) {
+            cout << "Encryption failed" << endl;
+            free(buf_in);
+            return -2;
+        }
+
+        crypto_memwipe((char *) buf_in, file_size);
+
+        free(buf_in);
+
+        return 0;
+    }
+
+    void kill(void) {
+        crypto_memunlock((char *) encryption_key, CRYPTO_KEY_SIZE);
+    }
+
+    int init_crypto(const char *key, const char *salt, const char *hash) {
+        memcpy(encryption_key, key, CRYPTO_KEY_SIZE);
+        memcpy(key_salt, salt, CRYPTO_SALT_SIZE);
+        memcpy(password_hash, hash, CRYPTO_HASH_SIZE);
+
+        if (crypto_memlock((char *) encryption_key, CRYPTO_KEY_SIZE) != 0) {
+            return -1;
+        }
+
+        return 0;
+    }
+
+    void get_key_salt(char *buf) {
+        memcpy(buf, key_salt, CRYPTO_SALT_SIZE);
+    }
+
+    void get_password_hash(char *buf) {
+        memcpy(buf, password_hash, CRYPTO_HASH_SIZE);
     }
 };
 

@@ -20,6 +20,10 @@
  *
  */
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 #include "util.hpp"
 
 /*
@@ -28,4 +32,24 @@
 bool string_contains(std::string s, std::string c)
 {
     return s.find(c) != std::string::npos;
+}
+
+/*
+ * Returns true if file pointed to by `fp` is empty.
+ */
+bool file_is_empty(std::ifstream &fp)
+{
+    return fp.peek() == std::ifstream::traits_type::eof();
+}
+
+/* Returns the size of the file pointed to by `path`. */
+off_t file_size(const char *path)
+{
+    struct stat st;
+
+    if (stat(path, &st) == -1) {
+        return 0;
+    }
+
+    return st.st_size;
 }
