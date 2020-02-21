@@ -71,6 +71,30 @@ public:
         return match;
     }
 
+    void get_key_salt(unsigned char *buf) {
+        memcpy(buf, key_salt, CRYPTO_SALT_SIZE);
+    }
+
+    void get_password_hash(unsigned char *buf) {
+        memcpy(buf, password_hash, CRYPTO_HASH_SIZE);
+    }
+
+    int init_crypto(const unsigned char *key, const unsigned char *salt, const unsigned char *hash) {
+        memcpy(encryption_key, key, CRYPTO_KEY_SIZE);
+        memcpy(key_salt, salt, CRYPTO_SALT_SIZE);
+        memcpy(password_hash, hash, CRYPTO_HASH_SIZE);
+
+        if (crypto_memlock(encryption_key, CRYPTO_KEY_SIZE) != 0) {
+            return -1;
+        }
+
+        return 0;
+    }
+
+    void kill(void) {
+        crypto_memunlock(encryption_key, CRYPTO_KEY_SIZE);
+    }
+
     /*
      * Decrypts file pointed to by `fp` and loads conents to pass store.
      *
@@ -122,7 +146,7 @@ public:
             tok = strtok(NULL, "\n");
         }
 
-        crypto_memwipe((char *) plaintext, plain_length);
+        crypto_memwipe(plaintext, plain_length);
 
         free(plaintext);
 
@@ -167,40 +191,15 @@ public:
         int ret = crypto_encrypt_file(fp, buf_in, file_size, &out_len, encryption_key);
 
         if (ret < 0) {
-            cout << "Encryption failed" << endl;
             free(buf_in);
             return -2;
         }
 
-        crypto_memwipe((char *) buf_in, file_size);
+        crypto_memwipe(buf_in, file_size);
 
         free(buf_in);
 
         return 0;
-    }
-
-    void kill(void) {
-        crypto_memunlock((char *) encryption_key, CRYPTO_KEY_SIZE);
-    }
-
-    int init_crypto(const char *key, const char *salt, const char *hash) {
-        memcpy(encryption_key, key, CRYPTO_KEY_SIZE);
-        memcpy(key_salt, salt, CRYPTO_SALT_SIZE);
-        memcpy(password_hash, hash, CRYPTO_HASH_SIZE);
-
-        if (crypto_memlock((char *) encryption_key, CRYPTO_KEY_SIZE) != 0) {
-            return -1;
-        }
-
-        return 0;
-    }
-
-    void get_key_salt(char *buf) {
-        memcpy(buf, key_salt, CRYPTO_SALT_SIZE);
-    }
-
-    void get_password_hash(char *buf) {
-        memcpy(buf, password_hash, CRYPTO_HASH_SIZE);
     }
 };
 

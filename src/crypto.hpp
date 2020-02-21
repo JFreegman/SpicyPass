@@ -51,7 +51,7 @@ int crypto_init(void);
 /*
  * Securely zeros `length` bytes from memory pointed to by `buf`.
  */
-void crypto_memwipe(char *buf, size_t length);
+void crypto_memwipe(unsigned char *buf, size_t length);
 
 /*
  * Locks `length` bytes in memory pointed to by `buf`.
@@ -59,7 +59,7 @@ void crypto_memwipe(char *buf, size_t length);
  * Return 0 on success.
  * Return -1 on failure.
  */
-int crypto_memlock(const char *buf, size_t length);
+int crypto_memlock(const unsigned char *buf, size_t length);
 
 /*
  * Unlocks `length` bytes in memory pointed to by `buf`.
@@ -69,7 +69,7 @@ int crypto_memlock(const char *buf, size_t length);
  * Return 0 on success.
  * Return -1 on failure.
  */
-int crypto_memunlock(char *buf, size_t length);
+int crypto_memunlock(unsigned char *buf, size_t length);
 
 /*
  * Creates a hash of `password` and puts it in `hash`.
@@ -79,12 +79,12 @@ int crypto_memunlock(char *buf, size_t length);
  * Return 0 on success.
  * Return -1 on failure.
  */
-int crypto_make_pass_hash(char *hash, const char *password, size_t length);
+int crypto_make_pass_hash(unsigned char *hash, const unsigned char *password, size_t length);
 
 /*
  * Returns true if password matches hash.
  */
-bool crypto_verify_pass_hash(const char *hash, const char *password, size_t length);
+bool crypto_verify_pass_hash(const unsigned char *hash, const unsigned char *password, size_t length);
 
 /*
  * Derives an encryption key from `password` and `salt` combo, and puts it in `key`.
@@ -99,12 +99,13 @@ bool crypto_verify_pass_hash(const char *hash, const char *password, size_t leng
  * Return 0 on success.
  * Return -1 on failure.
  */
-int crypto_derive_key_from_pass(const char *key, size_t keylen, const char *password, size_t pwlen, const char *salt);
+int crypto_derive_key_from_pass(const unsigned char *key, size_t keylen, const unsigned char *password,
+                                size_t pwlen, const unsigned char *salt);
 
 /*
  * Generates a random salt of `length` bytes and puts it in `salt`.
  */
-void crypto_gen_salt(char *salt, size_t length);
+void crypto_gen_salt(unsigned char *salt, size_t length);
 
 /*
  * Decrypts file pointed to by `fp` using `key`. Puts resulting plaintext in `output` and the

@@ -93,25 +93,25 @@ static int get_pass_store_of(ofstream &fp)
 }
 
 /*
- * Writes header comprised of `hash` and `salt` to `fp`.
+ * Writes header to `fp`. fp should be pointing to the beginning of the file.
  */
-static void write_header(ofstream &fp, const char *hash, const char *salt)
+static void write_header(ofstream &fp, const unsigned char *hash, const unsigned char *salt)
 {
     unsigned char m = MAGIC_NUMBER;
     fp.write((const char *) &m, sizeof(unsigned char));
-    fp.write(hash, CRYPTO_HASH_SIZE);
-    fp.write(salt, CRYPTO_SALT_SIZE);
+    fp.write((char *) hash, CRYPTO_HASH_SIZE);
+    fp.write((char *) salt, CRYPTO_SALT_SIZE);
 }
 
 /*
- * Reads header comprised of `hash` and `salt` from `fp` and places results in
- * respective buffers.
+ * Reads header from `fp` and places results in respective buffers. fp should be pointing to
+ * the beginning of the file.
  */
-static void read_header(ifstream &fp, unsigned char *magic_number, char *hash, char *salt)
+static void read_header(ifstream &fp, unsigned char *magic_number, unsigned char *hash, unsigned char *salt)
 {
     fp.read((char *) magic_number, sizeof(unsigned char));
-    fp.read(hash, CRYPTO_HASH_SIZE);
-    fp.read(salt, CRYPTO_SALT_SIZE);
+    fp.read((char *) hash, CRYPTO_HASH_SIZE);
+    fp.read((char *) salt, CRYPTO_SALT_SIZE);
 }
 
 /*
@@ -124,7 +124,7 @@ static void read_header(ifstream &fp, unsigned char *magic_number, char *hash, c
  * Return -4 if memory lock fails.
  * Return -5 if magic number is wrong.
  */
-int load_password_store(Pass_Store &p, const char *password, size_t length)
+int load_password_store(Pass_Store &p, const unsigned char *password, size_t length)
 {
     ifstream fp;
 
@@ -133,8 +133,8 @@ int load_password_store(Pass_Store &p, const char *password, size_t length)
     }
 
     unsigned char magic_number;
-    char hash[CRYPTO_HASH_SIZE];
-    char salt[CRYPTO_SALT_SIZE];
+    unsigned char hash[CRYPTO_HASH_SIZE];
+    unsigned char salt[CRYPTO_SALT_SIZE];
     read_header(fp, &magic_number, hash, salt);
 
     if (magic_number != MAGIC_NUMBER) {
@@ -147,7 +147,7 @@ int load_password_store(Pass_Store &p, const char *password, size_t length)
         return -2;
     }
 
-    char encryption_key[CRYPTO_KEY_SIZE];
+    unsigned char encryption_key[CRYPTO_KEY_SIZE];
 
     if (crypto_derive_key_from_pass(encryption_key, CRYPTO_KEY_SIZE, password, length, salt) != 0) {
         cout << "crypto_derive_key_from_pass() failed" << endl;
@@ -219,16 +219,16 @@ int first_time_run(void)
  * Return 0 on success.
  * Return -1 on failure.
  */
-int init_pass_hash(const char *password, size_t length)
+int init_pass_hash(const unsigned char *password, size_t length)
 {
-    char hash[CRYPTO_HASH_SIZE];
+    unsigned char hash[CRYPTO_HASH_SIZE];
 
     if (crypto_make_pass_hash(hash, password, length) != 0) {
         cout << "crypto_make_pass_hash() failed." << endl;
         return -1;
     }
 
-    char salt[CRYPTO_SALT_SIZE];
+    unsigned char salt[CRYPTO_SALT_SIZE];
     crypto_gen_salt(salt, CRYPTO_SALT_SIZE);
 
     ofstream fp;
@@ -268,10 +268,10 @@ int save_password_store(Pass_Store &p)
         return -1;
     }
 
-    char salt[CRYPTO_SALT_SIZE];
+    unsigned char salt[CRYPTO_SALT_SIZE];
     p.get_key_salt(salt);
 
-    char hash[CRYPTO_HASH_SIZE];
+    unsigned char hash[CRYPTO_HASH_SIZE];
     p.get_password_hash(hash);
 
     write_header(fp, hash, salt);

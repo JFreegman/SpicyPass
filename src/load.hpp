@@ -38,7 +38,7 @@
  * Return -4 if memory lock fails.
  * Return -5 if magic number is wrong.
  */
-int load_password_store(Pass_Store &p, const char *password, size_t length);
+int load_password_store(Pass_Store &p, const unsigned char *password, size_t length);
 
 /*
  * Saves encrypted contents of pass store to disk.
@@ -63,6 +63,6 @@ int first_time_run(void);
  * Return 0 on success.
  * Return -1 on failure.
  */
-int init_pass_hash(const char *password, size_t length);
+int init_pass_hash(const unsigned char *password, size_t length);
 
 #endif

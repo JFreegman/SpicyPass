@@ -82,10 +82,24 @@ static void add(Pass_Store &p)
     p.insert(key, password);
     int ret = save_password_store(p);
 
-    if (ret != 0) {
-        cout << "Failed to save password store (" << to_string(ret) << ")" << endl;
-    } else {
-        cout << "Added key " << key << " with password " << password << endl;
+    switch (ret) {
+        case 0: {
+            cout << "Added key " << key << " with password " << password << endl;
+            break;
+        }
+        case -1: {
+            cout << "Failed to save password store: Failed to open pass store file" << endl;
+            break;
+        }
+        case -2: {
+            cout << "Failed to save password store: Encryption error" << endl;
+            break;
+
+        }
+        default: {
+            cout << "Failed to save password store: Unknown error" << endl;
+            break;
+        }
     }
 }
 
@@ -253,7 +267,7 @@ static void menu_loop(Pass_Store &p)
  * Return 0 on success.
  * Return -1 input is invalid.
  */
-static int prompt_password(char *password, size_t max_length)
+static int prompt_password(unsigned char *password, size_t max_length)
 {
     /* disable terminal echo */
     struct termios oflags, nflags;
@@ -288,12 +302,12 @@ static int prompt_password(char *password, size_t max_length)
     memcpy(password, pass_buf, pass_length);
     password[pass_length] = 0;
 
-    crypto_memwipe(pass_buf, sizeof(pass_buf));
+    crypto_memwipe((unsigned char *) pass_buf, sizeof(pass_buf));
 
     return 0;
 }
 
-static void new_password_prompt(char *password, size_t max_length)
+static void new_password_prompt(unsigned char *password, size_t max_length)
 {
     cout << "Creating a new profile. ";
 
@@ -348,8 +362,8 @@ static void new_password_prompt(char *password, size_t max_length)
         memcpy(password, pass1, pass_length);
         password[pass_length] = 0;
 
-        crypto_memwipe(pass1, pass_length);
-        crypto_memwipe(pass2, pass_length);
+        crypto_memwipe((unsigned char *) pass1, pass_length);
+        crypto_memwipe((unsigned char *) pass2, pass_length);
 
         return;
     }
@@ -362,11 +376,11 @@ static void new_password_prompt(char *password, size_t max_length)
  * Returns 0 on success.
  * Returns -1 on failure.
  */
-static int init_new_password(char *password, size_t max_length)
+static int init_new_password(unsigned char *password, size_t max_length)
 {
     new_password_prompt(password, max_length);
 
-    if (init_pass_hash(password, strlen(password)) != 0) {
+    if (init_pass_hash(password, strlen((char *) password)) != 0) {
         cout << "init_pass_hash() failed." << endl;
         return -1;
     }
@@ -386,7 +400,7 @@ static int init_new_password(char *password, size_t max_length)
  */
 int new_pass_store(Pass_Store &p)
 {
-    char password[MAX_PASSWORD_SIZE + 1];
+    unsigned char password[MAX_PASSWORD_SIZE + 1];
 
     if (first_time_run()) {
         if (init_new_password(password, MAX_PASSWORD_SIZE) != 0) {
@@ -400,7 +414,7 @@ int new_pass_store(Pass_Store &p)
         return -2;
     }
 
-    int ret = load_password_store(p, password, strlen(password));
+    int ret = load_password_store(p, password, strlen((char *) password));
 
     if (crypto_memunlock(password, sizeof(password)) != 0) {
         cout << "Warning: crypto_memunlock() failed in new_pass_store()" << endl;

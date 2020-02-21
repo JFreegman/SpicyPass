@@ -25,6 +25,9 @@
 
 #include "crypto.hpp"
 
+#define CRYPTO_MAX_CIPHER_SIZE     (crypto_secretstream_xchacha20poly1305_MESSAGEBYTES_MAX)
+#define CRYPTO_MAX_PLAINEXT_SIZE   (crypto_secretstream_xchacha20poly1305_MESSAGEBYTES_MAX + crypto_secretstream_xchacha20poly1305_ABYTES)
+
 /*
  * Inits libsodium. Must be called before any other crypto operation.
  *
@@ -47,12 +50,12 @@ int crypto_init(void)
  * Return 0 on success.
  * Return -1 on failure.
  */
-int crypto_make_pass_hash(char *hash, const char *password, size_t length)
+int crypto_make_pass_hash(unsigned char *hash, const unsigned char *password, size_t length)
 {
     assert(length <= crypto_pwhash_PASSWD_MAX && length >= crypto_pwhash_PASSWD_MIN);
 
-    if (crypto_pwhash_str(hash,
-                          password,
+    if (crypto_pwhash_str((char *) hash,
+                          (const char *) password,
                           length,
                           CRYPTO_DEFAULT_OPSLIMIT,
                           CRYPTO_DEFAULT_MEMLIMIT) != 0) {
@@ -65,7 +68,7 @@ int crypto_make_pass_hash(char *hash, const char *password, size_t length)
 /*
  * Securely zeros `length` bytes from memory pointed to by `buf`.
  */
-void crypto_memwipe(char *buf, size_t length)
+void crypto_memwipe(unsigned char *buf, size_t length)
 {
     sodium_memzero((void *) buf, length);
 }
@@ -76,7 +79,7 @@ void crypto_memwipe(char *buf, size_t length)
  * Return 0 on success.
  * Return -1 on failure.
  */
-int crypto_memlock(const char *buf, size_t length)
+int crypto_memlock(const unsigned char *buf, size_t length)
 {
     if (sodium_mlock((void *) buf, length) != 0) {
         return -1;
@@ -93,7 +96,7 @@ int crypto_memlock(const char *buf, size_t length)
  * Return 0 on success.
  * Return -1 on failure.
  */
-int crypto_memunlock(char *buf, size_t length)
+int crypto_memunlock(unsigned char *buf, size_t length)
 {
     if (sodium_munlock((void *) buf, length) != 0) {
         sodium_memzero((void *) buf, length);   // Still attempt to securely wipe memory
@@ -106,15 +109,15 @@ int crypto_memunlock(char *buf, size_t length)
 /*
  * Returns true if `password` matches `hash`.
  */
-bool crypto_verify_pass_hash(const char *hash, const char *password, size_t length)
+bool crypto_verify_pass_hash(const unsigned char *hash, const unsigned char *password, size_t length)
 {
-    return crypto_pwhash_str_verify(hash, password, length) == 0;
+    return crypto_pwhash_str_verify((const char *) hash, (const char *) password, length) == 0;
 }
 
 /*
  * Generates a random salt of `length` bytes and puts it in `salt`.
  */
-void crypto_gen_salt(char *salt, size_t length)
+void crypto_gen_salt(unsigned char *salt, size_t length)
 {
     randombytes_buf(salt, length);
 }
@@ -132,15 +135,16 @@ void crypto_gen_salt(char *salt, size_t length)
  * Return 0 on success.
  * Return -1 on failure.
  */
-int crypto_derive_key_from_pass(const char *key, size_t keylen, const char *password, size_t pwlen, const char *salt)
+int crypto_derive_key_from_pass(const unsigned char *key, size_t keylen, const unsigned char *password,
+                                size_t pwlen, const unsigned char *salt)
 {
     assert(pwlen <= crypto_pwhash_PASSWD_MAX && pwlen >= crypto_pwhash_PASSWD_MIN);
 
-    if (crypto_pwhash((unsigned char *const) key,
-                      (unsigned long long) keylen,
-                      password,
+    if (crypto_pwhash((unsigned char *) key,
+                      keylen,
+                      (const char *) password,
                       pwlen,
-                      (const unsigned char *const) salt,
+                      salt,
                       CRYPTO_DEFAULT_OPSLIMIT,
                       CRYPTO_DEFAULT_MEMLIMIT,
                       CRYPTO_DEFAULT_ALGO) != 0) {
@@ -162,7 +166,7 @@ int crypto_derive_key_from_pass(const char *key, size_t keylen, const char *pass
 int crypto_decrypt_file(std::ifstream &fp, size_t file_size, unsigned char *output,
                         unsigned long long *out_len, const unsigned char *key)
 {
-    if (file_size > crypto_secretstream_xchacha20poly1305_MESSAGEBYTES_MAX) {
+    if (file_size > CRYPTO_MAX_PLAINEXT_SIZE) {
         return -1;
     }
 
@@ -219,7 +223,7 @@ int crypto_decrypt_file(std::ifstream &fp, size_t file_size, unsigned char *outp
 int crypto_encrypt_file(std::ofstream &fp, const unsigned char *input, size_t in_len,
                         unsigned long long *out_len, const unsigned char *key)
 {
-    if (in_len > crypto_secretstream_xchacha20poly1305_MESSAGEBYTES_MAX) {
+    if (in_len > CRYPTO_MAX_CIPHER_SIZE) {
         return -1;
     }
 
