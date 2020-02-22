@@ -40,4 +40,4 @@ std::string random_password(unsigned int size);
  */
 int init_rand(void);
 
-#endif
+#endif // PASSWORD

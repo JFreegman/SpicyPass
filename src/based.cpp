@@ -121,7 +121,13 @@ static void new_password_prompt(unsigned char *password, size_t max_length)
  */
 static int init_new_password(unsigned char *password, size_t max_length)
 {
+    struct termios oflags;
+    if (disable_terminal_echo(&oflags) != 0) {
+        cout << "Warning: failed to disable terminal echo" << endl;
+    }
+
     new_password_prompt(password, max_length);
+    enable_terminal_echo(&oflags);
 
     if (init_pass_hash(password, strlen((char *) password)) != 0) {
         cout << "init_pass_hash() failed." << endl;
@@ -185,11 +191,26 @@ static int change_password_prompt(Pass_Store &p)
     return 0;
 }
 
+static int new_password(Pass_Store &p)
+{
+   struct termios oflags;
+
+    if (disable_terminal_echo(&oflags) != 0) {
+        cout << "Warning: failed to disable terminal echo" << endl;
+    }
+
+    int ret = change_password_prompt(p);
+
+    enable_terminal_echo(&oflags);
+
+    return ret;
+}
+
 static void add(Pass_Store &p)
 {
     string key, password;
 
-    cout << "Enter key: ";
+    cout << "Enter key to add: ";
     getline(cin, key);
 
     if (key.length() > MAX_ENTRY_KEY_SIZE) {
@@ -245,6 +266,10 @@ static void add(Pass_Store &p)
             break;
 
         }
+        case -3: {
+            cout << "Failed to save password store: File save error" << endl;
+            break;
+        }
         default: {
             cout << "Failed to save password store: Unknown error" << endl;
             break;
@@ -255,7 +280,7 @@ static void add(Pass_Store &p)
 static void remove(Pass_Store &p)
 {
     string key;
-    cout << "Enter key: ";
+    cout << "Enter key to remove: ";
     getline(cin, key);
 
     if (!p.key_exists(key)) {
@@ -366,18 +391,7 @@ static bool execute(const int option, Pass_Store &p)
             break;
         }
         case 6: {
-            struct termios oflags;
-            if (disable_terminal_echo(&oflags) != 0) {
-                cout << "Warning: failed to disable terminal echo" << endl;
-            }
-
-            int ret = change_password_prompt(p);
-            enable_terminal_echo(&oflags);
-
-            if (ret == 0) {
-                return false;
-            }
-
+            new_password(p);
             break;
         }
         case 7: {
@@ -421,7 +435,6 @@ static void menu_loop(Pass_Store &p)
         option = prompt();
 
         if (!execute(option, p)) {
-            cout << "Goodbye :)" << endl;
             break;
         }
     }

@@ -43,7 +43,6 @@ bool file_is_empty(std::ifstream &fp);
 off_t file_size(const char *path);
 
 int disable_terminal_echo(struct termios *oflags);
-
 void enable_terminal_echo(struct termios *oflags);
 
-#endif
+#endif // UTIL

@@ -29,7 +29,7 @@
 #include "based.hpp"
 
 /*
- * Attempts to validate password, decrypt password store, and load it to memory.
+ * Attempts to validate password, decrypt password store, and load it into `p`.
  *
  * Return 0 on success.
  * Return -1 on file related error.
@@ -42,9 +42,12 @@ int load_password_store(Pass_Store &p, const unsigned char *password, size_t len
 /*
  * Saves encrypted contents of pass store to disk.
  *
+ * This function is atomic: changes will only be made to the pass store file upon success.
+ *
  * Return 0 on success.
  * Return -1 if path is invalid.
  * Return -2 if file encryption fails.
+ * Return -3 if file save operation fails.
  */
 int save_password_store(Pass_Store &p);
 
@@ -59,6 +62,8 @@ int first_time_run(void);
 /*
  * Puts hash of `password` at the beginning of based store file.
  *
+ * This funciton should only be called when the pass store file is empty.
+ *
  * Return 0 on success.
  * Return -1 on failure.
  */
@@ -71,8 +76,8 @@ int init_pass_hash(const unsigned char *password, size_t length);
  * Return 0 on sucess.
  * Return -1 on crypto related error.
  * Return -2 if `p` fails to update.
- * Return -3 if on save failure.
+ * Return -3 on save failure.
  */
 int update_crypto(Pass_Store &p, const unsigned char *password, size_t length);
 
-#endif
+#endif // LOAD

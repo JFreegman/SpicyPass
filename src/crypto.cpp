@@ -50,15 +50,12 @@ int crypto_init(void)
  * Return 0 on success.
  * Return -1 on failure.
  */
-int crypto_make_pass_hash(unsigned char *hash, const unsigned char *password, size_t length)
+int crypto_make_pass_hash(const unsigned char *hash, const unsigned char *password, size_t length)
 {
     assert(length <= crypto_pwhash_PASSWD_MAX && length >= crypto_pwhash_PASSWD_MIN);
 
-    if (crypto_pwhash_str((char *) hash,
-                          (const char *) password,
-                          length,
-                          CRYPTO_DEFAULT_OPSLIMIT,
-                          CRYPTO_DEFAULT_MEMLIMIT) != 0) {
+    if (crypto_pwhash_str((char *) hash, (const char *) password, length,
+                         CRYPTO_DEFAULT_OPSLIMIT, CRYPTO_DEFAULT_MEMLIMIT) != 0) {
         return -1;
     }
 
@@ -68,7 +65,7 @@ int crypto_make_pass_hash(unsigned char *hash, const unsigned char *password, si
 /*
  * Securely zeros `length` bytes from memory pointed to by `buf`.
  */
-void crypto_memwipe(unsigned char *buf, size_t length)
+void crypto_memwipe(const unsigned char *buf, size_t length)
 {
     sodium_memzero((void *) buf, length);
 }
@@ -96,7 +93,7 @@ int crypto_memlock(const unsigned char *buf, size_t length)
  * Return 0 on success.
  * Return -1 on failure.
  */
-int crypto_memunlock(unsigned char *buf, size_t length)
+int crypto_memunlock(const unsigned char *buf, size_t length)
 {
     if (sodium_munlock((void *) buf, length) != 0) {
         sodium_memzero((void *) buf, length);   // Still attempt to securely wipe memory
@@ -140,14 +137,8 @@ int crypto_derive_key_from_pass(const unsigned char *key, size_t keylen, const u
 {
     assert(pwlen <= crypto_pwhash_PASSWD_MAX && pwlen >= crypto_pwhash_PASSWD_MIN);
 
-    if (crypto_pwhash((unsigned char *) key,
-                      keylen,
-                      (const char *) password,
-                      pwlen,
-                      salt,
-                      CRYPTO_DEFAULT_OPSLIMIT,
-                      CRYPTO_DEFAULT_MEMLIMIT,
-                      CRYPTO_DEFAULT_ALGO) != 0) {
+    if (crypto_pwhash((unsigned char *) key, keylen, (const char *) password, pwlen, salt,
+                      CRYPTO_DEFAULT_OPSLIMIT, CRYPTO_DEFAULT_MEMLIMIT, CRYPTO_DEFAULT_ALGO) != 0) {
         return -1;
     }
 
@@ -190,15 +181,7 @@ int crypto_decrypt_file(std::ifstream &fp, size_t file_size, unsigned char *outp
 
     fp.read((char *) buf_in, buf_in_size);
 
-    if (crypto_secretstream_xchacha20poly1305_pull(&state,
-                                                    output,
-                                                    out_len,
-                                                    &tag,
-                                                    buf_in,
-                                                    fp.gcount(),
-                                                    NULL,
-                                                    0) != 0) {
-
+    if (crypto_secretstream_xchacha20poly1305_pull(&state, output, out_len, &tag, buf_in, fp.gcount(), NULL, 0) != 0) {
         free(buf_in);
         return -2;
     }
@@ -206,7 +189,7 @@ int crypto_decrypt_file(std::ifstream &fp, size_t file_size, unsigned char *outp
     free(buf_in);
 
     if (tag != crypto_secretstream_xchacha20poly1305_TAG_FINAL || !fp.eof() || *out_len > file_size) {
-        return -2;
+        return -3;
     }
 
     return 0;
@@ -239,13 +222,7 @@ int crypto_encrypt_file(std::ofstream &fp, const unsigned char *input, size_t in
     crypto_secretstream_xchacha20poly1305_init_push(&state, header, key);
     fp.write((char *)header, sizeof(header));
 
-    crypto_secretstream_xchacha20poly1305_push(&state,
-                                               buf_out,
-                                               out_len,
-                                               input,
-                                               in_len,
-                                               NULL,
-                                               0,
+    crypto_secretstream_xchacha20poly1305_push(&state, buf_out, out_len, input, in_len, NULL, 0,
                                                crypto_secretstream_xchacha20poly1305_TAG_FINAL);
 
     if (*out_len != in_len + crypto_secretstream_xchacha20poly1305_ABYTES) {

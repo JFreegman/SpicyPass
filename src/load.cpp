@@ -27,10 +27,15 @@ using namespace std;
 
 #define DEFAULT_FILENAME ".based_store"
 
-#define MAGIC_NUMBER (0x88U)
+#define MAGIC_NUMBER (0x88U)  // Identifies pass store file
 #define PASS_STORE_HEADER_SIZE (CRYPTO_HASH_SIZE + CRYPTO_SALT_SIZE + 1)
 
-static const string get_store_path(void)
+/*
+ * Returns a string containing pass store file path.
+ *
+ * Set `temp` to true for temp file path instead.
+ */
+static const string get_store_path(bool temp)
 {
     struct passwd *pw = getpwuid(getuid());
 
@@ -41,11 +46,15 @@ static const string get_store_path(void)
     string homedir = string(pw->pw_dir);
     string path = homedir + "/" + DEFAULT_FILENAME;
 
+    if (temp) {
+        path += ".tmp";
+    }
+
     return path;
 }
 
 /*
- * Opens input stream for the pass_store file.
+ * Opens input stream for the pass store file.
  *
  * Returns 0 on success.
  * Return -1 if invalid path.
@@ -53,7 +62,7 @@ static const string get_store_path(void)
  */
 static int get_pass_store_if(ifstream &fp)
 {
-    const string path = get_store_path();
+    const string path = get_store_path(false);
 
     if (path == "") {
         return -1;
@@ -69,15 +78,18 @@ static int get_pass_store_if(ifstream &fp)
 }
 
 /*
- * Opens output stream for the pass_store file.
+ * Opens output stream for the pass store file.
+ *
+ * Set `temp` to true for temp file instead. The temp file is used for
+ * all writing operations outside of the initialization of a profile.
  *
  * Return 0 on success.
  * Return -1 if invalid path.
  * Return -2 if file cannot be opened.
  */
-static int get_pass_store_of(ofstream &fp)
+static int get_pass_store_of(ofstream &fp, bool temp)
 {
-    const string path = get_store_path();
+    const string path = get_store_path(temp);
 
     if (path == "") {
         return -1;
@@ -117,26 +129,17 @@ static void read_header(ifstream &fp, unsigned char *magic_number, unsigned char
 /*
  * Saves encrypted contents of pass store to disk.
  *
+ * This function is atomic: changes will only be made to the pass store file upon success.
+ *
  * Return 0 on success.
  * Return -1 if path is invalid.
  * Return -2 if file encryption fails.
+ * Return -3 if file save operation fails.
  */
 int save_password_store(Pass_Store &p)
 {
-    const string path = get_store_path();
-
-    if (path == "") {
-        return -1;
-    }
-
     ofstream fp;
-
-    try {
-        fp.open(path);
-    }
-    catch (const exception &) {
-        return -1;
-    }
+    get_pass_store_of(fp, true);
 
     unsigned char salt[CRYPTO_SALT_SIZE];
     p.get_key_salt(salt);
@@ -153,11 +156,18 @@ int save_password_store(Pass_Store &p)
 
     fp.close();
 
+    string temp_path = get_store_path(true);
+    string real_path = get_store_path(false);
+
+    if (rename(temp_path.c_str(), real_path.c_str()) != 0) {
+        return -3;
+    }
+
     return 0;
 }
 
 /*
- * Attempts to validate password, decrypt password store, and load it to memory.
+ * Attempts to validate password, decrypt password store, and load it into `p`.
  *
  * Return 0 on success.
  * Return -1 on file related error.
@@ -202,7 +212,7 @@ int load_password_store(Pass_Store &p, const unsigned char *password, size_t len
         return -4;
     }
 
-    const string path = get_store_path();
+    const string path = get_store_path(false);
     off_t file_length = file_size(path.c_str());
 
     if (file_length < PASS_STORE_HEADER_SIZE) {
@@ -224,8 +234,8 @@ int load_password_store(Pass_Store &p, const unsigned char *password, size_t len
 }
 
 /*
- * Return 1 if based_store file does not exist or is empty.
- * Return 0 if based_store file exists.
+ * Return 1 if pass store file does not exist or is empty.
+ * Return 0 if pass store file exists.
  * Return -1 if invalid path.
  * Return -2 if file cannot be opened.
  */
@@ -247,6 +257,8 @@ int first_time_run(void)
 /*
  * Puts hash of `password` at the beginning of based store file.
  *
+ * This funciton should only be called when the pass store file is empty.
+ *
  * Return 0 on success.
  * Return -1 on failure.
  */
@@ -263,7 +275,7 @@ int init_pass_hash(const unsigned char *password, size_t length)
     crypto_gen_salt(salt, CRYPTO_SALT_SIZE);
 
     ofstream fp;
-    int ret = get_pass_store_of(fp);
+    int ret = get_pass_store_of(fp, false);
 
     if (ret != 0) {
         return ret;
@@ -282,7 +294,7 @@ int init_pass_hash(const unsigned char *password, size_t length)
  * Return 0 on sucess.
  * Return -1 on crypto related error.
  * Return -2 if `p` fails to update.
- * Return -3 if on save failure.
+ * Return -3 on save failure.
  */
 int update_crypto(Pass_Store &p, const unsigned char *password, size_t length)
 {

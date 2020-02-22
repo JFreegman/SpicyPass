@@ -51,7 +51,7 @@ int crypto_init(void);
 /*
  * Securely zeros `length` bytes from memory pointed to by `buf`.
  */
-void crypto_memwipe(unsigned char *buf, size_t length);
+void crypto_memwipe(const unsigned char *buf, size_t length);
 
 /*
  * Locks `length` bytes in memory pointed to by `buf`.
@@ -69,7 +69,7 @@ int crypto_memlock(const unsigned char *buf, size_t length);
  * Return 0 on success.
  * Return -1 on failure.
  */
-int crypto_memunlock(unsigned char *buf, size_t length);
+int crypto_memunlock(const unsigned char *buf, size_t length);
 
 /*
  * Creates a hash of `password` and puts it in `hash`.
@@ -79,7 +79,7 @@ int crypto_memunlock(unsigned char *buf, size_t length);
  * Return 0 on success.
  * Return -1 on failure.
  */
-int crypto_make_pass_hash(unsigned char *hash, const unsigned char *password, size_t length);
+int crypto_make_pass_hash(const unsigned char *hash, const unsigned char *password, size_t length);
 
 /*
  * Returns true if password matches hash.
@@ -130,4 +130,4 @@ int crypto_decrypt_file(std::ifstream &fp, size_t file_size, unsigned char *outp
 int crypto_encrypt_file(std::ofstream &fp, const unsigned char *input, size_t in_len,
                         unsigned long long *out_len, const unsigned char *key);
 
-#endif
+#endif //CRYPTO
