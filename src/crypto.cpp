@@ -120,6 +120,14 @@ void crypto_gen_salt(unsigned char *salt, size_t length)
 }
 
 /*
+ * Returns a random number between 0 and `upper_limit`.
+ */
+uint32_t crypto_random_number(const uint32_t upper_limit)
+{
+    return randombytes_uniform(upper_limit);
+}
+
+/*
  * Derives an encryption key from `password` and `salt` combo, and puts it in `key`.
  *
  * `salt` must be a random number and should be at least CRYPTO_SALT_SIZE bytes. See: crypto_gen_salt().

@@ -25,11 +25,12 @@
 
 
 #include <string>
+
 #include <sodium.h>
+#include <stdint.h>
 
 #include <iostream>
-#include <fstream>      // std::ifstream
-
+#include <fstream>
 
 #define CRYPTO_KEY_SIZE     (crypto_secretstream_xchacha20poly1305_KEYBYTES)
 #define CRYPTO_SALT_SIZE    (crypto_pwhash_SALTBYTES)
@@ -47,6 +48,11 @@
  * Returns 0 on success.
  */
 int crypto_init(void);
+
+/*
+ * Returns a random number between 0 and `upper_limit`.
+ */
+uint32_t crypto_random_number(const uint32_t upper_limit);
 
 /*
  * Securely zeros `length` bytes from memory pointed to by `buf`.

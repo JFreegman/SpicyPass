@@ -20,41 +20,15 @@
  *
  */
 
-#include <iostream>
 #include <string>
 #include <vector>
-#include <algorithm>
-#include <fstream>
+
+#include "crypto.hpp"
 
 using namespace std;
 
-/* Seeds random number generator. Call once on init.
- *
- * Returns 0 on success.
- * Returns -1 on failure.
- */
-int init_rand(void)
-{
-    ifstream fp;
-
-    try {
-        fp.open("/dev/urandom", ios::binary);
-    }
-    catch (const exception &) {
-        return -1;
-    }
-
-    char byte;
-    fp.read(&byte, sizeof(byte));
-    fp.close();
-
-    srand(byte);
-
-    return 0;
-}
-
 /*
- * Adds all characters from the `chars` string to `vec` and shuffles the resulting vector.
+ * Adds all characters from the `chars` string to `vec`.
  */
 static void init_char_vector(vector<char> &vec)
 {
@@ -63,41 +37,41 @@ static void init_char_vector(vector<char> &vec)
     for (char c: chars) {
         vec.push_back(c);
     }
-
-    random_shuffle(vec.begin(), vec.end());
 }
 
 /*
- * Removes the first character in `in_vec` between the range `start` and `end` inclusive
- * and puts it in `out_vec`.
+ * Returns true if `c` should be added to `pass`.
  */
-static void get_char_range(vector<char> &in_vec, vector<char> &out_vec, char start, char end)
+static bool good_char(const char c, bool *have_lower, bool *have_upper,
+                      bool *have_digit, bool *have_punct)
 {
-    for (unsigned int i = 0; i < in_vec.size(); ++i) {
-        char c = in_vec[i];
+    if (*have_lower && *have_upper && *have_digit && *have_punct) {
+        return true;
+    }
 
-        if (c >= start && c <= end) {
-            in_vec.erase(in_vec.begin() + i);
-            out_vec.push_back(c);
-            return;
+    if (!(c >= 'a' && c <= 'z') && !(c >= 'A' && c <= 'Z') && !(c >= '0' && c <= '9')) {
+        if (! *have_punct) {
+            *have_punct = true;
+            return true;
+        }
+    } else if (c >= '0' && c <= '9') {
+        if (! *have_digit) {
+            *have_digit = true;
+            return true;
+        }
+    } else if (c >= 'A' && c <= 'Z') {
+        if (! *have_upper) {
+            *have_upper = true;
+            return true;
+        }
+    } else if (c >= 'a' && c <= 'z') {
+        if (! *have_lower) {
+            *have_lower = true;
+            return true;
         }
     }
-}
 
-/*
- * Removes the first non-alphanumeric character in `in_vec` and puts it in `out_vec`.
- */
-static void get_char_punctuation(vector<char> &in_vec, vector<char> &out_vec)
-{
-    for (unsigned int i = 0; i < in_vec.size(); ++i) {
-        char c = in_vec[i];
-
-        if (!(c >= 'a' && c <= 'z') && !(c >= 'A' && c <= 'Z') && !(c >= '0' && c <= '9')) {
-            in_vec.erase(in_vec.begin() + i);
-            out_vec.push_back(c);
-            return;
-        }
-    }
+    return false;
 }
 
 /* Returns a randomly generated password.
@@ -110,34 +84,40 @@ static void get_char_punctuation(vector<char> &in_vec, vector<char> &out_vec)
  */
 string random_password(unsigned int size)
 {
-    if (size <= 4) {
+    string pass = "";
+
+    vector<char> char_vec;
+    vector<char> discarded;
+    init_char_vector(char_vec);
+
+    if (size <= 4 || size > char_vec.size()) {
         cout << "random_password() error: invalid size value" << endl;
         return "";
     }
 
-    vector<char> char_vec;
-    vector<char> res_vec;
-    init_char_vector(char_vec);
+    bool have_lower = false;
+    bool have_upper = false;
+    bool have_digit = false;
+    bool have_punct = false;
 
-    get_char_range(char_vec, res_vec, 'A', 'Z');
-    get_char_range(char_vec, res_vec, 'a', 'z');
-    get_char_range(char_vec, res_vec, '0', '9');
-    get_char_punctuation(char_vec, res_vec);
+    do {
+        auto vec_size = char_vec.size();
 
-    for (unsigned int i = 0; i < (size - 4); ++i) {
-        char c = char_vec[i];
-        char_vec.erase(char_vec.begin() + i);
-        res_vec.push_back(c);
-    }
+        if (vec_size == 0) {
+            char_vec = discarded;
+            continue;
+        }
 
-    // One last shuffle so the guaranteed chars aren't all at the front
-    random_shuffle(res_vec.begin(), res_vec.end());
+        auto index = crypto_random_number(vec_size);
+        auto c = char_vec[index];
+        char_vec.erase(char_vec.begin() + index);
 
-    string pass = "";
-
-    for (char c: res_vec) {
-        pass += c;
-    }
+        if (good_char(c, &have_lower, &have_upper, &have_digit, &have_punct)) {
+            pass += c;
+        } else {
+            discarded.push_back(c);
+        }
+    } while (pass.length() < size);
 
     return pass;
 }

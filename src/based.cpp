@@ -235,6 +235,10 @@ static void add(Pass_Store &p)
         password = random_password(16);
     }
 
+    if (password == "") {
+        return;
+    }
+
     if (p.key_exists(key)) {
         while (true) {
             string s;
@@ -351,7 +355,9 @@ static void generate(void)
     }
 
     string pass = random_password(size);
-    cout << pass << endl;
+
+    if (pass != "")
+        cout << pass << endl;
 }
 
 static void print_menu(void)
@@ -512,13 +518,8 @@ int main(void)
 {
     umask(S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
 
-    if (init_rand() != 0) {
-        cout << "init_rand() failed." << endl;
-        return -1;
-    }
-
     if (crypto_init() != 0) {
-        cout << "init_crypto() failed." << endl;
+        cout << "crypto_init() failed" << endl;
         return -1;
     }
 
