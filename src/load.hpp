@@ -27,6 +27,9 @@
 #include <pwd.h>
 
 #include "based.hpp"
+#include "crypto.hpp"
+
+#define PASS_STORE_HEADER_SIZE (CRYPTO_HASH_SIZE + CRYPTO_SALT_SIZE + 1)
 
 /*
  * Attempts to validate password, decrypt password store, and load it into `p`.
@@ -60,7 +63,7 @@ int save_password_store(Pass_Store &p);
 int first_time_run(void);
 
 /*
- * Puts hash of `password` at the beginning of based store file.
+ * Adds a header to the beginning of based store file.
  *
  * This funciton should only be called when the pass store file is empty.
  *

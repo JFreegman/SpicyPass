@@ -21,14 +21,12 @@
  */
 
 #include "load.hpp"
-#include "crypto.hpp"
 
 using namespace std;
 
 #define DEFAULT_FILENAME ".based_store"
 
 #define MAGIC_NUMBER (0x88U)  // Identifies pass store file
-#define PASS_STORE_HEADER_SIZE (CRYPTO_HASH_SIZE + CRYPTO_SALT_SIZE + 1)
 
 /*
  * Returns a string containing pass store file path.
@@ -105,25 +103,51 @@ static int get_pass_store_of(ofstream &fp, bool temp)
 }
 
 /*
- * Writes header to `fp`. fp should be pointing to the beginning of the file.
+ * Writes header to `fp`.
+ *
+ * Return 0 on success.
+ * Return -1 on write fail or if file stream is not at the beginning of the file.
  */
-static void write_header(ofstream &fp, const unsigned char *hash, const unsigned char *salt)
+static int write_header(ofstream &fp, const unsigned char *hash, const unsigned char *salt)
 {
+    if (fp.tellp() != 0) {
+        return -1;
+    }
+
     unsigned char m = MAGIC_NUMBER;
     fp.write((const char *) &m, sizeof(unsigned char));
     fp.write((char *) hash, CRYPTO_HASH_SIZE);
     fp.write((char *) salt, CRYPTO_SALT_SIZE);
+
+    if (fp.tellp() != PASS_STORE_HEADER_SIZE) {
+        return -1;
+    }
+
+    return 0;
 }
 
 /*
  * Reads header from `fp` and places results in respective buffers. fp should be pointing to
  * the beginning of the file.
+ *
+ * Return 0 on succes.
+ * Return -1 on read fail or if file stream is not at the beginning of file.
  */
-static void read_header(ifstream &fp, unsigned char *magic_number, unsigned char *hash, unsigned char *salt)
+static int read_header(ifstream &fp, unsigned char *magic_number, unsigned char *hash, unsigned char *salt)
 {
+    if (fp.tellg() != 0) {
+        return -1;
+    }
+
     fp.read((char *) magic_number, sizeof(unsigned char));
     fp.read((char *) hash, CRYPTO_HASH_SIZE);
     fp.read((char *) salt, CRYPTO_SALT_SIZE);
+
+    if (fp.tellg() != PASS_STORE_HEADER_SIZE) {
+        return -1;
+    }
+
+    return 0;
 }
 
 /*
@@ -147,7 +171,9 @@ int save_password_store(Pass_Store &p)
     unsigned char hash[CRYPTO_HASH_SIZE];
     p.get_password_hash(hash);
 
-    write_header(fp, hash, salt);
+    if (write_header(fp, hash, salt) != 0) {
+        return 0;
+    }
 
     if (p.save(fp) != 0) {
         fp.close();
@@ -186,7 +212,10 @@ int load_password_store(Pass_Store &p, const unsigned char *password, size_t len
     unsigned char magic_number;
     unsigned char hash[CRYPTO_HASH_SIZE];
     unsigned char salt[CRYPTO_SALT_SIZE];
-    read_header(fp, &magic_number, hash, salt);
+
+    if (read_header(fp, &magic_number, hash, salt) != 0) {
+        return -1;
+    }
 
     if (magic_number != MAGIC_NUMBER) {
         fp.close();
@@ -255,7 +284,7 @@ int first_time_run(void)
 }
 
 /*
- * Puts hash of `password` at the beginning of based store file.
+ * Adds a header to the beginning of based store file.
  *
  * This funciton should only be called when the pass store file is empty.
  *
@@ -281,7 +310,10 @@ int init_pass_hash(const unsigned char *password, size_t length)
         return ret;
     }
 
-    write_header(fp, hash, salt);
+    if (write_header(fp, hash, salt) != 0) {
+        return -1;
+    }
+
     fp.close();
 
     return 0;

@@ -24,6 +24,7 @@
 #include <assert.h>
 
 #include "crypto.hpp"
+#include "load.hpp"
 
 #define CRYPTO_MAX_CIPHER_SIZE     (crypto_secretstream_xchacha20poly1305_MESSAGEBYTES_MAX)
 #define CRYPTO_MAX_PLAINEXT_SIZE   (crypto_secretstream_xchacha20poly1305_MESSAGEBYTES_MAX + crypto_secretstream_xchacha20poly1305_ABYTES)
@@ -189,6 +190,11 @@ int crypto_decrypt_file(std::ifstream &fp, size_t file_size, unsigned char *outp
 
     fp.read((char *) buf_in, buf_in_size);
 
+    if (!fp.eof()) {
+        free(buf_in);
+        return -3;
+    }
+
     if (crypto_secretstream_xchacha20poly1305_pull(&state, output, out_len, &tag, buf_in, fp.gcount(), NULL, 0) != 0) {
         free(buf_in);
         return -2;
@@ -196,7 +202,7 @@ int crypto_decrypt_file(std::ifstream &fp, size_t file_size, unsigned char *outp
 
     free(buf_in);
 
-    if (tag != crypto_secretstream_xchacha20poly1305_TAG_FINAL || !fp.eof() || *out_len > file_size) {
+    if (tag != crypto_secretstream_xchacha20poly1305_TAG_FINAL || *out_len > file_size) {
         return -3;
     }
 
@@ -210,6 +216,7 @@ int crypto_decrypt_file(std::ifstream &fp, size_t file_size, unsigned char *outp
  * Return 0 on success.
  * Return -1 on memory related error.
  * Return -2 on encryption error.
+ * Return -3 on write error.
  */
 int crypto_encrypt_file(std::ofstream &fp, const unsigned char *input, size_t in_len,
                         unsigned long long *out_len, const unsigned char *key)
@@ -239,8 +246,11 @@ int crypto_encrypt_file(std::ofstream &fp, const unsigned char *input, size_t in
     }
 
     fp.write((char *)buf_out, *out_len);
-
     free(buf_out);
+
+    if ((size_t) fp.tellp() != PASS_STORE_HEADER_SIZE + *out_len + sizeof(header)) {
+        return -3;
+    }
 
     return 0;
 }

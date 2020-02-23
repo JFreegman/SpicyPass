@@ -130,6 +130,7 @@ int crypto_decrypt_file(std::ifstream &fp, size_t file_size, unsigned char *outp
  * Return 0 on success.
  * Return -1 on memory related error.
  * Return -2 on encryption error.
+ * Return -3 on write error.
  */
 int crypto_encrypt_file(std::ofstream &fp, const unsigned char *input, size_t in_len,
                         unsigned long long *out_len, const unsigned char *key);
