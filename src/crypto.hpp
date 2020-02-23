@@ -40,8 +40,6 @@
 #define CRYPTO_DEFAULT_MEMLIMIT (crypto_pwhash_MEMLIMIT_SENSITIVE)
 #define CRYPTO_DEFAULT_ALGO     (crypto_pwhash_ALG_ARGON2ID13)
 
-#define CRYPTO_CHUNK_SIZE (4096)
-
 /*
  * Inits libsodium. Must be called before any other crypto operation.
  *

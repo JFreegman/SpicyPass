@@ -1,7 +1,7 @@
 /*  password.cpp
  *
  *
- *  Copyright (C) 2019 Jfreegman <Jfreegman@gmail.com>
+ *  Copyright (C) 2020 Jfreegman <Jfreegman@gmail.com>
  *
  *  This file is part of BasedPass.
  *
@@ -21,9 +21,11 @@
  */
 
 #include <string>
-#include <vector>
 
 #include "crypto.hpp"
+#include "util.hpp"
+
+#define NUM_GUARANTEED_CHARS (4)
 
 using namespace std;
 
@@ -40,7 +42,8 @@ static void init_char_vector(vector<char> &vec)
 }
 
 /*
- * Returns true if `c` should be added to `pass`.
+ * Returns true if `c` is a char type that has not been seen yet, or if
+ * all char types have been seen.
  */
 static bool good_char(const char c, bool *have_lower, bool *have_upper,
                       bool *have_digit, bool *have_punct)
@@ -74,7 +77,22 @@ static bool good_char(const char c, bool *have_lower, bool *have_upper,
     return false;
 }
 
-/* Returns a randomly generated password.
+/*
+ * Shuffles items in `vec`.
+ */
+static void shuffle_vec(vector<char> &vec)
+{
+    auto vec_size = vec.size();
+
+    for (size_t i = 0; i < vec_size; ++i) {
+        auto index = crypto_random_number(vec_size);
+        auto a = vec.at(i);
+        vec.at(i) = vec.at(index);
+        vec.at(index) = a;
+    }
+}
+
+/* Returns a cryptographically secure randomly generated password.
  *
  * Password is guaranteed to meet minimum requirements as follows:
  * - At least one lower-case and upper-case letter
@@ -84,13 +102,12 @@ static bool good_char(const char c, bool *have_lower, bool *have_upper,
  */
 string random_password(unsigned int size)
 {
-    string pass = "";
-
+    vector<char> result;
     vector<char> char_vec;
     vector<char> discarded;
     init_char_vector(char_vec);
 
-    if (size <= 4 || size > char_vec.size()) {
+    if (size < NUM_GUARANTEED_CHARS || size > char_vec.size()) {
         cout << "random_password() error: invalid size value" << endl;
         return "";
     }
@@ -109,15 +126,17 @@ string random_password(unsigned int size)
         }
 
         auto index = crypto_random_number(vec_size);
-        auto c = char_vec[index];
+        auto c = char_vec.at(index);
         char_vec.erase(char_vec.begin() + index);
 
         if (good_char(c, &have_lower, &have_upper, &have_digit, &have_punct)) {
-            pass += c;
+            result.push_back(c);
         } else {
             discarded.push_back(c);
         }
-    } while (pass.length() < size);
+    } while (result.size() < size);
 
-    return pass;
+    shuffle_vec(result);
+
+    return vec_to_string(result);
 }

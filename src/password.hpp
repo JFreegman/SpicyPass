@@ -1,7 +1,7 @@
 /*  password.hpp
  *
  *
- *  Copyright (C) 2019 Jfreegman <Jfreegman@gmail.com>
+ *  Copyright (C) 2020 Jfreegman <Jfreegman@gmail.com>
  *
  *  This file is part of BasedPass.
  *
@@ -23,7 +23,7 @@
 #ifndef PASSWORD
 #define PASSWORD
 
-/* Returns a randomly generated password.
+/* Returns a cryptographically secure randomly generated password.
  *
  * Password is guaranteed to meet minimum requirements as follows:
  * - At least one lower-case and upper-case letter
@@ -32,12 +32,5 @@
  * - No duplicate characters
  */
 std::string random_password(unsigned int size);
-
-/* Seeds random number generator. Call once on init.
- *
- * Returns 0 on success.
- * Returns -1 on failure.
- */
-int init_rand(void);
 
 #endif // PASSWORD

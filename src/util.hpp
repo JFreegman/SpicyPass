@@ -1,7 +1,7 @@
 /*  util.hpp
  *
  *
- *  Copyright (C) 2019 Jfreegman <Jfreegman@gmail.com>
+ *  Copyright (C) 2020 Jfreegman <Jfreegman@gmail.com>
  *
  *  This file is part of BasedPass.
  *
@@ -25,6 +25,7 @@
 
 #include <string>
 #include <fstream>
+#include <vector>
 
 #include <string.h>
 #include <termios.h>
@@ -42,7 +43,15 @@ bool file_is_empty(std::ifstream &fp);
 /* Returns the size of the file pointed to by `path`. */
 off_t file_size(const char *path);
 
+/*
+ * These functions disable and enable terminal echo respectively.
+ */
 int disable_terminal_echo(struct termios *oflags);
 void enable_terminal_echo(struct termios *oflags);
+
+/*
+ * Returns a string containing the charaters in `vec`.
+ */
+std::string vec_to_string(const std::vector<char> &vec);
 
 #endif // UTIL

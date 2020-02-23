@@ -1,7 +1,7 @@
 /*  util.cpp
  *
  *
- *  Copyright (C) 2019 Jfreegman <Jfreegman@gmail.com>
+ *  Copyright (C) 2020 Jfreegman <Jfreegman@gmail.com>
  *
  *  This file is part of BasedPass.
  *
@@ -72,4 +72,18 @@ int disable_terminal_echo(struct termios *oflags)
 void enable_terminal_echo(struct termios *oflags)
 {
     tcsetattr(fileno(stdin), TCSANOW, oflags);
+}
+
+/*
+ * Returns a string containing the charaters in `vec`.
+ */
+std::string vec_to_string(const std::vector<char> &vec)
+{
+    std::string s = "";
+
+    for (char c: vec) {
+        s += c;
+    }
+
+    return s;
 }

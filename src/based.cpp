@@ -1,7 +1,7 @@
 /*  based.cpp
  *
  *
- *  Copyright (C) 2019 Jfreegman <Jfreegman@gmail.com>
+ *  Copyright (C) 2020 Jfreegman <Jfreegman@gmail.com>
  *
  *  This file is part of BasedPass.
  *
@@ -31,9 +31,9 @@
 
 using namespace std;
 
-#define MAX_PASSWORD_SIZE 32
+#define MAX_PASSWORD_SIZE 64
 #define MIN_PASSWORD_SIZE 8
-#define MAX_ENTRY_KEY_SIZE 32
+#define MAX_ENTRY_KEY_SIZE 64
 
 /* Promps password and puts it in `password` array.
  *
@@ -215,6 +215,11 @@ static void add(Pass_Store &p)
 
     if (key.length() > MAX_ENTRY_KEY_SIZE) {
         cout << "Key is too long" << endl;
+        return;
+    }
+
+    if (key.length() == 0) {
+        cout << "Invalid key" << endl;
         return;
     }
 
