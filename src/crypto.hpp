@@ -112,27 +112,27 @@ int crypto_derive_key_from_pass(const unsigned char *key, size_t keylen, const u
 void crypto_gen_salt(unsigned char *salt, size_t length);
 
 /*
- * Decrypts file pointed to by `fp` using `key`. Puts resulting plaintext in `output` and the
- * size of the plaintext in `out_len`.
+ * Decrypts file pointed to by `fp` using `key`. Puts result in `plaintext` and the
+ * size of the plaintext in `plain_len`.
  *
  * Return 0 on success.
  * Return -1 on memory related error.
  * Return -2 on decryption error.
  * Return -3 on file corruption related error.
  */
-int crypto_decrypt_file(std::ifstream &fp, size_t file_size, unsigned char *output,
-                        unsigned long long *out_len, const unsigned char *key);
+int crypto_decrypt_file(std::ifstream &fp, size_t file_size, unsigned char *plaintext,
+                        unsigned long long *plain_len, const unsigned char *key);
 
 /*
- * Encrypts contents of `input` and saves it to file pointed to by `fp` using `key`. Puts length of
- * ciphertext in `out_len`.
+ * Encrypts contents of `plaintext` using `key` and saves it to file pointed to by `fp`.
+ * Puts length of ciphertext in `cipher_len`.
  *
  * Return 0 on success.
  * Return -1 on memory related error.
  * Return -2 on encryption error.
  * Return -3 on write error.
  */
-int crypto_encrypt_file(std::ofstream &fp, const unsigned char *input, size_t in_len,
-                        unsigned long long *out_len, const unsigned char *key);
+int crypto_encrypt_file(std::ofstream &fp, const unsigned char *plaintext, size_t plain_len,
+                        unsigned long long *cipher_len, const unsigned char *key);
 
 #endif //CRYPTO

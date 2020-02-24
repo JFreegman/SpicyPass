@@ -1,4 +1,4 @@
-CPPFLAGS = -std=c++17 -Wall -Werror -g -fstack-protector-all
+CPPFLAGS = -std=c++17 -Wall -Werror -O2 -g -fstack-protector-all
 CFLAGS = `pkg-config --cflags  libsodium`
 LDFLAGS = `pkg-config --libs libsodium`
 OBJ = based.o load.o password.o util.o crypto.o

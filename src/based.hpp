@@ -106,16 +106,16 @@ public:
     }
 
     /*
-     * Decrypts file pointed to by `fp` and loads conents to pass store.
+     * Decrypts file contents of size `length` pointed to by `fp` and loads to pass store.
      *
      * Return -1 on out of memory error.
      * Return -2 on decryption error.
      */
-    int load(ifstream &fp, size_t file_size) {
-        unsigned char *plaintext = (unsigned char *) malloc(file_size + 1);
-        unsigned long long plain_length;
+    int load(ifstream &fp, size_t length) {
+        unsigned char *plaintext = (unsigned char *) malloc(length + 1);
+        unsigned long long plain_length = 0;
 
-        int ret = crypto_decrypt_file(fp, file_size, plaintext, &plain_length, encryption_key);
+        int ret = crypto_decrypt_file(fp, length, plaintext, &plain_length, encryption_key);
 
         if (ret != 0) {
             free(plaintext);
@@ -145,7 +145,7 @@ public:
 
         while (tok) {
             string entry = tok;
-            unsigned int d = entry.find(DELIMITER);
+            auto d = entry.find(DELIMITER);
 
             if (d != string::npos) {
                 string key = entry.substr(0, d);
@@ -197,7 +197,7 @@ public:
             pos += entry.length();
         }
 
-        unsigned long long out_len;
+        unsigned long long out_len = 0;
         int ret = crypto_encrypt_file(fp, buf_in, file_size, &out_len, encryption_key);
 
         if (ret < 0) {

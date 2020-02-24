@@ -185,6 +185,10 @@ int save_password_store(Pass_Store &p)
     string temp_path = get_store_path(true);
     string real_path = get_store_path(false);
 
+    if (temp_path == "" || real_path == "") {
+        return -1;
+    }
+
     if (rename(temp_path.c_str(), real_path.c_str()) != 0) {
         return -3;
     }

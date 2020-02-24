@@ -25,9 +25,18 @@
 #include "crypto.hpp"
 #include "util.hpp"
 
+using namespace std;
+
+
 #define NUM_GUARANTEED_CHARS (4)
 
-using namespace std;
+typedef enum {
+    UPPERCASE,
+    LOWERCASE,
+    DIGIT,
+    PUNCTUATION,
+    NON_PRINTABLE,
+} Char_Type;
 
 /*
  * Adds all characters from the `chars` string to `vec`.
@@ -42,6 +51,30 @@ static void init_char_vector(vector<char> &vec)
 }
 
 /*
+ * Returns the Char_Type of `c`.
+ */
+static Char_Type char_type(const char c)
+{
+    if (c >= 'A' && c <= 'Z') {
+        return UPPERCASE;
+    }
+
+    if (c >= 'a' && c <= 'z') {
+        return LOWERCASE;
+    }
+
+    if (c >= '0' && c <= '9') {
+        return DIGIT;
+    }
+
+    if ((c >= '!' && c <= '/') || (c >= ':' && c <= '@') || (c >= '[' && c <= '`') || (c >= '{' && c <= '~')) {
+        return PUNCTUATION;
+    }
+
+    return NON_PRINTABLE;
+}
+
+/*
  * Returns true if `c` is a char type that has not been seen yet, or if
  * all char types have been seen.
  */
@@ -52,29 +85,29 @@ static bool good_char(const char c, bool *have_lower, bool *have_upper,
         return true;
     }
 
-    if (!(c >= 'a' && c <= 'z') && !(c >= 'A' && c <= 'Z') && !(c >= '0' && c <= '9')) {
-        if (! *have_punct) {
-            *have_punct = true;
-            return true;
-        }
-    } else if (c >= '0' && c <= '9') {
-        if (! *have_digit) {
-            *have_digit = true;
-            return true;
-        }
-    } else if (c >= 'A' && c <= 'Z') {
-        if (! *have_upper) {
+    Char_Type type = char_type(c);
+
+    switch (type) {
+        case UPPERCASE: {
             *have_upper = true;
             return true;
         }
-    } else if (c >= 'a' && c <= 'z') {
-        if (! *have_lower) {
+        case LOWERCASE: {
             *have_lower = true;
             return true;
         }
+        case DIGIT: {
+            *have_digit = true;
+            return true;
+        }
+        case PUNCTUATION: {
+            *have_punct = true;
+            return true;
+        }
+        default: {
+            return false;
+        }
     }
-
-    return false;
 }
 
 /*
@@ -84,7 +117,7 @@ static void shuffle_vec(vector<char> &vec)
 {
     auto vec_size = vec.size();
 
-    for (size_t i = 0; i < vec_size; ++i) {
+    for (auto i = 0; i < vec_size; ++i) {
         auto index = crypto_random_number(vec_size);
         auto a = vec.at(i);
         vec.at(i) = vec.at(index);
