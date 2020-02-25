@@ -53,7 +53,7 @@ int crypto_init(void)
  */
 int crypto_make_pass_hash(const unsigned char *hash, const unsigned char *password, size_t length)
 {
-    assert(length <= crypto_pwhash_PASSWD_MAX && length >= crypto_pwhash_PASSWD_MIN);
+    assert(length <= crypto_pwhash_PASSWD_MAX);
 
     if (crypto_pwhash_str((char *) hash, (const char *) password, length,
                          CRYPTO_DEFAULT_OPSLIMIT, CRYPTO_DEFAULT_MEMLIMIT) != 0) {
@@ -144,7 +144,7 @@ uint32_t crypto_random_number(const uint32_t upper_limit)
 int crypto_derive_key_from_pass(const unsigned char *key, size_t keylen, const unsigned char *password,
                                 size_t pwlen, const unsigned char *salt)
 {
-    assert(pwlen <= crypto_pwhash_PASSWD_MAX && pwlen >= crypto_pwhash_PASSWD_MIN);
+    assert(pwlen <= crypto_pwhash_PASSWD_MAX);
 
     if (crypto_pwhash((unsigned char *) key, keylen, (const char *) password, pwlen, salt,
                       CRYPTO_DEFAULT_OPSLIMIT, CRYPTO_DEFAULT_MEMLIMIT, CRYPTO_DEFAULT_ALGO) != 0) {

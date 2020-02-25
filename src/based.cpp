@@ -20,6 +20,8 @@
  *
  */
 
+#include <BasedPassConfig.h>
+
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -44,7 +46,7 @@ static int prompt_password(unsigned char *password, size_t max_length)
 {
     cout << "Enter password: ";
 
-    char pass_buf[max_length + 1];
+    char pass_buf[MAX_PASSWORD_SIZE + 1];
     const char *input = fgets(pass_buf, sizeof(pass_buf), stdin);
 
     if (input == NULL) {
@@ -71,8 +73,8 @@ static void new_password_prompt(unsigned char *password, size_t max_length)
     while (true) {
         cout << "Enter password: ";
 
-        char pass1[max_length + 1];
-        char pass2[max_length + 1];
+        char pass1[MAX_PASSWORD_SIZE + 1];
+        char pass2[MAX_PASSWORD_SIZE + 1];
 
         const char *input1 = fgets(pass1, sizeof(pass1), stdin);
 
@@ -519,8 +521,20 @@ int new_pass_store(Pass_Store &p)
     return 0;
 }
 
-int main(void)
+static void print_version(const char *binary_name)
 {
+    cout << binary_name << " version "
+         << BasedPass_VERSION_MAJOR << "."
+         << BasedPass_VERSION_MINOR << "."
+         << BasedPass_VERSION_PATCH << endl;
+}
+
+int main(int argc, char **argv)
+{
+    if (argc > 0) {
+        print_version(argv[0]);
+    }
+
     umask(S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
 
     if (crypto_init() != 0) {

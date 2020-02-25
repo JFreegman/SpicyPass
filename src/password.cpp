@@ -117,7 +117,7 @@ static void shuffle_vec(vector<char> &vec)
 {
     auto vec_size = vec.size();
 
-    for (auto i = 0; i < vec_size; ++i) {
+    for (size_t i = 0; i < vec_size; ++i) {
         auto index = crypto_random_number(vec_size);
         auto a = vec.at(i);
         vec.at(i) = vec.at(index);

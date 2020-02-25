@@ -1,0 +1,3 @@
+#define BasedPass_VERSION_MAJOR "@BasedPass_VERSION_MAJOR@"
+#define BasedPass_VERSION_MINOR "@BasedPass_VERSION_MINOR@"
+#define BasedPass_VERSION_PATCH "@BasedPass_VERSION_PATCH@"
