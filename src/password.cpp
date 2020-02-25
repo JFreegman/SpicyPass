@@ -34,7 +34,7 @@ typedef enum {
     UPPERCASE,
     LOWERCASE,
     DIGIT,
-    PUNCTUATION,
+    SYMBOL,
     NON_PRINTABLE,
 } Char_Type;
 
@@ -68,7 +68,7 @@ static Char_Type char_type(const char c)
     }
 
     if ((c >= '!' && c <= '/') || (c >= ':' && c <= '@') || (c >= '[' && c <= '`') || (c >= '{' && c <= '~')) {
-        return PUNCTUATION;
+        return SYMBOL;
     }
 
     return NON_PRINTABLE;
@@ -79,9 +79,9 @@ static Char_Type char_type(const char c)
  * all char types have been seen.
  */
 static bool good_char(const char c, bool *have_lower, bool *have_upper,
-                      bool *have_digit, bool *have_punct)
+                      bool *have_digit, bool *have_symbol)
 {
-    if (*have_lower && *have_upper && *have_digit && *have_punct) {
+    if (*have_lower && *have_upper && *have_digit && *have_symbol) {
         return true;
     }
 
@@ -89,25 +89,39 @@ static bool good_char(const char c, bool *have_lower, bool *have_upper,
 
     switch (type) {
         case UPPERCASE: {
-            *have_upper = true;
-            return true;
+            if (! *have_upper) {
+                *have_upper = true;
+                return true;
+            }
+            break;
         }
         case LOWERCASE: {
-            *have_lower = true;
-            return true;
+            if (! *have_lower) {
+                *have_lower = true;
+                return true;
+            }
+            break;
         }
         case DIGIT: {
-            *have_digit = true;
-            return true;
+            if (! *have_digit) {
+                *have_digit = true;
+                return true;
+            }
+            break;
         }
-        case PUNCTUATION: {
-            *have_punct = true;
-            return true;
+        case SYMBOL: {
+            if (! *have_symbol) {
+                *have_symbol = true;
+                return true;
+            }
+            break;
         }
         default: {
-            return false;
+            break;
         }
     }
+
+    return false;
 }
 
 /*
@@ -130,7 +144,7 @@ static void shuffle_vec(vector<char> &vec)
  * Password is guaranteed to meet minimum requirements as follows:
  * - At least one lower-case and upper-case letter
  * - At least one digit
- * - At least one punctuation character
+ * - At least one symbol character
  * - No duplicate characters
  */
 string random_password(unsigned int size)
@@ -148,7 +162,7 @@ string random_password(unsigned int size)
     bool have_lower = false;
     bool have_upper = false;
     bool have_digit = false;
-    bool have_punct = false;
+    bool have_symbol = false;
 
     do {
         auto vec_size = char_vec.size();
@@ -162,7 +176,7 @@ string random_password(unsigned int size)
         auto c = char_vec.at(index);
         char_vec.erase(char_vec.begin() + index);
 
-        if (good_char(c, &have_lower, &have_upper, &have_digit, &have_punct)) {
+        if (good_char(c, &have_lower, &have_upper, &have_digit, &have_symbol)) {
             result.push_back(c);
         } else {
             discarded.push_back(c);
