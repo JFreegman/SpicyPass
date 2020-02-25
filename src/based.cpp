@@ -107,8 +107,8 @@ static void new_password_prompt(unsigned char *password, size_t max_length)
         memcpy(password, pass1, pass_length);
         password[pass_length] = 0;
 
-        crypto_memwipe((unsigned char *) pass1, pass_length);
-        crypto_memwipe((unsigned char *) pass2, pass_length);
+        crypto_memwipe((unsigned char *) pass1, sizeof(pass1));
+        crypto_memwipe((unsigned char *) pass2, sizeof(pass2));
 
         return;
     }
@@ -467,6 +467,10 @@ int new_pass_store(Pass_Store &p)
 {
     unsigned char password[MAX_PASSWORD_SIZE + 1];
 
+    if (crypto_memlock(password, sizeof(password)) != 0) {
+        return -2;
+    }
+
     if (first_time_run()) {
         cout << "Creating a new profile. ";
 
@@ -485,10 +489,6 @@ int new_pass_store(Pass_Store &p)
         if (pw_ret != 0) {
             return -1;
         }
-    }
-
-    if (crypto_memlock(password, sizeof(password)) != 0) {
-        return -2;
     }
 
     int ret = load_password_store(p, password, strlen((char *) password));

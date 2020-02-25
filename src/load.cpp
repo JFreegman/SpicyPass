@@ -245,6 +245,8 @@ int load_password_store(Pass_Store &p, const unsigned char *password, size_t len
         return -4;
     }
 
+    crypto_memwipe(encryption_key, sizeof(encryption_key));
+
     const string path = get_store_path(false);
     off_t file_length = file_size(path.c_str());
 

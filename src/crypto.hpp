@@ -48,7 +48,7 @@
 int crypto_init(void);
 
 /*
- * Returns a random number between 0 and `upper_limit`.
+ * Returns a random number between 0 and `upper_limit` (excluded).
  */
 uint32_t crypto_random_number(const uint32_t upper_limit);
 
@@ -95,7 +95,7 @@ bool crypto_verify_pass_hash(const unsigned char *hash, const unsigned char *pas
  *
  * `salt` must be a random number and should be at least CRYPTO_SALT_SIZE bytes. See: crypto_gen_salt().
  *
- * `key` must have room for at least CRYPTO_KEY_SIZE bytes.
+ * `keylen` must be at least 32 bytes.
  *
  * This key is responsible for all encryption and decryption operations, and therefore must be
  * kept secret.
@@ -108,6 +108,8 @@ int crypto_derive_key_from_pass(const unsigned char *key, size_t keylen, const u
 
 /*
  * Generates a random salt of `length` bytes and puts it in `salt`.
+ *
+ * `length` must be at least 16 bytes.
  */
 void crypto_gen_salt(unsigned char *salt, size_t length);
 

@@ -26,8 +26,9 @@
 #include "crypto.hpp"
 #include "load.hpp"
 
-#define CRYPTO_MAX_CIPHER_SIZE     (crypto_secretstream_xchacha20poly1305_MESSAGEBYTES_MAX)
-#define CRYPTO_MAX_PLAINTEXT_SIZE   (crypto_secretstream_xchacha20poly1305_MESSAGEBYTES_MAX + crypto_secretstream_xchacha20poly1305_ABYTES)
+#define CRYPTO_MAX_CIPHER_SIZE      (crypto_secretstream_xchacha20poly1305_MESSAGEBYTES_MAX)
+#define CRYPTO_MAX_PLAINTEXT_SIZE   (crypto_secretstream_xchacha20poly1305_MESSAGEBYTES_MAX +\
+                                     crypto_secretstream_xchacha20poly1305_ABYTES)
 
 /*
  * Inits libsodium. Must be called before any other crypto operation.
@@ -53,7 +54,9 @@ int crypto_init(void)
  */
 int crypto_make_pass_hash(const unsigned char *hash, const unsigned char *password, size_t length)
 {
+#ifdef DEBUG
     assert(length <= crypto_pwhash_PASSWD_MAX);
+#endif  //DEBUG
 
     if (crypto_pwhash_str((char *) hash, (const char *) password, length,
                          CRYPTO_DEFAULT_OPSLIMIT, CRYPTO_DEFAULT_MEMLIMIT) != 0) {
@@ -114,14 +117,20 @@ bool crypto_verify_pass_hash(const unsigned char *hash, const unsigned char *pas
 
 /*
  * Generates a random salt of `length` bytes and puts it in `salt`.
+ *
+ * `length` must be at least 16 bytes.
  */
 void crypto_gen_salt(unsigned char *salt, size_t length)
 {
+#ifdef DEBUG
+    assert(length >= 16);
+#endif
+
     randombytes_buf(salt, length);
 }
 
 /*
- * Returns a random number between 0 and `upper_limit`.
+ * Returns a random number between 0 and `upper_limit` (excluded).
  */
 uint32_t crypto_random_number(const uint32_t upper_limit)
 {
@@ -133,7 +142,7 @@ uint32_t crypto_random_number(const uint32_t upper_limit)
  *
  * `salt` must be a random number and should be at least CRYPTO_SALT_SIZE bytes. See: crypto_gen_salt().
  *
- * `key` must have room for at least CRYPTO_KEY_SIZE bytes.
+ * `keylen` must be at least 32 bytes.
  *
  * This key is responsible for all encryption and decryption operations, and therefore must be
  * kept secret.
@@ -144,7 +153,10 @@ uint32_t crypto_random_number(const uint32_t upper_limit)
 int crypto_derive_key_from_pass(const unsigned char *key, size_t keylen, const unsigned char *password,
                                 size_t pwlen, const unsigned char *salt)
 {
+#ifdef DEBUG
     assert(pwlen <= crypto_pwhash_PASSWD_MAX);
+    assert(keylen >= 32);
+#endif
 
     if (crypto_pwhash((unsigned char *) key, keylen, (const char *) password, pwlen, salt,
                       CRYPTO_DEFAULT_OPSLIMIT, CRYPTO_DEFAULT_MEMLIMIT, CRYPTO_DEFAULT_ALGO) != 0) {

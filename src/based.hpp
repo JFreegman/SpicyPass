@@ -93,11 +93,6 @@ public:
         memcpy(encryption_key, key, CRYPTO_KEY_SIZE);
         memcpy(key_salt, salt, CRYPTO_SALT_SIZE);
         memcpy(password_hash, hash, CRYPTO_HASH_SIZE);
-
-        if (crypto_memlock(encryption_key, CRYPTO_KEY_SIZE) != 0) {
-            return -1;
-        }
-
         return 0;
     }
 
@@ -157,7 +152,6 @@ public:
         }
 
         crypto_memwipe(plaintext, plain_length);
-
         free(plaintext);
 
         return 0;
@@ -201,12 +195,12 @@ public:
         int ret = crypto_encrypt_file(fp, buf_in, file_size, &out_len, encryption_key);
 
         if (ret < 0) {
+            crypto_memwipe(buf_in, file_size);
             free(buf_in);
             return -2;
         }
 
         crypto_memwipe(buf_in, file_size);
-
         free(buf_in);
 
         return 0;
