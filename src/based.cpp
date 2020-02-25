@@ -33,9 +33,6 @@
 
 using namespace std;
 
-#define MAX_PASSWORD_SIZE 64
-#define MIN_PASSWORD_SIZE 8
-#define MAX_ENTRY_KEY_SIZE 64
 
 /* Promps password and puts it in `password` array.
  *
@@ -46,7 +43,7 @@ static int prompt_password(unsigned char *password, size_t max_length)
 {
     cout << "Enter password: ";
 
-    char pass_buf[MAX_PASSWORD_SIZE + 1];
+    char pass_buf[MAX_STORE_PASSWORD_SIZE + 1];
     const char *input = fgets(pass_buf, sizeof(pass_buf), stdin);
 
     if (input == NULL) {
@@ -73,8 +70,8 @@ static void new_password_prompt(unsigned char *password, size_t max_length)
     while (true) {
         cout << "Enter password: ";
 
-        char pass1[MAX_PASSWORD_SIZE + 1];
-        char pass2[MAX_PASSWORD_SIZE + 1];
+        char pass1[MAX_STORE_PASSWORD_SIZE + 1];
+        char pass2[MAX_STORE_PASSWORD_SIZE + 1];
 
         const char *input1 = fgets(pass1, sizeof(pass1), stdin);
 
@@ -85,8 +82,8 @@ static void new_password_prompt(unsigned char *password, size_t max_length)
 
         size_t pass_length = strlen(pass1);
 
-        if (pass_length < MIN_PASSWORD_SIZE || pass_length > max_length) {
-            cout << "Password must be between " << MIN_PASSWORD_SIZE  << " and " << max_length << " characters long." << endl;
+        if (pass_length < MIN_STORE_PASSWORD_SIZE || pass_length > max_length) {
+            cout << "Password must be between " << MIN_STORE_PASSWORD_SIZE  << " and " << max_length << " characters long." << endl;
             continue;
         }
 
@@ -147,7 +144,7 @@ static int init_new_password(unsigned char *password, size_t max_length)
  */
 static int change_password_prompt(Pass_Store &p)
 {
-    unsigned char new_password[MAX_PASSWORD_SIZE + 1];
+    unsigned char new_password[MAX_STORE_PASSWORD_SIZE + 1];
     unsigned char hash[CRYPTO_HASH_SIZE];
     p.get_password_hash(hash);
 
@@ -156,7 +153,7 @@ static int change_password_prompt(Pass_Store &p)
     while (true) {
         cout << "Enter old password: ";
 
-        char old_pass[MAX_PASSWORD_SIZE + 1];
+        char old_pass[MAX_STORE_PASSWORD_SIZE + 1];
         const char *input1 = fgets(old_pass, sizeof(old_pass), stdin);
 
         if (input1 == NULL) {
@@ -178,7 +175,7 @@ static int change_password_prompt(Pass_Store &p)
         break;
     }
 
-    new_password_prompt(new_password, MAX_PASSWORD_SIZE);
+    new_password_prompt(new_password, MAX_STORE_PASSWORD_SIZE);
     int ret = update_crypto(p, new_password, strlen((char *) new_password));
 
     if (ret < 0) {
@@ -230,11 +227,11 @@ static void add(Pass_Store &p)
         return;
     }
 
-    cout << "Enter password: ";
+    cout << "Enter password (leave empty for a random password): ";
     getline(cin, password);
 
-    if (password.length() > MAX_PASSWORD_SIZE) {
-        cout << "Password length must not exceed " << to_string(MAX_PASSWORD_SIZE) << " characters" << endl;
+    if (password.length() > MAX_STORE_PASSWORD_SIZE) {
+        cout << "Password length must not exceed " << to_string(MAX_STORE_PASSWORD_SIZE) << " characters" << endl;
         return;
     }
 
@@ -260,7 +257,11 @@ static void add(Pass_Store &p)
         }
     }
 
-    p.insert(key, password);
+    if (p.insert(key, password) != 0) {
+        cout << "Failed to add entry" << endl;
+        return;
+    }
+
     int ret = save_password_store(p);
 
     switch (ret) {
@@ -294,11 +295,6 @@ static void remove(Pass_Store &p)
     cout << "Enter key to remove: ";
     getline(cin, key);
 
-    if (!p.key_exists(key)) {
-        cout << "Key not found" << endl;
-        return;
-    }
-
     while (true) {
         cout << "Are you sure you want to remove the key \"" << key << "\" ? Y/n ";
         string s;
@@ -311,7 +307,11 @@ static void remove(Pass_Store &p)
         }
     }
 
-    p.remove(key);
+    if (p.remove(key) != 0) {
+        cout << "Key not found" << endl;
+        return;
+    }
+
     int ret = save_password_store(p);
 
     if (ret != 0) {
@@ -348,17 +348,16 @@ static void generate(void)
 
         try {
             size = stoi(input);
-        }
-        catch (const exception &) {
+        } catch (const exception &) {
             cout << "Invalid input" << endl;
             continue;
         }
 
-        if (size >= MIN_PASSWORD_SIZE && size <= MAX_PASSWORD_SIZE) {
+        if (size >= MIN_STORE_PASSWORD_SIZE && size <= MAX_STORE_PASSWORD_SIZE) {
             break;
         }
 
-        cout << "Password must be between " << to_string(MIN_PASSWORD_SIZE) << " and " << to_string(MAX_PASSWORD_SIZE) << " characters in length" << endl;
+        cout << "Password must be between " << to_string(MIN_STORE_PASSWORD_SIZE) << " and " << to_string(MAX_STORE_PASSWORD_SIZE) << " characters in length" << endl;
     }
 
     string pass = random_password(size);
@@ -465,7 +464,7 @@ static void menu_loop(Pass_Store &p)
  */
 int new_pass_store(Pass_Store &p)
 {
-    unsigned char password[MAX_PASSWORD_SIZE + 1];
+    unsigned char password[MAX_STORE_PASSWORD_SIZE + 1];
 
     if (crypto_memlock(password, sizeof(password)) != 0) {
         return -2;
@@ -474,7 +473,7 @@ int new_pass_store(Pass_Store &p)
     if (first_time_run()) {
         cout << "Creating a new profile. ";
 
-        if (init_new_password(password, MAX_PASSWORD_SIZE) != 0) {
+        if (init_new_password(password, MAX_STORE_PASSWORD_SIZE) != 0) {
             return -1;
         }
     } else {
@@ -483,7 +482,7 @@ int new_pass_store(Pass_Store &p)
             cout << "Warning: failed to disable terminal echo" << endl;
         }
 
-        int pw_ret = prompt_password(password, MAX_PASSWORD_SIZE);
+        int pw_ret = prompt_password(password, MAX_STORE_PASSWORD_SIZE);
         enable_terminal_echo(&oflags);
 
         if (pw_ret != 0) {
@@ -575,8 +574,6 @@ int main(int argc, char **argv)
     }
 
     menu_loop(p);
-
-    p.kill();
 
     return 0;
 }

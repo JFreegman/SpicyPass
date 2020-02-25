@@ -34,36 +34,108 @@
 #include "util.hpp"
 #include "crypto.hpp"
 
-#define DELIMITER ":"
-
 using namespace std;
 
+
+#define DELIMITER ":"
+#define MAX_ENTRY_KEY_SIZE        (64)
+#define MAX_STORE_PASSWORD_SIZE   (64)
+#define MIN_STORE_PASSWORD_SIZE   (8)
+
+
+/*
+ * We used this struct to store passwords in the store map so that
+ * they can be securely wiped from memory when no longer in use.
+ */
+struct Password {
+    char password[MAX_STORE_PASSWORD_SIZE + 1];
+};
+
+
 class Pass_Store {
-    map<string, string> store;
+    map<string, struct Password *> store;
 
     unsigned char encryption_key[CRYPTO_KEY_SIZE];
     unsigned char key_salt[CRYPTO_SALT_SIZE];
     unsigned char password_hash[CRYPTO_HASH_SIZE];
 
 public:
-    void insert(string key, string value) {
-        store.insert_or_assign(key, value);
+    /*
+     * Inserts `key` into pass store with `value`. If key already exists it will
+     * be overwritten.
+     *
+     * Return 0 on sucess.
+     * Return -1 on failure.
+     */
+    int insert(string key, string value) {
+        struct Password *pass = (struct Password *) calloc(1, sizeof(struct Password));
+
+        if (pass == NULL) {
+            return -1;
+        }
+
+        size_t length = value.size();
+
+        if (length >= sizeof(pass->password)) {
+            free(pass);
+            return -1;
+        }
+
+        memcpy(pass->password, value.c_str(), length);
+        pass->password[length] = 0;
+
+        if (crypto_memlock((unsigned char *) pass->password, sizeof(pass->password)) != 0) {
+            free(pass);
+            return -1;
+        }
+
+        // manually delete key if it already exists so that memory is properly wiped and freed
+        remove(key);
+
+        try {
+            store.insert({key, pass});
+        } catch (const exception &) {
+            free(pass);
+            return -1;
+        }
+
+        return 0;
     }
 
-    void remove(string key) {
+    /*
+     * Removes `key` from pass store.
+     *
+     * Return 0 on success.
+     * Return -1 if key does not exist.
+     */
+    int remove(string key) {
+        if (!key_exists(key)) {
+            return -1;
+        }
+
+        crypto_memunlock((unsigned char *) store.at(key)->password, sizeof(store.at(key)->password));
+        free(store.at(key));
         store.erase(key);
+
+        return 0;
     }
 
+    /*
+     * Return true if `key` exists in pass store.
+     */
     bool key_exists(string key) {
         return store.find(key) != store.end();
     }
 
+    /*
+     * Prints all key:value pairs in pass store.
+     */
     bool print_matches(string key) {
         bool match = false;
 
         for (auto &item: store) {
             if (key.compare(0, key.length(), item.first, 0, key.length()) == 0) {
-                cout << item.first << ": " << item.second << endl;
+                cout << item.first << ": " << item.second->password << endl;
                 match = true;
             }
         }
@@ -93,11 +165,12 @@ public:
         memcpy(encryption_key, key, CRYPTO_KEY_SIZE);
         memcpy(key_salt, salt, CRYPTO_SALT_SIZE);
         memcpy(password_hash, hash, CRYPTO_HASH_SIZE);
-        return 0;
-    }
 
-    void kill(void) {
-        crypto_memunlock(encryption_key, CRYPTO_KEY_SIZE);
+        if (crypto_memlock(encryption_key, CRYPTO_KEY_SIZE) != 0) {
+            return -1;
+        }
+
+        return 0;
     }
 
     /*
@@ -169,7 +242,8 @@ public:
         size_t file_size = 0;
 
         for (auto &item: store) {
-            string entry = item.first + DELIMITER + item.second + '\n';
+            string val(item.second->password);
+            string entry = item.first + DELIMITER + val + '\n';
             file_size += entry.length();
         }
 
@@ -186,7 +260,8 @@ public:
         size_t pos = 0;
 
         for (auto &item: store) {
-            string entry = item.first + DELIMITER + item.second + '\n';
+            string val(item.second->password);
+            string entry = item.first + DELIMITER + val + '\n';
             memcpy(buf_in + pos, entry.c_str(), entry.length());
             pos += entry.length();
         }
@@ -204,6 +279,14 @@ public:
         free(buf_in);
 
         return 0;
+    }
+
+    ~Pass_Store(void) {
+        crypto_memunlock(encryption_key, CRYPTO_KEY_SIZE);
+
+        for (auto &item: store) {
+            remove(item.first);
+        }
     }
 };
 

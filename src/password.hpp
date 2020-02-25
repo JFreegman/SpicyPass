@@ -28,7 +28,7 @@
  * Password is guaranteed to meet minimum requirements as follows:
  * - At least one lower-case and upper-case letter
  * - At least one digit
- * - At least one punctuation character
+ * - At least one symbol character
  * - No duplicate characters
  */
 std::string random_password(unsigned int size);
