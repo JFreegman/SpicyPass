@@ -53,11 +53,86 @@ struct Password {
 
 
 class Pass_Store {
+private:
     map<string, struct Password *> store;
 
     unsigned char encryption_key[CRYPTO_KEY_SIZE];
     unsigned char key_salt[CRYPTO_SALT_SIZE];
     unsigned char password_hash[CRYPTO_HASH_SIZE];
+
+    /*
+     * Returns a string containing a key value entry in file format.
+     */
+    string format_entry(string key, const char *value) {
+        return key + DELIMITER + value + '\n';
+    }
+
+    /*
+     * Returns the size of the store map in file format.
+     */
+    size_t size(void) {
+        size_t size = 0;
+
+        for (auto &item: store) {
+            string entry = format_entry(item.first, item.second->password);
+            size += entry.length();
+        }
+
+        return size;
+    }
+
+    /*
+     * Copies contents of store map into `buf` in file format.
+     *
+     * The `size()` method should be used to determine how large the buffer
+     * needs to be.
+     *
+     * Returns the number of bytes copied to the buffer.
+     */
+    size_t copy(char *buf) {
+        size_t pos = 0;
+
+        for (auto &item: store) {
+            string entry = format_entry(item.first, item.second->password);
+            memcpy(buf + pos, entry.c_str(), entry.length());
+            pos += entry.length();
+        }
+
+        return pos;
+    }
+
+    /*
+     * Loads the contents of `buf` into the pass store map.
+     *
+     * Buffer must be file formatted and null terminated.
+     *
+     * Returns the number of entries loaded to the store map.
+     */
+    size_t load_buffer(const char *buf) {
+        size_t count = 0;
+        char *t = strtok((char *) buf, "\n");
+
+        while (t) {
+            string entry = t;
+            auto d = entry.find(DELIMITER);
+
+            if (d != string::npos) {
+                string key = entry.substr(0, d);
+                string pass = entry.substr(d + 1, entry.length());
+
+                if (insert(key, pass) < 0) {
+                    cout << "Warning: Failed to load entry with key `" << key << "`" << endl;
+                    continue;
+                }
+
+                ++count;
+            }
+
+            t = strtok(NULL, "\n");
+        }
+
+        return count;
+    }
 
 public:
     /*
@@ -176,12 +251,17 @@ public:
     /*
      * Decrypts file contents of size `length` pointed to by `fp` and loads to pass store.
      *
+     * Return number of entries loaded on success.
      * Return -1 on out of memory error.
      * Return -2 on decryption error.
      */
     int load(ifstream &fp, size_t length) {
-        unsigned char *plaintext = (unsigned char *) malloc(length + 1);
         unsigned long long plain_length = 0;
+        unsigned char *plaintext = (unsigned char *) malloc(length + 1);
+
+        if (plaintext == NULL) {
+            return -1;
+        }
 
         int ret = crypto_decrypt_file(fp, length, plaintext, &plain_length, encryption_key);
 
@@ -208,26 +288,12 @@ public:
         }
 
         plaintext[plain_length] = 0;
-
-        char *tok = strtok((char *) plaintext, "\n");
-
-        while (tok) {
-            string entry = tok;
-            auto d = entry.find(DELIMITER);
-
-            if (d != string::npos) {
-                string key = entry.substr(0, d);
-                string pass = entry.substr(d + 1, entry.length());
-                insert(key, pass);
-            }
-
-            tok = strtok(NULL, "\n");
-        }
+        size_t num_entries = load_buffer((char *) plaintext);
 
         crypto_memwipe(plaintext, plain_length);
         free(plaintext);
 
-        return 0;
+        return num_entries;
     }
 
     /*
@@ -239,13 +305,7 @@ public:
      * Return -2 if encryption fails.
      */
     int save(ofstream &fp) {
-        size_t file_size = 0;
-
-        for (auto &item: store) {
-            string val(item.second->password);
-            string entry = item.first + DELIMITER + val + '\n';
-            file_size += entry.length();
-        }
+        size_t file_size = size();
 
         if (file_size == 0) {
             return 0;
@@ -257,13 +317,9 @@ public:
             return -1;
         }
 
-        size_t pos = 0;
-
-        for (auto &item: store) {
-            string val(item.second->password);
-            string entry = item.first + DELIMITER + val + '\n';
-            memcpy(buf_in + pos, entry.c_str(), entry.length());
-            pos += entry.length();
+        if (copy((char *) buf_in) != file_size) {
+            free(buf_in);
+            return -1;
         }
 
         unsigned long long out_len = 0;

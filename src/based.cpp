@@ -312,12 +312,12 @@ static void remove(Pass_Store &p)
         return;
     }
 
+    cout << "Removed entry for key \"" << key << "\"" << endl;
+
     int ret = save_password_store(p);
 
     if (ret != 0) {
         cout << "Failed to save password store (" << to_string(ret) << ")" << endl;
-    } else {
-        cout << "Removed entry for key \"" << key << "\"" << endl;
     }
 }
 

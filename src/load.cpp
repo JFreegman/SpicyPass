@@ -257,10 +257,15 @@ int load_password_store(Pass_Store &p, const unsigned char *password, size_t len
     }
 
     if (file_length > PASS_STORE_HEADER_SIZE) {
-        if (p.load(fp, file_length - PASS_STORE_HEADER_SIZE) != 0) {
+        int num_entries = p.load(fp, file_length - PASS_STORE_HEADER_SIZE);
+
+        if (num_entries < 0) {
             fp.close();
             return -3;
         }
+#ifdef DEBUG
+        cout << "Loaded " << to_string(num_entries) << " entries to memory" << endl;
+#endif
     }
 
     fp.close();

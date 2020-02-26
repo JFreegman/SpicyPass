@@ -56,7 +56,7 @@ int crypto_make_pass_hash(const unsigned char *hash, const unsigned char *passwo
 {
 #ifdef DEBUG
     assert(length <= crypto_pwhash_PASSWD_MAX);
-#endif  //DEBUG
+#endif
 
     if (crypto_pwhash_str((char *) hash, (const char *) password, length,
                          CRYPTO_DEFAULT_OPSLIMIT, CRYPTO_DEFAULT_MEMLIMIT) != 0) {
