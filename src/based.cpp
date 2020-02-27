@@ -236,10 +236,11 @@ static void add(Pass_Store &p)
     }
 
     if (password.empty()) {
-        password = random_password(16);
+        password = random_password(16U);
     }
 
-    if (password == "") {
+    if (password.empty()) {
+        cout << "Failed to add entry" << endl;
         return;
     }
 

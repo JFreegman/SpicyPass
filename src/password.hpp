@@ -25,6 +25,9 @@
 
 /* Returns a cryptographically secure randomly generated password.
  *
+ * `size` must be greater than or equal to the number of guaranteed characters (4)
+ * and less than or equal to the total number of ASCII printable characters.
+ *
  * Password is guaranteed to meet minimum requirements as follows:
  * - At least one lower-case and upper-case letter
  * - At least one digit

@@ -21,14 +21,16 @@
  */
 
 #include <string>
+#include <assert.h>
 
 #include "crypto.hpp"
 #include "util.hpp"
 
 using namespace std;
 
-
 #define NUM_GUARANTEED_CHARS (4)
+
+#define PRINTABLE_CHARS "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890`~!@#$%^&*()=+_-{}[]:;'\",.<>/?\\|"
 
 typedef enum {
     UPPERCASE,
@@ -37,18 +39,6 @@ typedef enum {
     SYMBOL,
     NON_PRINTABLE,
 } Char_Type;
-
-/*
- * Adds all characters from the `chars` string to `vec`.
- */
-static void init_char_vector(vector<char> &vec)
-{
-    const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890`~!@#$%^&*()=+_-{}[]:;'\",.<>/?\\|";
-
-    for (char c: chars) {
-        vec.push_back(c);
-    }
-}
 
 /*
  * Returns the Char_Type of `c`.
@@ -141,6 +131,9 @@ static void shuffle_vec(vector<char> &vec)
 
 /* Returns a cryptographically secure randomly generated password.
  *
+ * `size` must be greater than or equal to the number of guaranteed characters (4)
+ * and less than or equal to the total number of ASCII printable characters.
+ *
  * Password is guaranteed to meet minimum requirements as follows:
  * - At least one lower-case and upper-case letter
  * - At least one digit
@@ -150,9 +143,12 @@ static void shuffle_vec(vector<char> &vec)
 string random_password(unsigned int size)
 {
     vector<char> result;
-    vector<char> char_vec;
     vector<char> discarded;
-    init_char_vector(char_vec);
+    vector<char> char_vec = string_to_vec(string(PRINTABLE_CHARS));
+
+#ifdef DEBUG
+    assert(strlen(PRINTABLE_CHARS) == char_vec.size());
+#endif
 
     if (size < NUM_GUARANTEED_CHARS || size > char_vec.size()) {
         cout << "random_password() error: invalid size value" << endl;
@@ -169,6 +165,9 @@ string random_password(unsigned int size)
 
         if (vec_size == 0) {
             char_vec = discarded;
+#ifdef DEBUG
+            assert(char_vec.size() != 0);
+#endif
             continue;
         }
 

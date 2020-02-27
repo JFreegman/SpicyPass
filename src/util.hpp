@@ -30,6 +30,7 @@
 #include <string.h>
 #include <termios.h>
 
+
 /*
  * Returns true if `s` contains `c`.
  */
@@ -53,5 +54,10 @@ void enable_terminal_echo(struct termios *oflags);
  * Returns a string containing the charaters in `vec`.
  */
 std::string vec_to_string(const std::vector<char> &vec);
+
+/*
+ * Returns a vector containing the characters in `s`.
+ */
+std::vector<char> string_to_vec(std::string s);
 
 #endif // UTIL

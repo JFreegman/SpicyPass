@@ -87,3 +87,17 @@ std::string vec_to_string(const std::vector<char> &vec)
 
     return s;
 }
+
+/*
+ * Returns a vector containing the characters in `s`.
+ */
+std::vector<char> string_to_vec(std::string s)
+{
+    std::vector<char> result;
+
+    for (char c: s) {
+        result.push_back(c);
+    }
+
+    return result;
+}
