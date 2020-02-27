@@ -363,8 +363,12 @@ static void generate(void)
 
     string pass = random_password(size);
 
-    if (pass != "")
-        cout << pass << endl;
+    if (pass.empty()) {
+        cout << "Failed to generate password" << endl;
+        return;
+    }
+
+    cout << pass << endl;
 }
 
 static void print_menu(void)
@@ -408,6 +412,7 @@ static bool execute(const int option, Pass_Store &p)
             break;
         }
         case 7: {
+            clear_console();
             print_menu();
             break;
         }
@@ -575,6 +580,8 @@ int main(int argc, char **argv)
     }
 
     menu_loop(p);
+
+    clear_console();
 
     return 0;
 }

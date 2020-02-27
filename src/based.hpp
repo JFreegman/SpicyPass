@@ -40,7 +40,7 @@ using namespace std;
 #define DELIMITER ":"
 #define MAX_ENTRY_KEY_SIZE        (64)
 #define MAX_STORE_PASSWORD_SIZE   (64)
-#define MIN_STORE_PASSWORD_SIZE   (8)
+#define MIN_STORE_PASSWORD_SIZE   (10)
 
 
 /*

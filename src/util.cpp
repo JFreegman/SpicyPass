@@ -101,3 +101,8 @@ std::vector<char> string_to_vec(std::string s)
 
     return result;
 }
+
+void clear_console(void)
+{
+    system("clear");
+}

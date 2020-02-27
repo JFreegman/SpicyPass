@@ -60,4 +60,6 @@ std::string vec_to_string(const std::vector<char> &vec);
  */
 std::vector<char> string_to_vec(std::string s);
 
+void clear_console(void);
+
 #endif // UTIL
