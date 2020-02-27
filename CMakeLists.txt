@@ -1,23 +1,23 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(BasedPass)
+project(SpicyPass)
 
-set(BasedPass_VERSION_MAJOR "0")
-set(BasedPass_VERSION_MINOR "2")
-set(BasedPass_VERSION_PATCH "0")
+set(SpicyPass_VERSION_MAJOR "0")
+set(SpicyPass_VERSION_MINOR "2")
+set(SpicyPass_VERSION_PATCH "0")
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-configure_file(BasedPassConfig.h.in BasedPassConfig.h)
+configure_file(SpicyPassConfig.h.in SpicyPassConfig.h)
 
 find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(LIBSODIUM REQUIRED libsodium)
 
-add_executable(basedpass src/based.cpp
-                         src/based.hpp
+add_executable(spicypass src/spicy.cpp
+                         src/spicy.hpp
                          src/util.cpp
                          src/util.hpp
                          src/crypto.cpp
@@ -28,9 +28,9 @@ add_executable(basedpass src/based.cpp
                          src/load.hpp
                          )
 
-target_link_libraries(basedpass ${LIBSODIUM_LIBRARIES})
-target_include_directories(basedpass PUBLIC ${LIBSODIUM_INCLUDE_DIRS})
-target_compile_options(basedpass PUBLIC ${LIBSODIUM_CFLAGS_OTHER})
+target_link_libraries(spicypass ${LIBSODIUM_LIBRARIES})
+target_include_directories(spicypass PUBLIC ${LIBSODIUM_INCLUDE_DIRS})
+target_compile_options(spicypass PUBLIC ${LIBSODIUM_CFLAGS_OTHER})
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
@@ -46,6 +46,6 @@ endif()
 
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
-target_include_directories(basedpass PUBLIC "${BasedPass_BINARY_DIR}")
+target_include_directories(spicypass PUBLIC "${SpicyPass_BINARY_DIR}")
 
-install(TARGETS basedpass DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+install(TARGETS spicypass DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)

@@ -1,33 +1,33 @@
-/*  based.cpp
+/*  spicy.cpp
  *
  *
  *  Copyright (C) 2020 Jfreegman <Jfreegman@gmail.com>
  *
- *  This file is part of BasedPass.
+ *  This file is part of SpicyPass.
  *
- *  BasedPass is free software: you can redistribute it and/or modify
+ *  SpicyPass is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  BasedPass is distributed in the hope that it will be useful,
+ *  SpicyPass is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with BasedPass.  If not, see <http://www.gnu.org/licenses/>.
+ *  along with SpicyPass.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
-#include <BasedPassConfig.h>
+#include <SpicyPassConfig.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
 
 #include "load.hpp"
 #include "password.hpp"
-#include "based.hpp"
+#include "spicy.hpp"
 #include "util.hpp"
 #include "crypto.hpp"
 
@@ -529,9 +529,9 @@ int new_pass_store(Pass_Store &p)
 static void print_version(const char *binary_name)
 {
     cout << binary_name << " version "
-         << BasedPass_VERSION_MAJOR << "."
-         << BasedPass_VERSION_MINOR << "."
-         << BasedPass_VERSION_PATCH << endl;
+         << SpicyPass_VERSION_MAJOR << "."
+         << SpicyPass_VERSION_MINOR << "."
+         << SpicyPass_VERSION_PATCH << endl;
 }
 
 int main(int argc, char **argv)
