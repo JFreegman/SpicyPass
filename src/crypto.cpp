@@ -99,8 +99,7 @@ int crypto_memlock(const unsigned char *buf, size_t length)
  */
 int crypto_memunlock(const unsigned char *buf, size_t length)
 {
-    if (sodium_munlock((void *) buf, length) != 0) {
-        sodium_memzero((void *) buf, length);   // Still attempt to securely wipe memory
+    if (sodium_munlock((void *) buf, length) != 0) {  // this will wipe the memory even if it fails
         return -1;
     }
 

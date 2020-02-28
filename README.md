@@ -1,4 +1,4 @@
-# What is SpicyPass
+# What Is SpicyPass?
 SpicyPass is a minimalist command-line password manager that utilizes state of the art cryptography for secure and simple password storage. It was designed by and for people who think modern software tends to be complicated and bloated with too many unnecessary features. No setup is required to start using SpicyPass, aside from choosing a master password. It also comes equipped with a cryptographically secure random password generator.
 
 ## Install
@@ -9,9 +9,7 @@ You will also need to [install](https://download.libsodium.org/doc/installation)
 
 ### Building
 #### Unix-like systems
-once you have all the dependencies installed on your system, clone this repository and navigate to its base directory.
-
-Now type the following commands:
+once you have all the dependencies installed on your system, clone this repository and navigate to its base directory. Execute the following commands:
 
 1. `mkdir _build && cd _build`
 2. `cmake ..`

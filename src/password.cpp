@@ -33,11 +33,11 @@ using namespace std;
 #define PRINTABLE_CHARS "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890`~!@#$%^&*()=+_-{}[]:;'\",.<>/?\\|"
 
 typedef enum {
-    UPPERCASE,
-    LOWERCASE,
-    DIGIT,
-    SYMBOL,
-    NON_PRINTABLE,
+    CHAR_UPPERCASE = 0,
+    CHAR_LOWERCASE,
+    CHAR_DIGIT,
+    CHAR_SYMBOL,
+    CHAR_NON_PRINTABLE,
 } Char_Type;
 
 /*
@@ -46,22 +46,22 @@ typedef enum {
 static Char_Type char_type(const char c)
 {
     if (c >= 'A' && c <= 'Z') {
-        return UPPERCASE;
+        return CHAR_UPPERCASE;
     }
 
     if (c >= 'a' && c <= 'z') {
-        return LOWERCASE;
+        return CHAR_LOWERCASE;
     }
 
     if (c >= '0' && c <= '9') {
-        return DIGIT;
+        return CHAR_DIGIT;
     }
 
     if ((c >= '!' && c <= '/') || (c >= ':' && c <= '@') || (c >= '[' && c <= '`') || (c >= '{' && c <= '~')) {
-        return SYMBOL;
+        return CHAR_SYMBOL;
     }
 
-    return NON_PRINTABLE;
+    return CHAR_NON_PRINTABLE;
 }
 
 /*
@@ -78,28 +78,28 @@ static bool good_char(const char c, bool *have_lower, bool *have_upper,
     Char_Type type = char_type(c);
 
     switch (type) {
-        case UPPERCASE: {
+        case CHAR_UPPERCASE: {
             if (! *have_upper) {
                 *have_upper = true;
                 return true;
             }
             break;
         }
-        case LOWERCASE: {
+        case CHAR_LOWERCASE: {
             if (! *have_lower) {
                 *have_lower = true;
                 return true;
             }
             break;
         }
-        case DIGIT: {
+        case CHAR_DIGIT: {
             if (! *have_digit) {
                 *have_digit = true;
                 return true;
             }
             break;
         }
-        case SYMBOL: {
+        case CHAR_SYMBOL: {
             if (! *have_symbol) {
                 *have_symbol = true;
                 return true;

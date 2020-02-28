@@ -20,6 +20,8 @@
  *
  */
 
+#include <iostream>
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -63,6 +65,9 @@ int disable_terminal_echo(struct termios *oflags)
     nflags.c_lflag |= ECHONL;
 
     if (tcsetattr(fileno(stdin), TCSANOW, &nflags) != 0) {
+#ifdef DEBUG
+        std::cout << "Warning: failed to disable terminal echo" << std::endl;
+#endif
         return -1;
     }
 
@@ -105,4 +110,20 @@ std::vector<char> string_to_vec(std::string s)
 void clear_console(void)
 {
     system("clear");
+}
+
+/*
+ * Returns the current Unix time.
+ */
+time_t get_time(void)
+{
+    return time(NULL);
+}
+
+/*
+ * Returns true if `t` has timed out relative to `timeout`.
+ */
+bool timed_out(time_t t, time_t timeout)
+{
+    return t + timeout <= get_time();
 }

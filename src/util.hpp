@@ -62,4 +62,14 @@ std::vector<char> string_to_vec(std::string s);
 
 void clear_console(void);
 
+/*
+ * Returns the current Unix time.
+ */
+time_t get_time(void);
+
+/*
+ * Returns true if `t` has timed out relative to `timeout`.
+ */
+bool timed_out(time_t t, time_t timeout);
+
 #endif // UTIL

@@ -33,8 +33,22 @@
 
 using namespace std;
 
+/* Seconds to wait since last activity before we prompt the user to enter their password again */
+#define INACTIVITY_LOCK_TIMEOUT (60U * 5U)
 
-/* Promps password and puts it in `password` array.
+typedef enum {
+    OPT_EXIT = 0,
+    OPT_ADD,
+    OPT_REMOVE,
+    OPT_FETCH,
+    OPT_LIST,
+    OPT_GENERATE,
+    OPT_PASSWORD,
+    OPT_PRINT,
+} Options;
+
+
+/* Prompts password and puts it in `password` array.
  *
  * Return 0 on success.
  * Return -1 input is invalid.
@@ -121,11 +135,10 @@ static void new_password_prompt(unsigned char *password, size_t max_length)
 static int init_new_password(unsigned char *password, size_t max_length)
 {
     struct termios oflags;
-    if (disable_terminal_echo(&oflags) != 0) {
-        cout << "Warning: failed to disable terminal echo" << endl;
-    }
+    disable_terminal_echo(&oflags);
 
     new_password_prompt(password, max_length);
+
     enable_terminal_echo(&oflags);
 
     if (init_pass_hash(password, strlen((char *) password)) != 0) {
@@ -179,7 +192,7 @@ static int change_password_prompt(Pass_Store &p)
     int ret = update_crypto(p, new_password, strlen((char *) new_password));
 
     if (ret < 0) {
-        cout << "Failed to update password with error: " << to_string(ret) << endl;
+        cout << "Failed to update password (error code: " << to_string(ret) << ")" << endl;
         return -1;
     }
 
@@ -192,11 +205,8 @@ static int change_password_prompt(Pass_Store &p)
 
 static int new_password(Pass_Store &p)
 {
-   struct termios oflags;
-
-    if (disable_terminal_echo(&oflags) != 0) {
-        cout << "Warning: failed to disable terminal echo" << endl;
-    }
+    struct termios oflags;
+    disable_terminal_echo(&oflags);
 
     int ret = change_password_prompt(p);
 
@@ -318,14 +328,15 @@ static void remove(Pass_Store &p)
     int ret = save_password_store(p);
 
     if (ret != 0) {
-        cout << "Failed to save password store (" << to_string(ret) << ")" << endl;
+        cout << "Failed to save password store (error code: " << to_string(ret) << ")" << endl;
     }
 }
 
 static void fetch(Pass_Store &p)
 {
-    string key;
     cout << "Enter key: ";
+
+    string key;
     getline(cin, key);
 
     if (!p.print_matches(key)) {
@@ -371,53 +382,113 @@ static void generate(void)
     cout << pass << endl;
 }
 
+static bool unlock_prompt(Pass_Store &p)
+{
+    cout << "Enter password: ";
+
+    unsigned char pass[MAX_STORE_PASSWORD_SIZE + 1];
+    const char *input = fgets((char *) pass, sizeof(pass), stdin);
+
+    if (input == NULL) {
+        cout << "Invalid input" << endl;
+        return false;
+    }
+
+    int ret = load_password_store(p, pass, strlen((char *) pass));
+
+    crypto_memwipe(pass, sizeof(pass));
+
+    switch (ret) {
+        case 0: {
+            return true;
+        }
+        case -2: {
+            cout << "Invalid password" << endl;
+            break;
+        }
+        default: {
+            break;
+        }
+    }
+
+    return false;
+}
+
+/*
+ * If the `last_active` timer has expired all pass store entries along with the
+ * private key are wiped from memory. The user is prompted to re-enter their
+ * master password. Upon success, the pass store file is decrypted and its contents
+ * loaded back into memory.
+ */
+void lock_check(Pass_Store &p, const time_t last_active)
+{
+    if (!timed_out(last_active, INACTIVITY_LOCK_TIMEOUT)) {
+        return;
+    }
+
+    p.clear();
+
+    cout << "Locked due to inactivity" << endl;
+
+    struct termios oflags;
+    disable_terminal_echo(&oflags);
+
+    while (!unlock_prompt(p))
+        ;
+
+    enable_terminal_echo(&oflags);
+}
+
 static void print_menu(void)
 {
     cout << "Menu:" << endl;
-    cout << "[1] Add entry" << endl;
-    cout << "[2] Remove entry" << endl;
-    cout << "[3] Fetch entry" << endl;
-    cout << "[4] List all entries" << endl;
-    cout << "[5] Generate password" << endl;
-    cout << "[6] Change master password" << endl;
-    cout << "[7] Print menu" << endl;
-    cout << "[8] Exit" << endl;
+    cout << "[" << to_string(OPT_ADD) << "] Add entry" << endl;
+    cout << "[" << to_string(OPT_REMOVE) << "] Remove entry" << endl;
+    cout << "[" << to_string(OPT_FETCH) << "] Fetch entry" << endl;
+    cout << "[" << to_string(OPT_LIST) << "] List all entries" << endl;
+    cout << "[" << to_string(OPT_GENERATE) << "] Generate password" << endl;
+    cout << "[" << to_string(OPT_PASSWORD) << "] Change master password" << endl;
+    cout << "[" << to_string(OPT_PRINT) << "] Print menu" << endl;
+    cout << "[" << to_string(OPT_EXIT) << "] Exit" << endl;
 }
 
-static bool execute(const int option, Pass_Store &p)
+static bool execute(const int option, Pass_Store &p, const time_t last_active)
 {
+    if (option == OPT_EXIT) {
+        return false;
+    }
+
+    lock_check(p, last_active);
+
     switch (option) {
-        case 1: {
+        case OPT_ADD: {
             add(p);
             break;
         }
-        case 2: {
+        case OPT_REMOVE: {
             remove(p);
             break;
         }
-        case 3: {
+        case OPT_FETCH: {
             fetch(p);
             break;
         }
-        case 4: {
+        case OPT_LIST: {
             list(p);
             break;
         }
-        case 5: {
+        case OPT_GENERATE: {
             generate();
             break;
         }
-        case 6: {
+        case OPT_PASSWORD: {
             new_password(p);
             break;
         }
-        case 7: {
+        case OPT_PRINT: {
             clear_console();
             print_menu();
             break;
-        }
-        case 8: {  // exit program
-            return false;
         }
         default: {
             cout << "Invalid command" << endl;
@@ -429,7 +500,7 @@ static bool execute(const int option, Pass_Store &p)
     return true;
 }
 
-static int prompt(void)
+static int command_prompt(void)
 {
     cout << "> ";
     string prompt;
@@ -437,8 +508,7 @@ static int prompt(void)
 
     try {
         return stoi(prompt);
-    }
-    catch (const exception &) {
+    } catch (const exception &) {
         return -1;
     }
 }
@@ -450,9 +520,10 @@ static void menu_loop(Pass_Store &p)
     print_menu();
 
     while (true) {
-        option = prompt();
+        time_t last_active = get_time();
+        option = command_prompt();
 
-        if (!execute(option, p)) {
+        if (!execute(option, p, last_active)) {
             break;
         }
     }
@@ -472,10 +543,6 @@ int new_pass_store(Pass_Store &p)
 {
     unsigned char password[MAX_STORE_PASSWORD_SIZE + 1];
 
-    if (crypto_memlock(password, sizeof(password)) != 0) {
-        return -2;
-    }
-
     if (first_time_run()) {
         cout << "Creating a new profile. ";
 
@@ -484,11 +551,10 @@ int new_pass_store(Pass_Store &p)
         }
     } else {
         struct termios oflags;
-        if (disable_terminal_echo(&oflags) != 0) {
-            cout << "Warning: failed to disable terminal echo" << endl;
-        }
+        disable_terminal_echo(&oflags);
 
         int pw_ret = prompt_password(password, MAX_STORE_PASSWORD_SIZE);
+
         enable_terminal_echo(&oflags);
 
         if (pw_ret != 0) {
@@ -498,9 +564,7 @@ int new_pass_store(Pass_Store &p)
 
     int ret = load_password_store(p, password, strlen((char *) password));
 
-    if (crypto_memunlock(password, sizeof(password)) != 0) {
-        cout << "Warning: crypto_memunlock() failed in new_pass_store()" << endl;
-    }
+    crypto_memwipe(password, sizeof(password));
 
     switch (ret) {
         case 0: {

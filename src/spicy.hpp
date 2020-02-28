@@ -337,12 +337,19 @@ public:
         return 0;
     }
 
-    ~Pass_Store(void) {
+    /*
+     * Securely wipes all sensitive pass store data from memory.
+     */
+    void clear(void) {
         crypto_memunlock(encryption_key, CRYPTO_KEY_SIZE);
 
         for (auto &item: store) {
             remove(item.first);
         }
+    }
+
+    ~Pass_Store(void) {
+        clear();
     }
 };
 
