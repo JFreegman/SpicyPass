@@ -80,6 +80,7 @@ int init_pass_hash(const unsigned char *password, size_t length);
  * Return -1 on crypto related error.
  * Return -2 if `p` fails to update.
  * Return -3 on save failure.
+ * Return PASS_STORE_LOCKED if pass store is locked.
  */
 int update_crypto(Pass_Store &p, const unsigned char *password, size_t length);
 

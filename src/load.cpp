@@ -231,6 +231,8 @@ int load_password_store(Pass_Store &p, const unsigned char *password, size_t len
         return -2;
     }
 
+    p.disable_lock();
+
     unsigned char encryption_key[CRYPTO_KEY_SIZE];
 
     if (crypto_derive_key_from_pass(encryption_key, CRYPTO_KEY_SIZE, password, length, salt) != 0) {
@@ -263,9 +265,6 @@ int load_password_store(Pass_Store &p, const unsigned char *password, size_t len
             fp.close();
             return -3;
         }
-#ifdef DEBUG
-        cout << "Loaded " << to_string(num_entries) << " entries to memory" << endl;
-#endif
     }
 
     fp.close();
@@ -338,6 +337,7 @@ int init_pass_hash(const unsigned char *password, size_t length)
  * Return -1 on crypto related error.
  * Return -2 if `p` fails to update.
  * Return -3 on save failure.
+ * Return PASS_STORE_LOCKED if pass store is locked.
  */
 int update_crypto(Pass_Store &p, const unsigned char *password, size_t length)
 {
@@ -357,7 +357,13 @@ int update_crypto(Pass_Store &p, const unsigned char *password, size_t length)
         return -1;
     }
 
-    if (p.init_crypto(encryption_key, salt, hash) !=0) {
+    int ret = p.init_crypto(encryption_key, salt, hash);
+
+    if (ret == PASS_STORE_LOCKED) {
+        return PASS_STORE_LOCKED;
+    }
+
+    if (ret != 0) {
         crypto_memwipe(encryption_key, sizeof(encryption_key));
         return -2;
     }

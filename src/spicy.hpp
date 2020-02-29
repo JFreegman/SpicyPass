@@ -27,7 +27,9 @@
 #include <string>
 #include <fstream>
 #include <map>
+#include <mutex>
 
+#include <assert.h>
 #include <string.h>
 
 #include "load.hpp"
@@ -38,9 +40,16 @@ using namespace std;
 
 
 #define DELIMITER ":"
+
 #define MAX_ENTRY_KEY_SIZE        (64)
 #define MAX_STORE_PASSWORD_SIZE   (64)
 #define MIN_STORE_PASSWORD_SIZE   (10)
+
+/* Seconds to wait since last activity before we prompt the user to enter their password again */
+#define INACTIVE_LOCK_TIMEOUT (60U * 10U)
+
+/* Return code indicating that `inactive_lock` is set to true */
+#define PASS_STORE_LOCKED (127)
 
 
 /*
@@ -60,6 +69,11 @@ private:
     unsigned char key_salt[CRYPTO_SALT_SIZE];
     unsigned char password_hash[CRYPTO_HASH_SIZE];
 
+    mutex store_m;
+    bool inactive_lock = false;
+    time_t last_active = get_time();
+
+
     /*
      * Returns a string containing a key value entry in file format.
      */
@@ -73,10 +87,14 @@ private:
     size_t size(void) {
         size_t size = 0;
 
+        s_lock();
+
         for (auto &item: store) {
             string entry = format_entry(item.first, item.second->password);
             size += entry.length();
         }
+
+        s_unlock();
 
         return size;
     }
@@ -92,11 +110,15 @@ private:
     size_t copy(char *buf) {
         size_t pos = 0;
 
+        s_lock();
+
         for (auto &item: store) {
             string entry = format_entry(item.first, item.second->password);
             memcpy(buf + pos, entry.c_str(), entry.length());
             pos += entry.length();
         }
+
+        s_unlock();
 
         return pos;
     }
@@ -108,9 +130,10 @@ private:
      *
      * Returns the number of entries loaded to the store map.
      */
-    size_t load_buffer(const char *buf) {
+    size_t load_buffer(char *buf) {
         size_t count = 0;
-        char *t = strtok((char *) buf, "\n");
+        char *s = buf;
+        char *t = strtok_r((char *) buf, "\n", &s);
 
         while (t) {
             string entry = t;
@@ -120,7 +143,7 @@ private:
                 string key = entry.substr(0, d);
                 string pass = entry.substr(d + 1, entry.length());
 
-                if (insert(key, pass) < 0) {
+                if (insert(key, pass) != 0) {
                     cout << "Warning: Failed to load entry with key `" << key << "`" << endl;
                     continue;
                 }
@@ -128,21 +151,91 @@ private:
                 ++count;
             }
 
-            t = strtok(NULL, "\n");
+            t = strtok_r(NULL, "\n", &s);
         }
 
         return count;
     }
 
+    /*
+     * Lock and unlock the pass store mutex.
+     */
+    void s_lock(void)   { store_m.lock();   }
+    void s_unlock(void) { store_m.unlock(); }
+
 public:
+    /*
+     * Return true if `inactive_lock` is enabled. If lock is not enabled,
+     * the `last_active` timer is reset.
+     *
+     * This should be used to block all user-prompted operations when the lock
+     * in enabled.
+     */
+    bool check_lock(void) {
+        s_lock();
+
+        if (inactive_lock) {
+            s_unlock();
+            return true;
+        }
+
+        last_active = get_time();
+        s_unlock();
+
+        return false;
+    }
+
+    /*
+     * Sets `inactive_lock` to false and resets the last active timer. This should only
+     * be called immediately after the user has entered a valid master password.
+     */
+    void disable_lock(void) {
+        s_lock();
+
+        inactive_lock = false;
+        last_active = get_time();
+
+        s_unlock();
+    }
+
+    /*
+     * Polls the `last_active` timer. Upon timeout `inactive_lock` is enabled and
+     * all pass store functionality is disabled until `disable_lock()` is called.
+     */
+    void poll_inactive(void) {
+        s_lock();
+
+        if (inactive_lock) {
+            s_unlock();
+            return;
+        }
+
+        if (!timed_out(last_active, INACTIVE_LOCK_TIMEOUT)) {
+            s_unlock();
+            return;
+        }
+
+        inactive_lock = true;
+        s_unlock();
+
+        clear();
+
+        cout << "Idle lock activated" << endl;
+    }
+
     /*
      * Inserts `key` into pass store with `value`. If key already exists it will
      * be overwritten.
      *
      * Return 0 on sucess.
      * Return -1 on failure.
+     * Return PASS_STORE_LOCKED if pass store is locked.
      */
     int insert(string key, string value) {
+        if (check_lock()) {
+            return PASS_STORE_LOCKED;
+        }
+
         struct Password *pass = (struct Password *) calloc(1, sizeof(struct Password));
 
         if (pass == NULL) {
@@ -167,12 +260,17 @@ public:
         // manually delete key if it already exists so that memory is properly wiped and freed
         remove(key);
 
+        s_lock();
+
         try {
             store.insert({key, pass});
         } catch (const exception &) {
             free(pass);
+            s_unlock();
             return -1;
         }
+
+        s_unlock();
 
         return 0;
     }
@@ -182,40 +280,73 @@ public:
      *
      * Return 0 on success.
      * Return -1 if key does not exist.
+     * Return PASS_STORE_LOCKED if pass store is locked.
      */
     int remove(string key) {
+        if (check_lock()) {
+            return PASS_STORE_LOCKED;
+        }
+
         if (!key_exists(key)) {
             return -1;
         }
+
+        s_lock();
 
         crypto_memunlock((unsigned char *) store.at(key)->password, sizeof(store.at(key)->password));
         free(store.at(key));
         store.erase(key);
 
+        s_unlock();
+
         return 0;
     }
 
     /*
-     * Return true if `key` exists in pass store.
+     * Return 1 if `key` exists in pass store.
+     * Return 0 if key does not exist.
+     * Return PASS_STORE_LOCKED if pass store is locked.
      */
-    bool key_exists(string key) {
-        return store.find(key) != store.end();
+    int key_exists(string key) {
+        if (check_lock()) {
+            return PASS_STORE_LOCKED;
+        }
+
+        s_lock();
+        bool exists = store.find(key) != store.end();
+        s_unlock();
+
+        return exists ? 1 : 0;
     }
 
     /*
-     * Prints all key:value pairs in pass store.
+     * Prints all entries in pass store.
+     *
+     * Set `show_password` to true to reveal passwords.
+     *
+     * Return number of matches found.
+     * Return PASS_STORE_LOCKED if pass store is locked.
      */
-    bool print_matches(string key) {
-        bool match = false;
+    int print_matches(string key, bool show_password) {
+        if (check_lock()) {
+            return PASS_STORE_LOCKED;
+        }
+
+        s_lock();
+
+        int matches = 0;
 
         for (auto &item: store) {
             if (key.compare(0, key.length(), item.first, 0, key.length()) == 0) {
-                cout << item.first << ": " << item.second->password << endl;
-                match = true;
+                string s = show_password ? item.first + ": " + item.second->password : item.first;
+                cout << s << endl;
+                ++matches;
             }
         }
 
-        return match;
+        s_unlock();
+
+        return matches;
     }
 
     /*
@@ -224,7 +355,9 @@ public:
      * buf must have room for at least CRYPTO_SALT_SIZE bytes.
      */
     void get_key_salt(unsigned char *buf) {
+        s_lock();
         memcpy(buf, key_salt, CRYPTO_SALT_SIZE);
+        s_unlock();
     }
 
     /*
@@ -233,17 +366,35 @@ public:
      * buf must have room for at least CRYPTO_HASH_SIZE bytes.
      */
     void get_password_hash(unsigned char *buf) {
+        s_lock();
         memcpy(buf, password_hash, CRYPTO_HASH_SIZE);
+        s_unlock();
     }
 
+    /*
+     * Initializes pass store crypto-related data structures.
+     *
+     * Return 0 on success.
+     * Return -1 if memory lock fails.
+     * Return PASS_STORE_LOCKED is pass store is locked.
+     */
     int init_crypto(const unsigned char *key, const unsigned char *salt, const unsigned char *hash) {
+        if (check_lock()) {
+            return PASS_STORE_LOCKED;
+        }
+
+        s_lock();
+
         memcpy(encryption_key, key, CRYPTO_KEY_SIZE);
         memcpy(key_salt, salt, CRYPTO_SALT_SIZE);
         memcpy(password_hash, hash, CRYPTO_HASH_SIZE);
 
         if (crypto_memlock(encryption_key, CRYPTO_KEY_SIZE) != 0) {
+            s_unlock();
             return -1;
         }
+
+        s_unlock();
 
         return 0;
     }
@@ -254,8 +405,13 @@ public:
      * Return number of entries loaded on success.
      * Return -1 on out of memory error.
      * Return -2 on decryption error.
+     * Return PASS_STORE_LOCKED if pass store is locked.
      */
     int load(ifstream &fp, size_t length) {
+        if (check_lock()) {
+            return PASS_STORE_LOCKED;
+        }
+
         unsigned long long plain_length = 0;
         unsigned char *plaintext = (unsigned char *) malloc(length + 1);
 
@@ -263,7 +419,9 @@ public:
             return -1;
         }
 
+        s_lock();
         int ret = crypto_decrypt_file(fp, length, plaintext, &plain_length, encryption_key);
+        s_unlock();
 
         if (ret != 0) {
             free(plaintext);
@@ -303,8 +461,13 @@ public:
      * Return 0 on success.
      * Return -1 on memory related error.
      * Return -2 if encryption fails.
+     * Return PASS_STORE_LOCKED if pass store is locked.
      */
     int save(ofstream &fp) {
+        if (check_lock()) {
+            return PASS_STORE_LOCKED;
+        }
+
         size_t file_size = size();
 
         if (file_size == 0) {
@@ -323,7 +486,10 @@ public:
         }
 
         unsigned long long out_len = 0;
+
+        s_lock();
         int ret = crypto_encrypt_file(fp, buf_in, file_size, &out_len, encryption_key);
+        s_unlock();
 
         if (ret < 0) {
             crypto_memwipe(buf_in, file_size);
@@ -341,11 +507,18 @@ public:
      * Securely wipes all sensitive pass store data from memory.
      */
     void clear(void) {
+        s_lock();
+
         crypto_memunlock(encryption_key, CRYPTO_KEY_SIZE);
 
         for (auto &item: store) {
-            remove(item.first);
+            string key = item.first;
+            crypto_memunlock((unsigned char *) store.at(key)->password, sizeof(store.at(key)->password));
+            free(store.at(key));
+            store.erase(key);
         }
+
+        s_unlock();
     }
 
     ~Pass_Store(void) {

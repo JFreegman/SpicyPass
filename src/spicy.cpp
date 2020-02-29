@@ -22,6 +22,9 @@
 
 #include <SpicyPassConfig.h>
 
+#include <thread>
+#include <chrono>
+
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -32,9 +35,6 @@
 #include "crypto.hpp"
 
 using namespace std;
-
-/* Seconds to wait since last activity before we prompt the user to enter their password again */
-#define INACTIVITY_LOCK_TIMEOUT (60U * 5U)
 
 typedef enum {
     OPT_EXIT = 0,
@@ -154,6 +154,7 @@ static int init_new_password(unsigned char *password, size_t max_length)
  *
  * Return 0 on success.
  * Return -1 on failure.
+ * Return PASS_STORE_LOCKED if pass store is locked.
  */
 static int change_password_prompt(Pass_Store &p)
 {
@@ -191,6 +192,10 @@ static int change_password_prompt(Pass_Store &p)
     new_password_prompt(new_password, MAX_STORE_PASSWORD_SIZE);
     int ret = update_crypto(p, new_password, strlen((char *) new_password));
 
+    if (ret == PASS_STORE_LOCKED) {
+        return PASS_STORE_LOCKED;
+    }
+
     if (ret < 0) {
         cout << "Failed to update password (error code: " << to_string(ret) << ")" << endl;
         return -1;
@@ -215,7 +220,7 @@ static int new_password(Pass_Store &p)
     return ret;
 }
 
-static void add(Pass_Store &p)
+static int add(Pass_Store &p)
 {
     string key, password;
 
@@ -224,17 +229,17 @@ static void add(Pass_Store &p)
 
     if (key.length() > MAX_ENTRY_KEY_SIZE) {
         cout << "Key is too long" << endl;
-        return;
+        return -1;
     }
 
     if (key.length() == 0) {
         cout << "Invalid key" << endl;
-        return;
+        return -1;
     }
 
     if (string_contains(key, DELIMITER)) {
         cout << "Key may not contain the \"" << DELIMITER << "\" character" << endl;
-        return;
+        return -1;
     }
 
     cout << "Enter password (leave empty for a random password): ";
@@ -242,7 +247,7 @@ static void add(Pass_Store &p)
 
     if (password.length() > MAX_STORE_PASSWORD_SIZE) {
         cout << "Password length must not exceed " << to_string(MAX_STORE_PASSWORD_SIZE) << " characters" << endl;
-        return;
+        return -1;
     }
 
     if (password.empty()) {
@@ -251,10 +256,16 @@ static void add(Pass_Store &p)
 
     if (password.empty()) {
         cout << "Failed to add entry" << endl;
-        return;
+        return -1;
     }
 
-    if (p.key_exists(key)) {
+    int exists = p.key_exists(key);
+
+    if (exists == PASS_STORE_LOCKED) {
+        return PASS_STORE_LOCKED;
+    }
+
+    if (exists > 0) {
         while (true) {
             string s;
             cout << "Key \"" << key << "\" already exists. Overwrite? Y/n ";
@@ -263,14 +274,14 @@ static void add(Pass_Store &p)
             if (s == "Y") {
                 break;
             } else if (s == "n") {
-                return;
+                return 0;
             }
         }
     }
 
     if (p.insert(key, password) != 0) {
         cout << "Failed to add entry" << endl;
-        return;
+        return -1;
     }
 
     int ret = save_password_store(p);
@@ -278,29 +289,31 @@ static void add(Pass_Store &p)
     switch (ret) {
         case 0: {
             cout << "Added key " << key << " with password " << password << endl;
-            break;
+            return 0;
         }
         case -1: {
             cout << "Failed to save password store: Failed to open pass store file" << endl;
-            break;
+            return -1;
         }
         case -2: {
             cout << "Failed to save password store: Encryption error" << endl;
-            break;
+            return -1;
 
         }
         case -3: {
             cout << "Failed to save password store: File save error" << endl;
-            break;
+            return -1;
         }
         default: {
             cout << "Failed to save password store: Unknown error" << endl;
-            break;
+            return -1;
         }
     }
+
+    return 0;
 }
 
-static void remove(Pass_Store &p)
+static int remove(Pass_Store &p)
 {
     string key;
     cout << "Enter key to remove: ";
@@ -314,13 +327,19 @@ static void remove(Pass_Store &p)
         if (s == "Y") {
             break;
         } else if (s == "n") {
-            return;
+            return 0;
         }
     }
 
-    if (p.remove(key) != 0) {
+    int removed = p.remove(key);
+
+    if (removed == PASS_STORE_LOCKED) {
+        return PASS_STORE_LOCKED;
+    }
+
+    if (removed != 0) {
         cout << "Key not found" << endl;
-        return;
+        return -1;
     }
 
     cout << "Removed entry for key \"" << key << "\"" << endl;
@@ -329,24 +348,46 @@ static void remove(Pass_Store &p)
 
     if (ret != 0) {
         cout << "Failed to save password store (error code: " << to_string(ret) << ")" << endl;
+        return -1;
     }
+
+    return 0;
 }
 
-static void fetch(Pass_Store &p)
+static int fetch(Pass_Store &p)
 {
     cout << "Enter key: ";
 
     string key;
     getline(cin, key);
 
-    if (!p.print_matches(key)) {
-        cout << "Key not found" << endl;
+    if (key.empty()) {
+        return -1;
     }
+
+    int matches = p.print_matches(key, true);
+
+    if (matches == PASS_STORE_LOCKED) {
+        return PASS_STORE_LOCKED;
+    }
+
+    if (!matches) {
+        cout << "Key not found" << endl;
+        return -1;
+    }
+
+    return 0;
 }
 
-static void list(Pass_Store &p)
+static int list(Pass_Store &p)
 {
-    p.print_matches("");
+    int matches = p.print_matches("", false);
+
+    if (matches == PASS_STORE_LOCKED) {
+        return PASS_STORE_LOCKED;
+    }
+
+    return 0;
 }
 
 static void generate(void)
@@ -384,7 +425,7 @@ static void generate(void)
 
 static bool unlock_prompt(Pass_Store &p)
 {
-    cout << "Enter password: ";
+    cout << "Enter master password: ";
 
     unsigned char pass[MAX_STORE_PASSWORD_SIZE + 1];
     const char *input = fgets((char *) pass, sizeof(pass), stdin);
@@ -414,22 +455,8 @@ static bool unlock_prompt(Pass_Store &p)
     return false;
 }
 
-/*
- * If the `last_active` timer has expired all pass store entries along with the
- * private key are wiped from memory. The user is prompted to re-enter their
- * master password. Upon success, the pass store file is decrypted and its contents
- * loaded back into memory.
- */
-void lock_check(Pass_Store &p, const time_t last_active)
+void lock_check(Pass_Store &p)
 {
-    if (!timed_out(last_active, INACTIVITY_LOCK_TIMEOUT)) {
-        return;
-    }
-
-    p.clear();
-
-    cout << "Locked due to inactivity" << endl;
-
     struct termios oflags;
     disable_terminal_echo(&oflags);
 
@@ -452,29 +479,40 @@ static void print_menu(void)
     cout << "[" << to_string(OPT_EXIT) << "] Exit" << endl;
 }
 
-static bool execute(const int option, Pass_Store &p, const time_t last_active)
+/*
+ * Executes command indicated by `option`.
+ *
+ * Return 0 on normal execution (including errors).
+ * Return -1 on exit command.
+ * Return PASS_STORE_LOCKED if pass store is locked.
+ */
+static int execute(const int option, Pass_Store &p)
 {
     if (option == OPT_EXIT) {
-        return false;
+        return -1;
     }
 
-    lock_check(p, last_active);
+    if (p.check_lock()) {
+        return PASS_STORE_LOCKED;
+    }
+
+    int ret = 0;
 
     switch (option) {
         case OPT_ADD: {
-            add(p);
+            ret = add(p);
             break;
         }
         case OPT_REMOVE: {
-            remove(p);
+            ret = remove(p);
             break;
         }
         case OPT_FETCH: {
-            fetch(p);
+            ret = fetch(p);
             break;
         }
         case OPT_LIST: {
-            list(p);
+            ret = list(p);
             break;
         }
         case OPT_GENERATE: {
@@ -482,7 +520,7 @@ static bool execute(const int option, Pass_Store &p, const time_t last_active)
             break;
         }
         case OPT_PASSWORD: {
-            new_password(p);
+            ret = new_password(p);
             break;
         }
         case OPT_PRINT: {
@@ -497,7 +535,7 @@ static bool execute(const int option, Pass_Store &p, const time_t last_active)
         }
     }
 
-    return true;
+    return (ret != PASS_STORE_LOCKED) ? 0 : PASS_STORE_LOCKED;
 }
 
 static int command_prompt(void)
@@ -515,16 +553,23 @@ static int command_prompt(void)
 
 static void menu_loop(Pass_Store &p)
 {
-    int option = -1;
-
     print_menu();
 
     while (true) {
-        time_t last_active = get_time();
-        option = command_prompt();
+        int option = command_prompt();
+        int ret = execute(option, p);
 
-        if (!execute(option, p, last_active)) {
-            break;
+        switch (ret) {
+            case 0: {
+                break;
+            }
+            case PASS_STORE_LOCKED: {
+                lock_check(p);
+                break;
+            }
+            default: {
+                return;
+            }
         }
     }
 }
@@ -598,6 +643,14 @@ static void print_version(const char *binary_name)
          << SpicyPass_VERSION_PATCH << endl;
 }
 
+void store_lock_loop(Pass_Store &p)
+{
+    while(true) {
+        p.poll_inactive();
+        this_thread::sleep_for(std::chrono::milliseconds(500));
+    }
+}
+
 int main(int argc, char **argv)
 {
     if (argc > 0) {
@@ -642,6 +695,9 @@ int main(int argc, char **argv)
             return -1;
         }
     }
+
+    thread t(store_lock_loop, ref(p));
+    t.detach();
 
     menu_loop(p);
 
