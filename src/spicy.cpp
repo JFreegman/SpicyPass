@@ -425,7 +425,7 @@ static void generate(void)
 
 static bool unlock_prompt(Pass_Store &p)
 {
-    cout << "Enter master password: ";
+    cout << "Enter password: ";
 
     unsigned char pass[MAX_STORE_PASSWORD_SIZE + 1];
     const char *input = fgets((char *) pass, sizeof(pass), stdin);
@@ -459,6 +459,8 @@ void lock_check(Pass_Store &p)
 {
     struct termios oflags;
     disable_terminal_echo(&oflags);
+
+    cout << "Idle lock has been activated. ";
 
     while (!unlock_prompt(p))
         ;
@@ -646,7 +648,7 @@ static void print_version(const char *binary_name)
 void store_lock_loop(Pass_Store &p)
 {
     while(true) {
-        p.poll_inactive();
+        p.poll_idle();
         this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 }

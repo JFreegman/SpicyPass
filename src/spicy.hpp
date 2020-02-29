@@ -48,7 +48,7 @@ using namespace std;
 /* Seconds to wait since last activity before we prompt the user to enter their password again */
 #define INACTIVE_LOCK_TIMEOUT (60U * 10U)
 
-/* Return code indicating that `inactive_lock` is set to true */
+/* Return code indicating that `idle_lock` is set to true */
 #define PASS_STORE_LOCKED (127)
 
 
@@ -70,7 +70,7 @@ private:
     unsigned char password_hash[CRYPTO_HASH_SIZE];
 
     mutex store_m;
-    bool inactive_lock = false;
+    bool idle_lock = false;
     time_t last_active = get_time();
 
 
@@ -165,7 +165,7 @@ private:
 
 public:
     /*
-     * Return true if `inactive_lock` is enabled. If lock is not enabled,
+     * Return true if `idle_lock` is enabled. If lock is not enabled,
      * the `last_active` timer is reset.
      *
      * This should be used to block all user-prompted operations when the lock
@@ -174,7 +174,7 @@ public:
     bool check_lock(void) {
         s_lock();
 
-        if (inactive_lock) {
+        if (idle_lock) {
             s_unlock();
             return true;
         }
@@ -186,26 +186,26 @@ public:
     }
 
     /*
-     * Sets `inactive_lock` to false and resets the last active timer. This should only
+     * Sets `idle_lock` to false and resets the last active timer. This should only
      * be called immediately after the user has entered a valid master password.
      */
     void disable_lock(void) {
         s_lock();
 
-        inactive_lock = false;
+        idle_lock = false;
         last_active = get_time();
 
         s_unlock();
     }
 
     /*
-     * Polls the `last_active` timer. Upon timeout `inactive_lock` is enabled and
+     * Polls the `last_active` timer. Upon timeout `idle_lock` is enabled and
      * all pass store functionality is disabled until `disable_lock()` is called.
      */
-    void poll_inactive(void) {
+    void poll_idle(void) {
         s_lock();
 
-        if (inactive_lock) {
+        if (idle_lock) {
             s_unlock();
             return;
         }
@@ -215,12 +215,10 @@ public:
             return;
         }
 
-        inactive_lock = true;
+        idle_lock = true;
         s_unlock();
 
         clear();
-
-        cout << "Idle lock activated" << endl;
     }
 
     /*

@@ -1,5 +1,9 @@
-# What Is SpicyPass?
-SpicyPass is a minimalist command-line password manager that utilizes state of the art cryptography for secure and simple password storage. It was designed by and for people who think modern software tends to be complicated, and often bloated with too many unnecessary features. No setup is required to start using SpicyPass, aside from choosing a master password. It also comes equipped with a cryptographically secure random password generator.
+<a href="https://scan.coverity.com/projects/jfreegman-spicypass">
+  <img alt="Coverity Scan Build Status"
+       src="https://scan.coverity.com/projects/20491/badge.svg"/>
+</a>
+
+**SpicyPass** is a minimalist command-line password manager that utilizes state of the art cryptography for secure and simple password storage. It was designed by and for people who think modern software tends to be complicated, and often bloated with too many unnecessary features. No setup is required to start using SpicyPass, aside from choosing a master password. It also comes equipped with a cryptographically secure random password generator.
 
 ## Install
 ### Dependencies
