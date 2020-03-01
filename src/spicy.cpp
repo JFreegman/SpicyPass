@@ -548,7 +548,8 @@ static int command_prompt(void)
 
     try {
         return stoi(prompt);
-    } catch (const exception &) {
+    } catch (const exception &e) {
+        cerr << "Caught exception in command_prompt(): " << e.what() << endl;
         return -1;
     }
 }

@@ -62,15 +62,15 @@ static int get_pass_store_if(ifstream &fp)
 {
     const string path = get_store_path(false);
 
-    if (path == "") {
+    if (path.empty()) {
         return -1;
     }
 
     try {
         fp.open(path);
         return 0;
-    }
-    catch (const exception &) {
+    } catch (const exception &e) {
+        cerr << "Caught exception in get_pass_store_if(): " << e.what() << endl;
         return -2;
     }
 }
@@ -89,7 +89,7 @@ static int get_pass_store_of(ofstream &fp, bool temp)
 {
     const string path = get_store_path(temp);
 
-    if (path == "") {
+    if (path.empty()) {
         return -1;
     }
 
@@ -97,7 +97,8 @@ static int get_pass_store_of(ofstream &fp, bool temp)
         fp.open(path);
         return 0;
     }
-    catch (const exception &) {
+    catch (const exception &e) {
+        cerr << "Caught exception in get_pass_store_of(): " << e.what() << endl;
         return -2;
     }
 }
@@ -204,15 +205,12 @@ int save_password_store(Pass_Store &p)
  * Return 0 on success.
  * Return -1 on failure.
  */
-static int get_hash_params(const string hash, Hash_Parameters *params)
+static int get_hash_params(const string &hash, Hash_Parameters *params)
 {
-    size_t last = 0;
-    size_t next = 0;
+    auto tokens = string_split(hash, "$");
 
-    while ((next = hash.find("$", last)) != string::npos) {
-        string tok = hash.substr(last, next - last);
-
-        if (tok.find("argon") != string::npos) {
+    for (auto &tok: tokens) {
+        if (string_contains(tok, "argon")) {
             if (tok == "argon2id") {
                 params->algorithm = crypto_pwhash_ALG_ARGON2ID13;
             } else if (tok == "argon2i") {
@@ -220,29 +218,21 @@ static int get_hash_params(const string hash, Hash_Parameters *params)
             } else {
                 params->algorithm = crypto_pwhash_ALG_DEFAULT;
             }
-        } else if (tok.find("m=") != string::npos) {
-            size_t end = tok.find(",t");
+        } else if (string_contains(tok, "m=")) {
+            auto p = string_split(tok, ",");
 
-            if (end == string::npos) {
-                return -1;
-            }
-
-            // this is ugly but what are you gonna do
-            string m_str = tok.substr(2, end - 2);
-            string t_str = tok.substr(end + 3, 1);
-
-            try {
-                params->memory_limit = stoull(m_str) * 1024U;
-                params->ops_limit = stoull(t_str);
-            } catch (const exception &) {
-#ifdef DEBUG
-                cout << "Failed to parse hash params m_str: " << m_str << ", t_str: " << t_str << endl;
-#endif
+            try {  // If we got to this point the hash should be valid, but just in case
+                string m_tok = p.at(0);
+                string t_tok = p.at(1);
+                string m_val = m_tok.substr(2, m_tok.length());
+                string t_val = t_tok.substr(2, t_tok.length());
+                params->memory_limit = stoull(m_val) * 1024U;
+                params->ops_limit = stoull(t_val);
+            } catch (const exception &e) {
+                cerr << "Caught exception in get_hash_params(): " << e.what() << endl;
                 return -1;
             }
         }
-
-        last = next + 1;
     }
 
     if (params->algorithm == 0 || params->memory_limit == 0 || params->ops_limit == 0) {
@@ -293,6 +283,7 @@ int load_password_store(Pass_Store &p, const unsigned char *password, size_t len
     memset(&params, 0, sizeof(params));
 
     if (get_hash_params(string((char *) hash), &params) != 0) {
+        cout << "Failed to parse hash parameters" << endl;
         return -4;
     }
 
@@ -417,6 +408,7 @@ int update_crypto(Pass_Store &p, const unsigned char *password, size_t length)
     memset(&params, 0, sizeof(params));
 
     if (get_hash_params(string((char *) hash), &params) != 0) {
+        cout << "Failed to parse hash parameters" << endl;
         return -1;
     }
 

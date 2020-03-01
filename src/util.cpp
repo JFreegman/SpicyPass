@@ -31,7 +31,7 @@
 /*
  * Returns true if `s` contains `c`.
  */
-bool string_contains(std::string s, std::string c)
+bool string_contains(const std::string &s, const std::string &c)
 {
     return s.find(c) != std::string::npos;
 }
@@ -96,7 +96,7 @@ std::string vec_to_string(const std::vector<char> &vec)
 /*
  * Returns a vector containing the characters in `s`.
  */
-std::vector<char> string_to_vec(std::string s)
+std::vector<char> string_to_vec(const std::string &s)
 {
     std::vector<char> result;
 
@@ -126,4 +126,23 @@ time_t get_time(void)
 bool timed_out(time_t t, time_t timeout)
 {
     return t + timeout <= get_time();
+}
+
+/*
+ * Returns a vector containing the tokenized results of `s` split at
+ * each instace of `token`.
+ */
+std::vector<std::string> string_split(const std::string &s, const std::string &token)
+{
+    std::vector<std::string> result;
+    size_t last = 0;
+    size_t next = 0;
+
+    while ((next = s.find(token, last)) != std::string::npos) {
+        std::string tok = s.substr(last, next-last);
+        result.push_back(tok);
+        last = next + 1;
+    }
+
+    return result;
 }

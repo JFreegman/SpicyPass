@@ -124,9 +124,8 @@ private:
     }
 
     /*
-     * Loads the contents of `buf` into the pass store map.
-     *
-     * Buffer must be file formatted and null terminated.
+     * Loads the contents of `buf` into the pass store map. Buffer must be file
+     * formatted and null terminated.
      *
      * Returns the number of entries loaded to the store map.
      */
@@ -262,9 +261,10 @@ public:
 
         try {
             store.insert({key, pass});
-        } catch (const exception &) {
+        } catch (const exception &e) {
             free(pass);
             s_unlock();
+            cerr << "Caught exception in insert(): " << e.what() << endl;
             return -1;
         }
 

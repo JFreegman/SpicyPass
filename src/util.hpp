@@ -34,7 +34,7 @@
 /*
  * Returns true if `s` contains `c`.
  */
-bool string_contains(std::string s, std::string c);
+bool string_contains(const std::string &s, const std::string &c);
 
 /*
  * Returns true if file pointed to by `fp` is empty.
@@ -58,7 +58,7 @@ std::string vec_to_string(const std::vector<char> &vec);
 /*
  * Returns a vector containing the characters in `s`.
  */
-std::vector<char> string_to_vec(std::string s);
+std::vector<char> string_to_vec(const std::string &s);
 
 void clear_console(void);
 
@@ -71,5 +71,11 @@ time_t get_time(void);
  * Returns true if `t` has timed out relative to `timeout`.
  */
 bool timed_out(time_t t, time_t timeout);
+
+/*
+ * Returns a vector containing the tokenized results of `s` split at
+ * each instace of `token`.
+ */
+std::vector<std::string> string_split(const std::string &s, const std::string &token);
 
 #endif // UTIL
