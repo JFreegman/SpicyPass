@@ -489,14 +489,12 @@ public:
         int ret = crypto_encrypt_file(fp, buf_in, file_size, &out_len, encryption_key);
         s_unlock();
 
-        if (ret < 0) {
-            crypto_memwipe(buf_in, file_size);
-            free(buf_in);
-            return -2;
-        }
-
         crypto_memwipe(buf_in, file_size);
         free(buf_in);
+
+        if (ret < 0) {
+            return -2;
+        }
 
         return 0;
     }

@@ -96,8 +96,7 @@ static int get_pass_store_of(ofstream &fp, bool temp)
     try {
         fp.open(path);
         return 0;
-    }
-    catch (const exception &e) {
+    } catch (const exception &e) {
         cerr << "Caught exception in get_pass_store_of(): " << e.what() << endl;
         return -2;
     }
@@ -421,16 +420,15 @@ int update_crypto(Pass_Store &p, const unsigned char *password, size_t length)
 
     int ret = p.init_crypto(encryption_key, salt, hash);
 
+    crypto_memwipe(encryption_key, sizeof(encryption_key));
+
     if (ret == PASS_STORE_LOCKED) {
         return PASS_STORE_LOCKED;
     }
 
     if (ret != 0) {
-        crypto_memwipe(encryption_key, sizeof(encryption_key));
         return -2;
     }
-
-    crypto_memwipe(encryption_key, sizeof(encryption_key));
 
     if (save_password_store(p) != 0) {
         return -3;

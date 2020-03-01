@@ -190,7 +190,10 @@ static int change_password_prompt(Pass_Store &p)
     }
 
     new_password_prompt(new_password, MAX_STORE_PASSWORD_SIZE);
+
     int ret = update_crypto(p, new_password, strlen((char *) new_password));
+
+    crypto_memwipe(new_password, sizeof(new_password));
 
     if (ret == PASS_STORE_LOCKED) {
         return PASS_STORE_LOCKED;
@@ -202,8 +205,6 @@ static int change_password_prompt(Pass_Store &p)
     }
 
     cout << "Successfully updated password" << endl;
-
-    crypto_memwipe(new_password, sizeof(new_password));
 
     return 0;
 }
