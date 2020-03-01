@@ -46,7 +46,7 @@ using namespace std;
 #define MIN_STORE_PASSWORD_SIZE   (10)
 
 /* Seconds to wait since last activity before we prompt the user to enter their password again */
-#define INACTIVE_LOCK_TIMEOUT (60U * 10U)
+#define INACTIVE_LOCK_TIMEOUT (60U * 5U)
 
 /* Return code indicating that `idle_lock` is set to true */
 #define PASS_STORE_LOCKED (127)
@@ -132,7 +132,7 @@ private:
      */
     size_t load_buffer(char *buf) {
         size_t count = 0;
-        char *s = buf;
+        char *s = NULL;
         char *t = strtok_r((char *) buf, "\n", &s);
 
         while (t) {

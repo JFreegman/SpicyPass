@@ -197,13 +197,69 @@ int save_password_store(Pass_Store &p)
 }
 
 /*
+ * Initializes `params` structure with the relevant parameters from the `hash` string.
+ *
+ * Expects a hash produced by `crypto_pwhash_str()`.
+ *
+ * Return 0 on success.
+ * Return -1 on failure.
+ */
+static int get_hash_params(const string hash, Hash_Parameters *params)
+{
+    size_t last = 0;
+    size_t next = 0;
+
+    while ((next = hash.find("$", last)) != string::npos) {
+        string tok = hash.substr(last, next - last);
+
+        if (tok.find("argon") != string::npos) {
+            if (tok == "argon2id") {
+                params->algorithm = crypto_pwhash_ALG_ARGON2ID13;
+            } else if (tok == "argon2i") {
+                params->algorithm = crypto_pwhash_ALG_ARGON2I13;
+            } else {
+                params->algorithm = crypto_pwhash_ALG_DEFAULT;
+            }
+        } else if (tok.find("m=") != string::npos) {
+            size_t end = tok.find(",t");
+
+            if (end == string::npos) {
+                return -1;
+            }
+
+            // this is ugly but what are you gonna do
+            string m_str = tok.substr(2, end - 2);
+            string t_str = tok.substr(end + 3, 1);
+
+            try {
+                params->memory_limit = stoull(m_str) * 1024U;
+                params->ops_limit = stoull(t_str);
+            } catch (const exception &) {
+#ifdef DEBUG
+                cout << "Failed to parse hash params m_str: " << m_str << ", t_str: " << t_str << endl;
+#endif
+                return -1;
+            }
+        }
+
+        last = next + 1;
+    }
+
+    if (params->algorithm == 0 || params->memory_limit == 0 || params->ops_limit == 0) {
+        return -1;
+    }
+
+    return 0;
+}
+
+/*
  * Attempts to validate password, decrypt password store, and load it into `p`.
  *
  * Return 0 on success.
  * Return -1 on file related error.
  * Return -2 if password is invalid.
  * Return -3 on crypto related error.
- * Return -4 if magic number is wrong.
+ * Return -4 on bad file format.
  */
 int load_password_store(Pass_Store &p, const unsigned char *password, size_t length)
 {
@@ -233,9 +289,16 @@ int load_password_store(Pass_Store &p, const unsigned char *password, size_t len
 
     p.disable_lock();
 
+    Hash_Parameters params;
+    memset(&params, 0, sizeof(params));
+
+    if (get_hash_params(string((char *) hash), &params) != 0) {
+        return -4;
+    }
+
     unsigned char encryption_key[CRYPTO_KEY_SIZE];
 
-    if (crypto_derive_key_from_pass(encryption_key, CRYPTO_KEY_SIZE, password, length, salt) != 0) {
+    if (crypto_derive_key_from_pass(encryption_key, CRYPTO_KEY_SIZE, password, length, salt, &params) != 0) {
         cout << "crypto_derive_key_from_pass() failed" << endl;
         fp.close();
         return -3;
@@ -350,9 +413,16 @@ int update_crypto(Pass_Store &p, const unsigned char *password, size_t length)
         return -1;
     }
 
+    Hash_Parameters params;
+    memset(&params, 0, sizeof(params));
+
+    if (get_hash_params(string((char *) hash), &params) != 0) {
+        return -1;
+    }
+
     crypto_gen_salt(salt, CRYPTO_SALT_SIZE);
 
-    if (crypto_derive_key_from_pass(encryption_key, CRYPTO_KEY_SIZE, password, length, salt) != 0) {
+    if (crypto_derive_key_from_pass(encryption_key, CRYPTO_KEY_SIZE, password, length, salt, &params) != 0) {
         cout << "crypto_derive_key_from_pass() failed" << endl;
         return -1;
     }

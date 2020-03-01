@@ -140,8 +140,8 @@ uint32_t crypto_random_number(const uint32_t upper_limit)
  * Derives an encryption key from `password` and `salt` combo, and puts it in `key`.
  *
  * `salt` must be a random number and should be at least CRYPTO_SALT_SIZE bytes. See: crypto_gen_salt().
- *
  * `keylen` must be at least 32 bytes.
+ * `params` must contain the same parameters that the key was originally derived with.
  *
  * This key is responsible for all encryption and decryption operations, and therefore must be
  * kept secret.
@@ -150,15 +150,17 @@ uint32_t crypto_random_number(const uint32_t upper_limit)
  * Return -1 on failure.
  */
 int crypto_derive_key_from_pass(const unsigned char *key, size_t keylen, const unsigned char *password,
-                                size_t pwlen, const unsigned char *salt)
+                                size_t pwlen, const unsigned char *salt, Hash_Parameters *params)
 {
 #ifdef DEBUG
     assert(pwlen <= crypto_pwhash_PASSWD_MAX);
     assert(keylen >= 32);
+    assert(params->ops_limit >= crypto_pwhash_OPSLIMIT_MIN && params->ops_limit <= crypto_pwhash_OPSLIMIT_MAX);
+    assert(params->memory_limit >= crypto_pwhash_MEMLIMIT_MIN && params->memory_limit <= crypto_pwhash_MEMLIMIT_MAX);
 #endif
 
     if (crypto_pwhash((unsigned char *) key, keylen, (const char *) password, pwlen, salt,
-                      CRYPTO_DEFAULT_OPSLIMIT, CRYPTO_DEFAULT_MEMLIMIT, CRYPTO_DEFAULT_ALGO) != 0) {
+                      params->ops_limit, params->memory_limit, params->algorithm) != 0) {
         return -1;
     }
 
@@ -185,7 +187,12 @@ int crypto_decrypt_file(std::ifstream &fp, size_t file_size, unsigned char *plai
     unsigned char header[crypto_secretstream_xchacha20poly1305_HEADERBYTES];
     crypto_secretstream_xchacha20poly1305_state state;
 
+    if (file_size <= sizeof(header)) {
+        return -3;
+    }
+
     size_t cipher_len = file_size - sizeof(header);
+
     unsigned char *buf_cipher = (unsigned char *) malloc(cipher_len);
 
     if (buf_cipher == NULL) {

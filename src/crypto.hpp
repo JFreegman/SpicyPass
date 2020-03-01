@@ -37,8 +37,14 @@
 #define CRYPTO_HASH_SIZE    (crypto_pwhash_STRBYTES)
 
 #define CRYPTO_DEFAULT_OPSLIMIT (crypto_pwhash_OPSLIMIT_SENSITIVE)
-#define CRYPTO_DEFAULT_MEMLIMIT (crypto_pwhash_MEMLIMIT_SENSITIVE)
-#define CRYPTO_DEFAULT_ALGO     (crypto_pwhash_ALG_ARGON2ID13)
+#define CRYPTO_DEFAULT_MEMLIMIT (crypto_pwhash_MEMLIMIT_MODERATE)
+
+typedef struct Hash_Parameters
+{
+    size_t memory_limit;
+    unsigned long long ops_limit;
+    int algorithm;
+} Hash_Parameters;
 
 /*
  * Inits libsodium. Must be called before any other crypto operation.
@@ -94,8 +100,8 @@ bool crypto_verify_pass_hash(const unsigned char *hash, const unsigned char *pas
  * Derives an encryption key from `password` and `salt` combo, and puts it in `key`.
  *
  * `salt` must be a random number and should be at least CRYPTO_SALT_SIZE bytes. See: crypto_gen_salt().
- *
  * `keylen` must be at least 32 bytes.
+ * `params` must contain the same parameters that the key was originally derived with.
  *
  * This key is responsible for all encryption and decryption operations, and therefore must be
  * kept secret.
@@ -104,7 +110,7 @@ bool crypto_verify_pass_hash(const unsigned char *hash, const unsigned char *pas
  * Return -1 on failure.
  */
 int crypto_derive_key_from_pass(const unsigned char *key, size_t keylen, const unsigned char *password,
-                                size_t pwlen, const unsigned char *salt);
+                                size_t pwlen, const unsigned char *salt, Hash_Parameters *params);
 
 /*
  * Generates a random salt of `length` bytes and puts it in `salt`.

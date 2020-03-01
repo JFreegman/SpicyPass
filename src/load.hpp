@@ -38,7 +38,7 @@
  * Return -1 on file related error.
  * Return -2 if password is invalid.
  * Return -3 on crypto related error.
- * Return -4 if magic number is wrong.
+ * Return -4 on bad file format.
  */
 int load_password_store(Pass_Store &p, const unsigned char *password, size_t length);
 
