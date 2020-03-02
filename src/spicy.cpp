@@ -253,11 +253,11 @@ static int add(Pass_Store &p)
 
     if (password.empty()) {
         password = random_password(16U);
-    }
 
-    if (password.empty()) {
-        cout << "Failed to add entry" << endl;
-        return -1;
+        if (password.empty()) {
+            cout << "Failed to generate random password" << endl;
+            return -1;
+        }
     }
 
     int exists = p.key_exists(key);
@@ -461,8 +461,6 @@ void lock_check(Pass_Store &p)
     struct termios oflags;
     disable_terminal_echo(&oflags);
 
-    cout << "Idle lock has been activated. ";
-
     while (!unlock_prompt(p))
         ;
 
@@ -550,7 +548,6 @@ static int command_prompt(void)
     try {
         return stoi(prompt);
     } catch (const exception &e) {
-        cerr << "Caught exception in command_prompt(): " << e.what() << endl;
         return -1;
     }
 }

@@ -46,7 +46,7 @@ using namespace std;
 #define MIN_STORE_PASSWORD_SIZE   (10)
 
 /* Seconds to wait since last activity before we prompt the user to enter their password again */
-#define INACTIVE_LOCK_TIMEOUT (60U * 5U)
+#define INACTIVE_LOCK_TIMEOUT (60 * 5U)
 
 /* Return code indicating that `idle_lock` is set to true */
 #define PASS_STORE_LOCKED (127)
@@ -215,6 +215,10 @@ public:
         }
 
         idle_lock = true;
+
+        clear_console();
+        cout << "Idle lock has been activated. Press enter to unlock." << endl;
+
         s_unlock();
 
         clear();
