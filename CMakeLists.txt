@@ -17,16 +17,18 @@ find_package(Threads REQUIRED)
 
 pkg_check_modules(LIBSODIUM REQUIRED libsodium)
 
-add_executable(spicypass src/spicy.cpp
+add_executable(spicypass src/cli.cpp
+                         src/cli.hpp
+                         src/crypto.cpp
+                         src/crypto.hpp
+                         src/load.cpp
+                         src/load.hpp
+                         src/password.cpp
+                         src/password.hpp
+                         src/spicy.cpp
                          src/spicy.hpp
                          src/util.cpp
                          src/util.hpp
-                         src/crypto.cpp
-                         src/crypto.hpp
-                         src/password.cpp
-                         src/password.hpp
-                         src/load.cpp
-                         src/load.hpp
                          )
 
 target_link_libraries (spicypass Threads::Threads)

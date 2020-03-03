@@ -32,7 +32,6 @@
 #include <assert.h>
 #include <string.h>
 
-#include "load.hpp"
 #include "util.hpp"
 #include "crypto.hpp"
 
@@ -46,11 +45,10 @@ using namespace std;
 #define MIN_STORE_PASSWORD_SIZE   (10)
 
 /* Seconds to wait since last activity before we prompt the user to enter their password again */
-#define INACTIVE_LOCK_TIMEOUT (60 * 5U)
+#define INACTIVE_LOCK_TIMEOUT (60U * 5U)
 
 /* Return code indicating that `idle_lock` is set to true */
 #define PASS_STORE_LOCKED (127)
-
 
 /*
  * We used this struct to store passwords in the store map so that
