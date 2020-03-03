@@ -320,33 +320,28 @@ public:
     }
 
     /*
-     * Prints all entries in pass store.
+     * Puts all full and partial matches for `search_key` in `result`. The first tuple
+     * member is the key and the second member is the password.
      *
-     * Set `show_password` to true to reveal passwords.
-     *
-     * Return number of matches found.
+     * Return 0 on succsess.
      * Return PASS_STORE_LOCKED if pass store is locked.
      */
-    int print_matches(string key, bool show_password) {
+    int get_matches(string search_key, vector<tuple<string, string>> &result) {
         if (check_lock()) {
             return PASS_STORE_LOCKED;
         }
 
         s_lock();
 
-        int matches = 0;
-
         for (auto &item: store) {
-            if (key.compare(0, key.length(), item.first, 0, key.length()) == 0) {
-                string s = show_password ? item.first + ": " + item.second->password : item.first;
-                cout << s << endl;
-                ++matches;
+            if (search_key.compare(0, search_key.length(), item.first, 0, search_key.length()) == 0) {
+                result.push_back( {item.first, item.second->password} );
             }
         }
 
         s_unlock();
 
-        return matches;
+        return 0;
     }
 
     /*

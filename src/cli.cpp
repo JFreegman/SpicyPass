@@ -356,15 +356,20 @@ static int fetch(Pass_Store &p)
         return -1;
     }
 
-    int matches = p.print_matches(key, true);
+    vector<tuple<string, string>> result;
+    int matches = p.get_matches(key, result);
 
     if (matches == PASS_STORE_LOCKED) {
         return PASS_STORE_LOCKED;
     }
 
-    if (!matches) {
+    if (result.empty()) {
         cout << "Key not found" << endl;
         return -1;
+    }
+
+    for (auto &item: result) {
+        cout << get<0>(item) << ": " << get<1>(item) << endl;
     }
 
     return 0;
@@ -372,10 +377,15 @@ static int fetch(Pass_Store &p)
 
 static int list(Pass_Store &p)
 {
-    int matches = p.print_matches("", false);
+    vector<tuple<string, string>> result;
+    int matches = p.get_matches("", result);
 
     if (matches == PASS_STORE_LOCKED) {
         return PASS_STORE_LOCKED;
+    }
+
+    for (auto &item: result) {
+        cout << get<0>(item) << endl;
     }
 
     return 0;
