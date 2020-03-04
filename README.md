@@ -13,14 +13,14 @@ You will also need to [install](https://download.libsodium.org/doc/installation)
 
 ### Building
 #### Unix-like systems
-once you have all the dependencies installed on your system, clone this repository and navigate to its base directory. Execute the following commands:
+Once you have all the dependencies installed on your system, clone this repository and navigate to its base directory. Execute the following commands:
 
 1. `mkdir _build && cd _build`
 2. `cmake ..`
 3. `cmake --build .`
 4. `sudo make install`
 
-#### Windows and OSX
+#### Windows
 Coming soon?
 
 ### Uninstall
