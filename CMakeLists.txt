@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 project(SpicyPass)
 
 set(SpicyPass_VERSION_MAJOR "0")
-set(SpicyPass_VERSION_MINOR "3")
+set(SpicyPass_VERSION_MINOR "4")
 set(SpicyPass_VERSION_PATCH "0")
 
 set(CMAKE_CXX_STANDARD 17)
@@ -12,10 +12,10 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 configure_file(SpicyPassConfig.h.in SpicyPassConfig.h)
 
-find_package(PkgConfig REQUIRED)
 find_package(Threads REQUIRED)
-
+find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBSODIUM REQUIRED libsodium)
+
 
 add_executable(spicypass src/cli.cpp
                          src/cli.hpp

@@ -28,8 +28,6 @@
 #include <vector>
 
 #include <string.h>
-#include <termios.h>
-
 
 /*
  * Returns true if `s` contains `c`.
@@ -45,10 +43,9 @@ bool file_is_empty(std::ifstream &fp);
 off_t file_size(const char *path);
 
 /*
- * These functions disable and enable terminal echo respectively.
+ * Disables or enables terminal echo depending on `enabled` boolean.
  */
-int disable_terminal_echo(struct termios *oflags);
-void enable_terminal_echo(struct termios *oflags);
+int terminal_echo(bool enabled);
 
 /*
  * Returns a string containing the charaters in `vec`.
@@ -63,7 +60,7 @@ std::vector<char> string_to_vec(const std::string &s);
 void clear_console(void);
 
 /*
- * Returns the current Unix time.
+ * Returns the local time.
  */
 time_t get_time(void);
 

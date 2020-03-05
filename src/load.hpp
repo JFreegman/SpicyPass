@@ -23,8 +23,13 @@
 #ifndef LOAD
 #define LOAD
 
-#include <unistd.h>
-#include <pwd.h>
+#if defined(_WIN32)
+    #include <windows.h>
+    #include <io.h>
+#else
+    #include <unistd.h>
+    #include <pwd.h>
+#endif // _WIN32
 
 #include "spicy.hpp"
 #include "crypto.hpp"

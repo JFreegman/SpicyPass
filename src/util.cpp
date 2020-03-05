@@ -20,11 +20,18 @@
  *
  */
 
-#include <iostream>
+#if defined(_WIN32)
+    #include <io.h>
+    #include <time.h>
+    #include <windows.h>
+#else
+    #include <unistd.h>
+    #include <termios.h>
+#endif // _WIN32
 
+#include <iostream>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h>
 
 #include "util.hpp"
 
@@ -56,27 +63,41 @@ off_t file_size(const char *path)
     return st.st_size;
 }
 
-int disable_terminal_echo(struct termios *oflags)
+/*
+ * Disables or enables terminal echo depending on `enabled` boolean.
+ */
+int terminal_echo(bool enabled)
 {
-    struct termios nflags;
-    tcgetattr(fileno(stdin), oflags);
-    nflags = *oflags;
-    nflags.c_lflag &= ~ECHO;
-    nflags.c_lflag |= ECHONL;
+#if defined(_WIN32)
+    HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
+    DWORD mode;
 
-    if (tcsetattr(fileno(stdin), TCSANOW, &nflags) != 0) {
-#ifdef DEBUG
-        std::cout << "Warning: failed to disable terminal echo" << std::endl;
-#endif
+    if (!GetConsoleMode(hStdin, &mode)) {
         return -1;
     }
 
-    return 0;
-}
+    if (!enabled) {
+        mode &= (~ENABLE_ECHO_INPUT);
+    } else {
+        mode |= ENABLE_ECHO_INPUT;
+    }
 
-void enable_terminal_echo(struct termios *oflags)
-{
-    tcsetattr(fileno(stdin), TCSANOW, oflags);
+    if (!SetConsoleMode(hStdin, mode)) {
+        return -1;
+    }
+#else
+    struct termios tty;
+    tcgetattr(STDIN_FILENO, &tty);
+
+    if (!enabled) {
+        tty.c_lflag &= (~ECHO);
+    } else {
+        tty.c_lflag |= ECHO;
+    }
+
+    tcsetattr(STDIN_FILENO, TCSANOW, &tty);
+#endif // _WIN32
+    return 0;
 }
 
 /*
@@ -109,11 +130,15 @@ std::vector<char> string_to_vec(const std::string &s)
 
 void clear_console(void)
 {
+#if defined(_WIN32)
+    system("CLS");
+#else
     system("clear");
+#endif // _WIN32
 }
 
 /*
- * Returns the current Unix time.
+ * Returns the local time.
  */
 time_t get_time(void)
 {

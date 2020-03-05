@@ -23,6 +23,10 @@
 #ifndef SPICY
 #define SPICY
 
+#if defined(_WIN32)
+#define strtok_r strtok_s
+#endif // WIN_32
+
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -45,7 +49,7 @@ using namespace std;
 #define MIN_STORE_PASSWORD_SIZE   (10)
 
 /* Seconds to wait since last activity before we prompt the user to enter their password again */
-#define INACTIVE_LOCK_TIMEOUT (60U * 5U)
+#define IDLE_LOCK_TIMEOUT (60U * 5U)
 
 /* Return code indicating that `idle_lock` is set to true */
 #define PASS_STORE_LOCKED (127)
@@ -207,7 +211,7 @@ public:
             return;
         }
 
-        if (!timed_out(last_active, INACTIVE_LOCK_TIMEOUT)) {
+        if (!timed_out(last_active, IDLE_LOCK_TIMEOUT)) {
             s_unlock();
             return;
         }

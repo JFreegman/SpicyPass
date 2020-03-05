@@ -35,6 +35,10 @@ using namespace std;
  */
 static const string get_store_path(bool temp)
 {
+#if defined(_WIN32)
+    string homedir = getenv("HOMEPATH");
+    string path = homedir + "\\" + DEFAULT_FILENAME;
+#else
     struct passwd *pw = getpwuid(getuid());
 
     if (!pw) {
@@ -43,7 +47,7 @@ static const string get_store_path(bool temp)
 
     string homedir = string(pw->pw_dir);
     string path = homedir + "/" + DEFAULT_FILENAME;
-
+#endif // _WIN_32
     if (temp) {
         path += ".tmp";
     }
@@ -67,7 +71,7 @@ static int get_pass_store_if(ifstream &fp)
     }
 
     try {
-        fp.open(path);
+        fp.open(path, ios::binary);
         return 0;
     } catch (const exception &e) {
         cerr << "Caught exception in get_pass_store_if(): " << e.what() << endl;
@@ -94,7 +98,7 @@ static int get_pass_store_of(ofstream &fp, bool temp)
     }
 
     try {
-        fp.open(path);
+        fp.open(path, ios::binary);
         return 0;
     } catch (const exception &e) {
         cerr << "Caught exception in get_pass_store_of(): " << e.what() << endl;
@@ -185,12 +189,28 @@ int save_password_store(Pass_Store &p)
     string temp_path = get_store_path(true);
     string real_path = get_store_path(false);
 
-    if (temp_path == "" || real_path == "") {
+    if (temp_path.empty() || real_path.empty()) {
         return -1;
     }
 
     if (rename(temp_path.c_str(), real_path.c_str()) != 0) {
-        return -3;
+        if (errno != EEXIST) {
+            remove(temp_path.c_str());
+            return -3;
+        }
+
+        string tmp = real_path + ".tmp2";
+        if (rename(real_path.c_str(), tmp.c_str()) != 0) {
+            return -3;
+        }
+
+        if (rename(temp_path.c_str(), real_path.c_str()) != 0) {
+            rename(tmp.c_str(), real_path.c_str()); // Attempt fallback to original file in case everything else fails
+            remove(temp_path.c_str());
+            return -3;
+        }
+
+        remove(tmp.c_str());
     }
 
     return 0;

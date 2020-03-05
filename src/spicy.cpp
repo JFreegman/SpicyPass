@@ -20,7 +20,9 @@
  *
  */
 
+#ifndef _WIN32
 #include <SpicyPassConfig.h>
+#endif
 
 #include <thread>
 #include <chrono>
@@ -37,10 +39,12 @@ using namespace std;
 
 static void print_version(const char *binary_name)
 {
+#ifndef _WIN32
     cout << binary_name << " version "
          << SpicyPass_VERSION_MAJOR << "."
          << SpicyPass_VERSION_MINOR << "."
          << SpicyPass_VERSION_PATCH << endl;
+#endif // _WIN32
 }
 
 void store_lock_loop(Pass_Store &p)
@@ -53,7 +57,9 @@ void store_lock_loop(Pass_Store &p)
 
 void set_file_permissions(void)
 {
+#ifndef _WIN32
     umask(S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+#endif
 }
 
 int main(int argc, char **argv)

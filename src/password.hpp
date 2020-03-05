@@ -23,6 +23,8 @@
 #ifndef PASSWORD
 #define PASSWORD
 
+#include <string>
+
 /* Returns a cryptographically secure randomly generated password.
  *
  * `size` must be greater than or equal to the number of guaranteed characters (4)

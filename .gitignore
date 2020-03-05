@@ -1,3 +1,9 @@
 *.o
 *.orig
+*.vc*
+*.vs*
+*.sln
+x64/*
+x32/*
 _build/*
+.gitattributes

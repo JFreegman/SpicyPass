@@ -23,10 +23,14 @@
 #ifndef CRYPTO
 #define CRYPTO
 
-
-#include <string>
+#if defined(_WIN32)
+    #define SODIUM_STATIC (1)
+    #pragma comment (lib, "libsodium.lib")
+#endif
 
 #include <sodium.h>
+
+#include <string>
 #include <stdint.h>
 
 #include <iostream>

@@ -78,6 +78,7 @@ static void new_password_prompt(unsigned char *password, size_t max_length)
         char pass2[MAX_STORE_PASSWORD_SIZE + 1];
 
         const char *input1 = fgets(pass1, sizeof(pass1), stdin);
+        cout << endl;
 
         if (input1 == NULL) {
             cout << "Invalid input." << endl;
@@ -94,6 +95,7 @@ static void new_password_prompt(unsigned char *password, size_t max_length)
         cout << "Enter password again: ";
 
         const char *input2 = fgets(pass2, sizeof(pass2), stdin);
+        cout << endl;
 
         if (input2 == NULL) {
             cout << "Invalid input." << endl;
@@ -124,12 +126,9 @@ static void new_password_prompt(unsigned char *password, size_t max_length)
  */
 static int init_new_password(unsigned char *password, size_t max_length)
 {
-    struct termios oflags;
-    disable_terminal_echo(&oflags);
-
+    terminal_echo(false);
     new_password_prompt(password, max_length);
-
-    enable_terminal_echo(&oflags);
+    terminal_echo(true);
 
     if (init_pass_hash(password, strlen((char *) password)) != 0) {
         cout << "init_pass_hash() failed." << endl;
@@ -159,6 +158,7 @@ static int change_password_prompt(Pass_Store &p)
 
         char old_pass[MAX_STORE_PASSWORD_SIZE + 1];
         const char *input1 = fgets(old_pass, sizeof(old_pass), stdin);
+        cout << endl;
 
         if (input1 == NULL) {
             cout << "Invalid input" << endl;
@@ -201,12 +201,9 @@ static int change_password_prompt(Pass_Store &p)
 
 static int new_password(Pass_Store &p)
 {
-    struct termios oflags;
-    disable_terminal_echo(&oflags);
-
+    terminal_echo(false);
     int ret = change_password_prompt(p);
-
-    enable_terminal_echo(&oflags);
+    terminal_echo(true);
 
     return ret;
 }
@@ -430,6 +427,7 @@ static bool unlock_prompt(Pass_Store &p)
 
     unsigned char pass[MAX_STORE_PASSWORD_SIZE + 1];
     const char *input = fgets((char *) pass, sizeof(pass), stdin);
+    cout << endl;
 
     if (input == NULL) {
         cout << "Invalid input" << endl;
@@ -458,13 +456,12 @@ static bool unlock_prompt(Pass_Store &p)
 
 static void lock_check(Pass_Store &p)
 {
-    struct termios oflags;
-    disable_terminal_echo(&oflags);
+    terminal_echo(false);
 
     while (!unlock_prompt(p))
         ;
 
-    enable_terminal_echo(&oflags);
+    terminal_echo(true);
 }
 
 static void print_menu(void)
@@ -567,18 +564,17 @@ int cli_new_pass_store(Pass_Store &p)
     unsigned char password[MAX_STORE_PASSWORD_SIZE + 1];
 
     if (first_time_run()) {
-        cout << "Creating a new profile. ";
+        cout << "Creating a new profile. " << endl;
 
         if (init_new_password(password, MAX_STORE_PASSWORD_SIZE) != 0) {
             return -1;
         }
     } else {
-        struct termios oflags;
-        disable_terminal_echo(&oflags);
-
+        terminal_echo(false);
         int pw_ret = prompt_password(password, MAX_STORE_PASSWORD_SIZE);
+        terminal_echo(true);
 
-        enable_terminal_echo(&oflags);
+        cout << endl;
 
         if (pw_ret != 0) {
             return -1;
