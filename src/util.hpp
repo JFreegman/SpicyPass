@@ -43,9 +43,9 @@ bool file_is_empty(std::ifstream &fp);
 off_t file_size(const char *path);
 
 /*
- * Disables or enables terminal echo depending on `enabled` boolean.
+ * Disables or enables terminal echo depending on `enable` boolean.
  */
-int terminal_echo(bool enabled);
+void terminal_echo(bool enable);
 
 /*
  * Returns a string containing the charaters in `vec`.

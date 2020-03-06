@@ -199,8 +199,9 @@ int save_password_store(Pass_Store &p)
             return -3;
         }
 
-        string tmp = real_path + ".tmp2";
+        string tmp = real_path + ".tmp.1";
         if (rename(real_path.c_str(), tmp.c_str()) != 0) {
+            remove(temp_path.c_str());
             return -3;
         }
 
@@ -302,20 +303,20 @@ int load_password_store(Pass_Store &p, const unsigned char *password, size_t len
     memset(&params, 0, sizeof(params));
 
     if (get_hash_params(string((char *) hash), &params) != 0) {
-        cout << "Failed to parse hash parameters" << endl;
+        cerr << "Failed to parse hash parameters" << endl;
         return -4;
     }
 
     unsigned char encryption_key[CRYPTO_KEY_SIZE];
 
     if (crypto_derive_key_from_pass(encryption_key, CRYPTO_KEY_SIZE, password, length, salt, &params) != 0) {
-        cout << "crypto_derive_key_from_pass() failed" << endl;
+        cerr << "crypto_derive_key_from_pass() failed" << endl;
         fp.close();
         return -3;
     }
 
     if (p.init_crypto(encryption_key, salt, hash) != 0) {
-        cout << "crypto_memlock() failed in init_crypto()" << endl;
+        cerr << "crypto_memlock() failed in init_crypto()" << endl;
         fp.close();
         return -4;
     }
@@ -326,7 +327,7 @@ int load_password_store(Pass_Store &p, const unsigned char *password, size_t len
     off_t file_length = file_size(path.c_str());
 
     if (file_length < PASS_STORE_HEADER_SIZE) {
-        cout << "Invalid file format" << endl;
+        cerr << "Invalid file format" << endl;
         fp.close();
         return -1;
     }
@@ -379,7 +380,7 @@ int init_pass_hash(const unsigned char *password, size_t length)
     unsigned char hash[CRYPTO_HASH_SIZE];
 
     if (crypto_make_pass_hash(hash, password, length) != 0) {
-        cout << "crypto_make_pass_hash() failed." << endl;
+        cerr << "crypto_make_pass_hash() failed." << endl;
         return -1;
     }
 
@@ -419,7 +420,7 @@ int update_crypto(Pass_Store &p, const unsigned char *password, size_t length)
     unsigned char hash[CRYPTO_HASH_SIZE];
 
     if (crypto_make_pass_hash(hash, password, length) != 0) {
-        cout << "crypto_make_pass_hash() failed." << endl;
+        cerr << "crypto_make_pass_hash() failed." << endl;
         return -1;
     }
 
@@ -427,14 +428,14 @@ int update_crypto(Pass_Store &p, const unsigned char *password, size_t length)
     memset(&params, 0, sizeof(params));
 
     if (get_hash_params(string((char *) hash), &params) != 0) {
-        cout << "Failed to parse hash parameters" << endl;
+        cerr << "Failed to parse hash parameters" << endl;
         return -1;
     }
 
     crypto_gen_salt(salt, CRYPTO_SALT_SIZE);
 
     if (crypto_derive_key_from_pass(encryption_key, CRYPTO_KEY_SIZE, password, length, salt, &params) != 0) {
-        cout << "crypto_derive_key_from_pass() failed" << endl;
+        cerr << "crypto_derive_key_from_pass() failed" << endl;
         return -1;
     }
 

@@ -131,7 +131,7 @@ static int init_new_password(unsigned char *password, size_t max_length)
     terminal_echo(true);
 
     if (init_pass_hash(password, strlen((char *) password)) != 0) {
-        cout << "init_pass_hash() failed." << endl;
+        cerr << "init_pass_hash() failed." << endl;
         return -1;
     }
 
@@ -190,7 +190,7 @@ static int change_password_prompt(Pass_Store &p)
     }
 
     if (ret < 0) {
-        cout << "Failed to update password (error code: " << to_string(ret) << ")" << endl;
+        cerr << "Failed to update password (error code: " << to_string(ret) << ")" << endl;
         return -1;
     }
 
@@ -280,20 +280,20 @@ static int add(Pass_Store &p)
             return 0;
         }
         case -1: {
-            cout << "Failed to save password store: Failed to open pass store file" << endl;
+            cerr << "Failed to save password store: Failed to open pass store file" << endl;
             return -1;
         }
         case -2: {
-            cout << "Failed to save password store: Encryption error" << endl;
+            cerr << "Failed to save password store: Encryption error" << endl;
             return -1;
 
         }
         case -3: {
-            cout << "Failed to save password store: File save error" << endl;
+            cerr << "Failed to save password store: File save error" << endl;
             return -1;
         }
         default: {
-            cout << "Failed to save password store: Unknown error" << endl;
+            cerr << "Failed to save password store: Unknown error" << endl;
             return -1;
         }
     }
@@ -335,7 +335,7 @@ static int remove(Pass_Store &p)
     int ret = save_password_store(p);
 
     if (ret != 0) {
-        cout << "Failed to save password store (error code: " << to_string(ret) << ")" << endl;
+        cerr << "Failed to save password store (error code: " << to_string(ret) << ")" << endl;
         return -1;
     }
 

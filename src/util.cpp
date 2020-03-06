@@ -22,14 +22,16 @@
 
 #if defined(_WIN32)
     #include <io.h>
-    #include <time.h>
     #include <windows.h>
 #else
     #include <unistd.h>
     #include <termios.h>
+    #include <errno.h>
 #endif // _WIN32
 
 #include <iostream>
+
+#include <time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -64,40 +66,52 @@ off_t file_size(const char *path)
 }
 
 /*
- * Disables or enables terminal echo depending on `enabled` boolean.
+ * Disables or enables terminal echo depending on `enable` boolean.
  */
-int terminal_echo(bool enabled)
+void terminal_echo(bool enable)
 {
 #if defined(_WIN32)
     HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
     DWORD mode;
 
-    if (!GetConsoleMode(hStdin, &mode)) {
-        return -1;
+    int ret = GetConsoleMode(hStdin, &mode);
+
+    if (!ret) {
+        std::cerr << "Warning: GetConsoleMode() returned error: " << std::to_string(ret) << std::endl;
+        return;
     }
 
-    if (!enabled) {
+    if (!enable) {
         mode &= (~ENABLE_ECHO_INPUT);
     } else {
         mode |= ENABLE_ECHO_INPUT;
     }
 
-    if (!SetConsoleMode(hStdin, mode)) {
-        return -1;
+    ret = SetConsoleMode(hStdin, mode);
+
+    if (!ret) {
+        std::cerr << "Warning: SetConsoleMode() returned error: " << std::to_string(ret) << std::endl;
+        return;
     }
 #else
     struct termios tty;
-    tcgetattr(STDIN_FILENO, &tty);
 
-    if (!enabled) {
+    if (tcgetattr(STDIN_FILENO, &tty) != 0) {
+        std::cerr << "Warning: tcgetattr() returned error. errno: " << std::to_string(errno) << std::endl;
+        return;
+    }
+
+    if (!enable) {
         tty.c_lflag &= (~ECHO);
     } else {
         tty.c_lflag |= ECHO;
     }
 
-    tcsetattr(STDIN_FILENO, TCSANOW, &tty);
+    if (tcsetattr(STDIN_FILENO, TCSANOW, &tty) != 0) {
+        std::cerr << "Warning: tcsetattr() returned error. errno: " << std::to_string(errno) << std::endl;
+        return;
+    }
 #endif // _WIN32
-    return 0;
 }
 
 /*
@@ -105,7 +119,7 @@ int terminal_echo(bool enabled)
  */
 std::string vec_to_string(const std::vector<char> &vec)
 {
-    std::string s = "";
+    std::string s;
 
     for (char c: vec) {
         s += c;

@@ -71,7 +71,7 @@ int main(int argc, char **argv)
     set_file_permissions();
 
     if (crypto_init() != 0) {
-        cout << "crypto_init() failed" << endl;
+        cerr << "crypto_init() failed" << endl;
         return -1;
     }
 
@@ -86,11 +86,11 @@ int main(int argc, char **argv)
             return -1;
         }
         case -2: {
-            cout << "crypto_memlock() failed in new_pass_store()" << endl;
+            cerr << "crypto_memlock() failed in new_pass_store()" << endl;
             return -1;
         }
         case -3: {
-            cout << "load_password_store() failed to open pass store file" << endl;
+            cerr << "load_password_store() failed to open pass store file" << endl;
             return -1;
         }
         case -4: {
@@ -98,11 +98,11 @@ int main(int argc, char **argv)
             return -1;
         }
         case -5: {
-            cout << "Failed to decrypt pass store file" << endl;
+            cerr << "Failed to decrypt pass store file" << endl;
             return -1;
         }
         default: {
-            cout << "Unknown error" << endl;
+            cerr << "Unknown error in cli_new_pass_store()" << endl;
             return -1;
         }
     }
