@@ -72,7 +72,7 @@ static int prompt_password(unsigned char *password, size_t max_length)
 static void new_password_prompt(unsigned char *password, size_t max_length)
 {
     while (true) {
-        cout << "Enter password: ";
+        cout << "Enter new master password: ";
 
         char pass1[MAX_STORE_PASSWORD_SIZE + 1];
         char pass2[MAX_STORE_PASSWORD_SIZE + 1];
@@ -130,6 +130,8 @@ static int init_new_password(unsigned char *password, size_t max_length)
     new_password_prompt(password, max_length);
     terminal_echo(true);
 
+    cout << "Generating new encryption key. This can take a while" << endl;
+
     if (init_pass_hash(password, strlen((char *) password)) != 0) {
         cerr << "init_pass_hash() failed." << endl;
         return -1;
@@ -169,6 +171,8 @@ static int change_password_prompt(Pass_Store &p)
             return -1;
         }
 
+        cout << "Validating password..." << endl;
+
         size_t pass_length = strlen(old_pass);
 
         if (!crypto_verify_pass_hash(hash, (unsigned char *) old_pass, pass_length)) {
@@ -180,6 +184,8 @@ static int change_password_prompt(Pass_Store &p)
     }
 
     new_password_prompt(new_password, MAX_STORE_PASSWORD_SIZE);
+
+    cout << "Generating new encryption key..." << endl;
 
     int ret = update_crypto(p, new_password, strlen((char *) new_password));
 
@@ -312,11 +318,14 @@ static int remove(Pass_Store &p)
         string s;
         getline(cin, s);
 
-        if (s == "Y") {
+        if (s == "y" || s == "Y") {
             break;
-        } else if (s == "n") {
+        } else if (s == "n" || s == "N") {
             return 0;
         }
+
+        cout << "Invalid option" << endl;
+        return -1;
     }
 
     int removed = p.remove(key);
@@ -330,7 +339,7 @@ static int remove(Pass_Store &p)
         return -1;
     }
 
-    cout << "Removed entry for key \"" << key << "\"" << endl;
+    cout << "Removed \"" << key << "\" from pass store" << endl;
 
     int ret = save_password_store(p);
 
@@ -434,19 +443,35 @@ static bool unlock_prompt(Pass_Store &p)
         return false;
     }
 
+    cout << "Decrypting pass store file..." << endl;
+
     int ret = load_password_store(p, pass, strlen((char *) pass));
 
     crypto_memwipe(pass, sizeof(pass));
 
+    if (ret >= 0) {
+        return true;
+    }
+
     switch (ret) {
-        case 0: {
-            return true;
+        case -1: {
+            cerr << "Pass store file cannot be read" << endl;
+            break;
         }
         case -2: {
             cout << "Invalid password" << endl;
             break;
         }
+        case -3: {
+            cerr << "Failed to decrypt pass store file" << endl;
+            break;
+        }
+        case -4: {
+            cerr << "Pass store file has bad format" << endl;
+            break;
+        }
         default: {
+            cerr << "load_password_store() returned unknown error: " << to_string(ret) << endl;
             break;
         }
     }
@@ -581,14 +606,18 @@ int cli_new_pass_store(Pass_Store &p)
         }
     }
 
+    cout << "Decrypting pass store file..." << endl;
+
     int ret = load_password_store(p, password, strlen((char *) password));
 
     crypto_memwipe(password, sizeof(password));
 
+    if (ret >= 0) {
+        cout << "Loaded " << to_string(ret) << " entries" << endl;
+        return 0;
+    }
+
     switch (ret) {
-        case 0: {
-            break;
-        }
         case -1: {
             return -3;
         }
@@ -605,8 +634,6 @@ int cli_new_pass_store(Pass_Store &p)
             return -3;
         }
     }
-
-    return 0;
 }
 
 static void menu_loop(Pass_Store &p)
@@ -623,6 +650,7 @@ static void menu_loop(Pass_Store &p)
             }
             case PASS_STORE_LOCKED: {
                 lock_check(p);
+                print_menu();
                 break;
             }
             default: {

@@ -52,7 +52,7 @@ using namespace std;
 #define IDLE_LOCK_TIMEOUT (60U * 5U)
 
 /* Return code indicating that `idle_lock` is set to true */
-#define PASS_STORE_LOCKED (127)
+#define PASS_STORE_LOCKED (INT_MIN)
 
 /*
  * We used this struct to store passwords in the store map so that

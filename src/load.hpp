@@ -39,7 +39,7 @@
 /*
  * Attempts to validate password, decrypt password store, and load it into `p`.
  *
- * Return 0 on success.
+ * Return the number of pass store entries loaded on success.
  * Return -1 on file related error.
  * Return -2 if password is invalid.
  * Return -3 on crypto related error.

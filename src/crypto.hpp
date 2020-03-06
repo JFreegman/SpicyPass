@@ -24,7 +24,7 @@
 #define CRYPTO
 
 #if defined(_WIN32)
-    #define SODIUM_STATIC (1)
+    #define SODIUM_STATIC
     #pragma comment (lib, "libsodium.lib")
 #endif
 

@@ -144,11 +144,17 @@ std::vector<char> string_to_vec(const std::string &s)
 
 void clear_console(void)
 {
+    int ret;
+
 #if defined(_WIN32)
-    system("CLS");
+    ret = system("CLS");
 #else
-    system("clear");
+    ret = system("clear");
 #endif // _WIN32
+
+    if (ret != 0) {
+        std::cerr << "Warning: system() returned non-zero code: " << std::to_string(ret) << std::endl;
+    }
 }
 
 /*

@@ -265,7 +265,7 @@ static int get_hash_params(const string &hash, Hash_Parameters *params)
 /*
  * Attempts to validate password, decrypt password store, and load it into `p`.
  *
- * Return 0 on success.
+ * Return the number of pass store entries loaded on success.
  * Return -1 on file related error.
  * Return -2 if password is invalid.
  * Return -3 on crypto related error.
@@ -318,7 +318,7 @@ int load_password_store(Pass_Store &p, const unsigned char *password, size_t len
     if (p.init_crypto(encryption_key, salt, hash) != 0) {
         cerr << "crypto_memlock() failed in init_crypto()" << endl;
         fp.close();
-        return -4;
+        return -3;
     }
 
     crypto_memwipe(encryption_key, sizeof(encryption_key));
@@ -332,9 +332,14 @@ int load_password_store(Pass_Store &p, const unsigned char *password, size_t len
         return -1;
     }
 
-    if (file_length > PASS_STORE_HEADER_SIZE) {
-        int num_entries = p.load(fp, file_length - PASS_STORE_HEADER_SIZE);
+    int num_entries = 0;
 
+    if (file_length > PASS_STORE_HEADER_SIZE) {
+        num_entries = p.load(fp, file_length - PASS_STORE_HEADER_SIZE);
+
+#ifdef DEBUG
+        assert(num_entries != PASS_STORE_LOCKED);
+#endif
         if (num_entries < 0) {
             fp.close();
             return -3;
@@ -343,7 +348,7 @@ int load_password_store(Pass_Store &p, const unsigned char *password, size_t len
 
     fp.close();
 
-    return 0;
+    return num_entries;
 }
 
 /*
