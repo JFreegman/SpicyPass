@@ -9,7 +9,7 @@
 ### Dependencies
 You will need to [install](https://download.libsodium.org/doc/installation) the libsodium cryptography library (version >= 1.0.13).
 
-On Unix-like systems you will also need `cmake` (version >= 3.10) and `pkg-config`.
+On Unix-like systems you will also need `cmake` (version >= 3.10) and `pkg-config`. The minimum required version of gcc is 7.0, and the minumum required version of clang is 5.0. Other modern compilers will probably work but are not officially supported.
 
 ### Building
 #### Unix-like systems
@@ -21,7 +21,7 @@ Once you have all the dependencies installed on your system, clone this reposito
 4. `sudo make install`
 
 #### Windows
-Windows support is still in an experimental stage; the CMake configuration does not currently support Windows, and only static builds of libsodium work. Building natively with Microsoft© Visual Studio™ is straight-forward. Just be sure to set the appropriate libsodium headers and static libraries. 
+Windows support is still in an experimental stage; the CMake configuration does not currently support Windows, and only static builds of libsodium work. Building natively with Microsoft© Visual Studio™ is straight-forward. Just be sure to set the appropriate libsodium headers and static libraries, and set the language standard to C++17.
 
 ### Uninstall
 There is no uninstall command. However you can manually uninstall SpicyPass by deleting all of the files listed in the `install_manifest.txt` file, which resides in the `_build` directory.

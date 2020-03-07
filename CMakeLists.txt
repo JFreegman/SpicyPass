@@ -10,6 +10,15 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+set(CLANG_MINIMUM_VERSION 5.0)
+set(GCC_MINIMUM_VERSION 7.0)
+
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS GCC_MINIMUM_VERSION)
+    message(FATAL_ERROR "Minimum gcc version is ${GCC_MINIMUM_VERSION}")
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS CLANG_MINIMUM_VERSION)
+    message(FATAL_ERROR "Minimum Clang version is ${CLANG_MINIMUM_VERSION}")
+endif()
+
 configure_file(SpicyPassConfig.h.in SpicyPassConfig.h)
 
 find_package(Threads REQUIRED)
@@ -41,9 +50,9 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 if(CMAKE_BUILD_TYPE MATCHES Release)
-    set(CMAKE_CXX_FLAGS "${CAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -O2 -fstack-protector-all")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -O2 -fstack-protector-all")
 elseif(CMAKE_BUILD_TYPE MATCHES Debug)
-    set(CMAKE_CXX_FLAGS "${CAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -O0 -g -fstack-protector-all -DDEBUG")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -O0 -g -fstack-protector-all -DDEBUG")
 else()
     message(FATAL_ERROR "Unsupported build type: ${CMAKE_BUILD_TYPE}")
 endif()
