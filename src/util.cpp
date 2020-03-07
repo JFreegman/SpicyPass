@@ -121,7 +121,7 @@ std::string vec_to_string(const std::vector<char> &vec)
 {
     std::string s;
 
-    for (char c: vec) {
+    for (const char c: vec) {
         s += c;
     }
 
@@ -135,7 +135,7 @@ std::vector<char> string_to_vec(const std::string &s)
 {
     std::vector<char> result;
 
-    for (char c: s) {
+    for (const char c: s) {
         result.push_back(c);
     }
 

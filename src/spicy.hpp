@@ -91,8 +91,8 @@ private:
 
         s_lock();
 
-        for (auto &item: store) {
-            string entry = format_entry(item.first, item.second->password);
+        for (const auto &[key, value]: store) {
+            string entry = format_entry(key, value->password);
             size += entry.length();
         }
 
@@ -114,8 +114,8 @@ private:
 
         s_lock();
 
-        for (auto &item: store) {
-            string entry = format_entry(item.first, item.second->password);
+        for (const auto &[key, value]: store) {
+            string entry = format_entry(key, value->password);
             memcpy(buf + pos, entry.c_str(), entry.length());
             pos += entry.length();
         }
@@ -145,7 +145,7 @@ private:
                 string pass = entry.substr(d + 1, entry.length());
 
                 if (insert(key, pass) != 0) {
-                    cout << "Warning: Failed to load entry with key `" << key << "`" << endl;
+                    cerr << "Warning: Failed to load entry with key `" << key << "`" << endl;
                     continue;
                 }
 
@@ -337,9 +337,9 @@ public:
 
         s_lock();
 
-        for (auto &item: store) {
-            if (search_key.compare(0, search_key.length(), item.first, 0, search_key.length()) == 0) {
-                result.push_back( {item.first, item.second->password} );
+        for (const auto &[key, value]: store) {
+            if (search_key.compare(0, search_key.length(), key, 0, search_key.length()) == 0) {
+                result.push_back( {key, value->password} );
             }
         }
 
@@ -508,12 +508,12 @@ public:
 
         crypto_memunlock(encryption_key, CRYPTO_KEY_SIZE);
 
-        for (auto &item: store) {
-            string key = item.first;
-            crypto_memunlock((unsigned char *) store.at(key)->password, sizeof(store.at(key)->password));
+        for (const auto &[key, value]: store) {
+            crypto_memunlock((unsigned char *) value->password, sizeof(value->password));
             free(store.at(key));
-            store.erase(key);
         }
+
+        store.clear();
 
         s_unlock();
     }
