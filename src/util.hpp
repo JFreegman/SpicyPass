@@ -43,6 +43,12 @@ bool file_is_empty(std::ifstream &fp);
 off_t file_size(const char *path);
 
 /*
+ * Attempts to remove file located at `path`. This is just a wrapper for the stdio.h remove()
+ * function. We use this for when we only want a stderr warning on failure.
+ */
+void remove_file(const std::string path);
+
+/*
  * Disables or enables terminal echo depending on `enable` boolean.
  */
 void terminal_echo(bool enable);

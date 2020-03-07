@@ -20,6 +20,7 @@
  *
  */
 
+#include <errno.h>
 #include "load.hpp"
 
 using namespace std;
@@ -195,23 +196,31 @@ int save_password_store(Pass_Store &p)
 
     if (rename(temp_path.c_str(), real_path.c_str()) != 0) {
         if (errno != EEXIST) {
-            remove(temp_path.c_str());
+            remove_file(temp_path);
             return -3;
         }
 
         string tmp = real_path + ".tmp.1";
+
         if (rename(real_path.c_str(), tmp.c_str()) != 0) {
-            remove(temp_path.c_str());
+            remove_file(temp_path);
             return -3;
         }
 
         if (rename(temp_path.c_str(), real_path.c_str()) != 0) {
-            rename(tmp.c_str(), real_path.c_str()); // Attempt fallback to original file in case everything else fails
-            remove(temp_path.c_str());
+            cerr << "rename() failed in save_password_store() with errno code: " << to_string(errno) << endl;
+
+            // If we get here we're in trouble. The best we can do is attempt
+            // to fall back to original file and clean everything up.
+            if (rename(tmp.c_str(), real_path.c_str()) != 0) {
+                remove_file(tmp);
+            }
+
+            remove_file(temp_path);
             return -3;
         }
 
-        remove(tmp.c_str());
+        remove_file(tmp);
     }
 
     return 0;

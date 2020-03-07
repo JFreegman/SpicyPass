@@ -292,9 +292,9 @@ static int add(Pass_Store &p)
             cout << "Key \"" << key << "\" already exists. Overwrite? Y/n ";
             getline(cin, s);
 
-            if (s == "Y") {
+            if (s == "Y" || s == "y") {
                 break;
-            } else if (s == "n") {
+            } else if (s == "N" || s == "n") {
                 return 0;
             }
         }
