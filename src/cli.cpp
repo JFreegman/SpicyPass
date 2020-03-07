@@ -45,7 +45,7 @@ typedef enum {
  */
 static int prompt_password(unsigned char *password, size_t max_length)
 {
-    cout << "Enter password: ";
+    cout << "Enter master password: ";
 
     char pass_buf[MAX_STORE_PASSWORD_SIZE + 1];
     const char *input = fgets(pass_buf, sizeof(pass_buf), stdin);
@@ -69,7 +69,7 @@ static int prompt_password(unsigned char *password, size_t max_length)
     return 0;
 }
 
-static void new_password_prompt(unsigned char *password, size_t max_length)
+static int new_password_prompt(Pass_Store &p, unsigned char *password, size_t max_length)
 {
     while (true) {
         cout << "Enter new master password: ";
@@ -79,6 +79,10 @@ static void new_password_prompt(unsigned char *password, size_t max_length)
 
         const char *input1 = fgets(pass1, sizeof(pass1), stdin);
         cout << endl;
+
+        if (p.check_lock()) {
+            return PASS_STORE_LOCKED;
+        }
 
         if (input1 == NULL) {
             cout << "Invalid input." << endl;
@@ -97,6 +101,10 @@ static void new_password_prompt(unsigned char *password, size_t max_length)
         const char *input2 = fgets(pass2, sizeof(pass2), stdin);
         cout << endl;
 
+        if (p.check_lock()) {
+            return PASS_STORE_LOCKED;
+        }
+
         if (input2 == NULL) {
             cout << "Invalid input." << endl;
             continue;
@@ -113,7 +121,7 @@ static void new_password_prompt(unsigned char *password, size_t max_length)
         crypto_memwipe((unsigned char *) pass1, sizeof(pass1));
         crypto_memwipe((unsigned char *) pass2, sizeof(pass2));
 
-        return;
+        return 0;
     }
 }
 
@@ -123,12 +131,17 @@ static void new_password_prompt(unsigned char *password, size_t max_length)
  *
  * Returns 0 on success.
  * Returns -1 on failure.
+ * Return PASS_STORE_LOCKED if pass store is locked.
  */
-static int init_new_password(unsigned char *password, size_t max_length)
+static int init_new_password(Pass_Store &p, unsigned char *password, size_t max_length)
 {
     terminal_echo(false);
-    new_password_prompt(password, max_length);
+    int ret = new_password_prompt(p, password, max_length);
     terminal_echo(true);
+
+    if (ret == PASS_STORE_LOCKED) {
+        return ret;
+    }
 
     cout << "Generating new encryption key. This can take a while" << endl;
 
@@ -162,6 +175,10 @@ static int change_password_prompt(Pass_Store &p)
         const char *input1 = fgets(old_pass, sizeof(old_pass), stdin);
         cout << endl;
 
+        if (p.check_lock()) {
+            return PASS_STORE_LOCKED;
+        }
+
         if (input1 == NULL) {
             cout << "Invalid input" << endl;
             continue;
@@ -183,7 +200,9 @@ static int change_password_prompt(Pass_Store &p)
         break;
     }
 
-    new_password_prompt(new_password, MAX_STORE_PASSWORD_SIZE);
+    if (new_password_prompt(p, new_password, MAX_STORE_PASSWORD_SIZE) == PASS_STORE_LOCKED) {
+        return PASS_STORE_LOCKED;
+    }
 
     cout << "Generating new encryption key..." << endl;
 
@@ -221,6 +240,10 @@ static int add(Pass_Store &p)
     cout << "Enter key to add: ";
     getline(cin, key);
 
+    if (p.check_lock()) {
+        return PASS_STORE_LOCKED;
+    }
+
     if (key.length() > MAX_ENTRY_KEY_SIZE) {
         cout << "Key is too long" << endl;
         return -1;
@@ -238,6 +261,10 @@ static int add(Pass_Store &p)
 
     cout << "Enter password (leave empty for a random password): ";
     getline(cin, password);
+
+    if (p.check_lock()) {
+        return PASS_STORE_LOCKED;
+    }
 
     if (password.length() > MAX_STORE_PASSWORD_SIZE) {
         cout << "Password length must not exceed " << to_string(MAX_STORE_PASSWORD_SIZE) << " characters" << endl;
@@ -313,10 +340,18 @@ static int remove(Pass_Store &p)
     cout << "Enter key to remove: ";
     getline(cin, key);
 
+    if (p.check_lock()) {
+        return PASS_STORE_LOCKED;
+    }
+
     while (true) {
         cout << "Are you sure you want to remove the key \"" << key << "\" ? Y/n ";
         string s;
         getline(cin, s);
+
+        if (p.check_lock()) {
+            return PASS_STORE_LOCKED;
+        }
 
         if (s == "y" || s == "Y") {
             break;
@@ -325,7 +360,6 @@ static int remove(Pass_Store &p)
         }
 
         cout << "Invalid option" << endl;
-        return -1;
     }
 
     int removed = p.remove(key);
@@ -358,6 +392,10 @@ static int fetch(Pass_Store &p)
     string key;
     getline(cin, key);
 
+    if (p.check_lock()) {
+        return PASS_STORE_LOCKED;
+    }
+
     if (key.empty()) {
         return -1;
     }
@@ -374,7 +412,7 @@ static int fetch(Pass_Store &p)
         return -1;
     }
 
-    for (auto &item: result) {
+    for (const auto &item: result) {
         cout << get<0>(item) << ": " << get<1>(item) << endl;
     }
 
@@ -390,14 +428,14 @@ static int list(Pass_Store &p)
         return PASS_STORE_LOCKED;
     }
 
-    for (auto &item: result) {
+    for (const auto &item: result) {
         cout << get<0>(item) << endl;
     }
 
     return 0;
 }
 
-static void generate(void)
+static int generate(Pass_Store &p)
 {
     string input;
     int size = 0;
@@ -405,6 +443,10 @@ static void generate(void)
     while (true) {
         cout << "Enter password length: ";
         getline(cin, input);
+
+        if (p.check_lock()) {
+            return PASS_STORE_LOCKED;
+        }
 
         try {
             size = stoi(input);
@@ -424,15 +466,17 @@ static void generate(void)
 
     if (pass.empty()) {
         cout << "Failed to generate password" << endl;
-        return;
+        return -1;
     }
 
     cout << pass << endl;
+
+    return 0;
 }
 
 static bool unlock_prompt(Pass_Store &p)
 {
-    cout << "Enter password: ";
+    cout << "Enter master password: ";
 
     unsigned char pass[MAX_STORE_PASSWORD_SIZE + 1];
     const char *input = fgets((char *) pass, sizeof(pass), stdin);
@@ -539,7 +583,7 @@ static int execute(const int option, Pass_Store &p)
             break;
         }
         case OPT_GENERATE: {
-            generate();
+            ret = generate(p);
             break;
         }
         case OPT_PASSWORD: {
@@ -547,13 +591,11 @@ static int execute(const int option, Pass_Store &p)
             break;
         }
         case OPT_PRINT: {
-            clear_console();
             print_menu();
             break;
         }
         default: {
-            cout << "Invalid command" << endl;
-            print_menu();
+            cout << "Invalid command. Enter " << to_string(OPT_PRINT) << " to print menu." << endl;
             break;
         }
     }
@@ -591,7 +633,7 @@ int cli_new_pass_store(Pass_Store &p)
     if (first_time_run()) {
         cout << "Creating a new profile. " << endl;
 
-        if (init_new_password(password, MAX_STORE_PASSWORD_SIZE) != 0) {
+        if (init_new_password(p, password, MAX_STORE_PASSWORD_SIZE) != 0) {
             return -1;
         }
     } else {
