@@ -254,6 +254,11 @@ static int add(Pass_Store &p)
         return -1;
     }
 
+    if (!string_printable(key)) {
+        cout << "Key may only contain printable ASCII characters" << endl;
+        return -1;
+    }
+
     if (string_contains(key, DELIMITER)) {
         cout << "Key may not contain the \"" << DELIMITER << "\" character" << endl;
         return -1;
@@ -278,6 +283,9 @@ static int add(Pass_Store &p)
             cout << "Failed to generate random password" << endl;
             return -1;
         }
+    } else if (!string_printable(password)) {
+        cout << "Password may only contain printable ASCII characters" << endl;
+        return -1;
     }
 
     int exists = p.key_exists(key);

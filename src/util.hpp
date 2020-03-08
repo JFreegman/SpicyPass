@@ -53,15 +53,6 @@ void remove_file(const std::string path);
  */
 void terminal_echo(bool enable);
 
-/*
- * Returns a string containing the charaters in `vec`.
- */
-std::string vec_to_string(const std::vector<char> &vec);
-
-/*
- * Returns a vector containing the characters in `s`.
- */
-std::vector<char> string_to_vec(const std::string &s);
 
 void clear_console(void);
 
@@ -80,5 +71,20 @@ bool timed_out(time_t t, time_t timeout);
  * each instace of `token`.
  */
 std::vector<std::string> string_split(const std::string &s, const std::string &token);
+
+/*
+ * Returns a string containing the charaters in `vec`.
+ */
+std::string vec_to_string(const std::vector<char> &vec);
+
+/*
+ * Returns a vector containing the characters in `s`.
+ */
+std::vector<char> string_to_vec(const std::string &s);
+
+/*
+ * Return true if all characters in `s` are printable (ASCII).
+ */
+bool string_printable(const std::string &s);
 
 #endif // UTIL

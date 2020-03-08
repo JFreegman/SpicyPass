@@ -31,6 +31,7 @@
 
 #include <iostream>
 
+#include <ctype.h>
 #include <time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -125,34 +126,6 @@ void terminal_echo(bool enable)
 #endif // _WIN32
 }
 
-/*
- * Returns a string containing the charaters in `vec`.
- */
-std::string vec_to_string(const std::vector<char> &vec)
-{
-    std::string s;
-
-    for (const char c: vec) {
-        s += c;
-    }
-
-    return s;
-}
-
-/*
- * Returns a vector containing the characters in `s`.
- */
-std::vector<char> string_to_vec(const std::string &s)
-{
-    std::vector<char> result;
-
-    for (const char c: s) {
-        result.push_back(c);
-    }
-
-    return result;
-}
-
 void clear_console(void)
 {
     int ret;
@@ -201,4 +174,46 @@ std::vector<std::string> string_split(const std::string &s, const std::string &t
     }
 
     return result;
+}
+
+/*
+ * Returns a string containing the charaters in `vec`.
+ */
+std::string vec_to_string(const std::vector<char> &vec)
+{
+    std::string s;
+
+    for (const char c: vec) {
+        s += c;
+    }
+
+    return s;
+}
+
+/*
+ * Returns a vector containing the characters in `s`.
+ */
+std::vector<char> string_to_vec(const std::string &s)
+{
+    std::vector<char> result;
+
+    for (const char c: s) {
+        result.push_back(c);
+    }
+
+    return result;
+}
+
+/*
+ * Return true if all characters in `s` are printable (ASCII).
+ */
+bool string_printable(const std::string &s)
+{
+    for (const char c: s) {
+        if (!isprint(c)) {
+            return false;
+        }
+    }
+
+    return true;
 }
