@@ -98,14 +98,13 @@ int main(int argc, char **argv)
 
     bool have_gui = gui_enabled(argv[1]);
     GUI ui;
-
 #else
     if (argc > 1) {
         cerr << "Warning: Unrecognized options" << endl;
     }
 
     bool have_gui = false;
-#endif
+#endif // GUI_SUPPORT
 
     set_file_permissions();
 

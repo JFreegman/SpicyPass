@@ -298,6 +298,9 @@ static void on_buttonAdd_clicked(GtkButton *button, gpointer data)
 
     struct Callback_Data *cb_data = (struct Callback_Data *) data;
 
+    Pass_Store *p = cb_data->p;
+    struct List_Store *ls = cb_data->ls;
+
     GtkBuilder *builder = gtk_builder_new_from_file(GLADE_FILE_PATH);
     GtkWidget *window = GTK_WIDGET(gtk_builder_get_object(builder, "addEntryWindow"));
 
@@ -320,9 +323,14 @@ static void on_buttonAdd_clicked(GtkButton *button, gpointer data)
     g_signal_connect(loginEntry, "activate", G_CALLBACK(on_key_enter), okButton);
     g_signal_connect(window, "key-press-event", G_CALLBACK(on_key_escape), NULL);
 
-
     gtk_window_set_keep_above(GTK_WINDOW(window), true);
     gtk_widget_show(window);
+
+    if (p->check_lock()) {
+        if (password_prompt(*p, *ls) != 0) {
+            dialog_box("Failed to unlock pass store", GTK_MESSAGE_ERROR);
+        }
+    }
 }
 
 static void on_deleteEntryButtonYes(GtkButton *button, gpointer data)
@@ -406,9 +414,19 @@ static void on_buttonDelete_clicked(GtkButton *button, gpointer data)
         return;
     }
 
-
     struct Callback_Data *cb_data = (struct Callback_Data *) data;
+
     struct List_Store *ls = cb_data->ls;
+    Pass_Store *p = cb_data->p;
+
+    if (p->check_lock()) {
+        if (password_prompt(*p, *ls) != 0) {
+            dialog_box("Failed to unlock pass store", GTK_MESSAGE_ERROR);
+        }
+
+        return;
+    }
+
     GtkTreeModel *model = GTK_TREE_MODEL(ls->store);
     GtkTreeSelection *selection = gtk_tree_view_get_selection(ls->view);
 
@@ -553,6 +571,14 @@ static void on_changePassButtonOk_clicked(GtkButton *button, gpointer data)
     Pass_Store *p = cb_data->p;
     struct List_Store *ls = cb_data->ls;
 
+    if (p->check_lock()) {
+        if (password_prompt(*p, *ls) != 0) {
+            dialog_box("Failed to unlock pass store", GTK_MESSAGE_ERROR);
+        }
+
+        return;
+    }
+
     GtkEntry *entry1 = GTK_ENTRY(cb_data->widget1);
     GtkEntry *entry2 = GTK_ENTRY(cb_data->widget2);
     GtkEntry *entry3 = GTK_ENTRY(cb_data->widget3);
@@ -575,16 +601,6 @@ static void on_changePassButtonOk_clicked(GtkButton *button, gpointer data)
 
     unsigned char old_pass_buf[MAX_STORE_PASSWORD_SIZE + 2];
     unsigned char new_pass_buf[MAX_STORE_PASSWORD_SIZE + 2];
-
-    if (p->check_lock()) {
-        if (password_prompt(*p, *ls) != 0) {
-            dialog_box("Failed to unlock pass store", GTK_MESSAGE_ERROR);
-            return;
-        }
-
-        gtk_widget_destroy(cb_data->window);
-        return;
-    }
 
     if (new_pass1_len < MIN_STORE_PASSWORD_SIZE) {
         snprintf(msg, sizeof(msg), "Password must be at least %d characters long", MIN_STORE_PASSWORD_SIZE);
@@ -618,6 +634,15 @@ static void on_changePassButtonOk_clicked(GtkButton *button, gpointer data)
 
     crypto_memwipe(new_pass_buf, sizeof(new_pass_buf));
 
+    if (ret == PASS_STORE_LOCKED) {
+        if (password_prompt(*p, *ls) != 0) {
+            dialog_box("Failed to unlock pass store", GTK_MESSAGE_ERROR);
+        }
+
+        gtk_widget_destroy(cb_data->window);
+        return;
+    }
+
     if (ret < 0) {
         snprintf(msg, sizeof(msg), "Failed to update password (error: %d)", ret);
         goto on_exit;
@@ -643,6 +668,9 @@ static void on_menuChangePassword_activate(GtkMenuItem *menuitem, gpointer data)
     }
 
     struct Callback_Data *cb_data = (struct Callback_Data *) data;
+
+    struct List_Store *ls = cb_data->ls;
+    Pass_Store *p = cb_data->p;
 
     GtkBuilder *builder = gtk_builder_new_from_file(GLADE_FILE_PATH);
     GtkWidget *window = GTK_WIDGET(gtk_builder_get_object(builder, "changePwWindow"));
@@ -673,6 +701,12 @@ static void on_menuChangePassword_activate(GtkMenuItem *menuitem, gpointer data)
 
     gtk_window_set_keep_above(GTK_WINDOW(window), true);
     gtk_widget_show(window);
+
+    if (p->check_lock()) {
+        if (password_prompt(*p, *ls) != 0) {
+            dialog_box("Failed to unlock pass store", GTK_MESSAGE_ERROR);
+        }
+    }
 }
 
 static void on_menuPassGenGenerate_clicked(GtkButton *button, gpointer data)
