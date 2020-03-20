@@ -47,7 +47,7 @@ static int prompt_password(unsigned char *password, size_t max_length)
 {
     cout << "Enter master password: ";
 
-    char pass_buf[MAX_STORE_PASSWORD_SIZE + 1];
+    char pass_buf[MAX_STORE_PASSWORD_SIZE + 2];
     const char *input = fgets(pass_buf, sizeof(pass_buf), stdin);
 
     if (input == NULL) {
@@ -74,8 +74,8 @@ static int new_password_prompt(Pass_Store &p, unsigned char *password, size_t ma
     while (true) {
         cout << "Enter new master password: ";
 
-        char pass1[MAX_STORE_PASSWORD_SIZE + 1];
-        char pass2[MAX_STORE_PASSWORD_SIZE + 1];
+        char pass1[MAX_STORE_PASSWORD_SIZE + 2];
+        char pass2[MAX_STORE_PASSWORD_SIZE + 2];
 
         const char *input1 = fgets(pass1, sizeof(pass1), stdin);
         cout << endl;
@@ -162,7 +162,7 @@ static int init_new_password(Pass_Store &p, unsigned char *password, size_t max_
  */
 static int change_password_prompt(Pass_Store &p)
 {
-    unsigned char new_password[MAX_STORE_PASSWORD_SIZE + 1];
+    unsigned char new_password[MAX_STORE_PASSWORD_SIZE + 2];
     unsigned char hash[CRYPTO_HASH_SIZE];
     p.get_password_hash(hash);
 
@@ -171,7 +171,7 @@ static int change_password_prompt(Pass_Store &p)
     while (true) {
         cout << "Enter old password: ";
 
-        char old_pass[MAX_STORE_PASSWORD_SIZE + 1];
+        char old_pass[MAX_STORE_PASSWORD_SIZE + 2];
         const char *input1 = fgets(old_pass, sizeof(old_pass), stdin);
         cout << endl;
 
@@ -200,7 +200,7 @@ static int change_password_prompt(Pass_Store &p)
         break;
     }
 
-    if (new_password_prompt(p, new_password, MAX_STORE_PASSWORD_SIZE) == PASS_STORE_LOCKED) {
+    if (new_password_prompt(p, new_password, sizeof(new_password) - 1) == PASS_STORE_LOCKED) {
         return PASS_STORE_LOCKED;
     }
 
@@ -486,7 +486,7 @@ static bool unlock_prompt(Pass_Store &p)
 {
     cout << "Enter master password: ";
 
-    unsigned char pass[MAX_STORE_PASSWORD_SIZE + 1];
+    unsigned char pass[MAX_STORE_PASSWORD_SIZE + 2];
     const char *input = fgets((char *) pass, sizeof(pass), stdin);
     cout << endl;
 
@@ -636,17 +636,17 @@ static int command_prompt(void)
  */
 int cli_new_pass_store(Pass_Store &p)
 {
-    unsigned char password[MAX_STORE_PASSWORD_SIZE + 1];
+    unsigned char password[MAX_STORE_PASSWORD_SIZE + 2];
 
     if (first_time_run()) {
         cout << "Creating a new profile. " << endl;
 
-        if (init_new_password(p, password, MAX_STORE_PASSWORD_SIZE) != 0) {
+        if (init_new_password(p, password, sizeof(password) - 1) != 0) {
             return -1;
         }
     } else {
         terminal_echo(false);
-        int pw_ret = prompt_password(password, MAX_STORE_PASSWORD_SIZE);
+        int pw_ret = prompt_password(password, sizeof(password) - 1);
         terminal_echo(true);
 
         cout << endl;

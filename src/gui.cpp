@@ -839,7 +839,7 @@ static void on_pwButtonEnter_clicked(GtkEntry *button, gpointer data)
     char msg[128];
     bool has_err = true;
     int ret;
-    unsigned char password[MAX_STORE_PASSWORD_SIZE + 1];
+    unsigned char password[MAX_STORE_PASSWORD_SIZE + 2];
     memcpy(password, text, length);
 
     crypto_memwipe((unsigned char *) text, length);
