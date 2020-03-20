@@ -204,8 +204,6 @@ static void on_addEntryButtonOk(GtkButton *button, gpointer data)
     keyBuf[keylen] = 0;
     passBuf[passlen] = 0;
 
-    crypto_memwipe((unsigned char *) passText, passlen);
-
     char msg[128];
     bool has_err = true;
     int exists;
@@ -586,10 +584,9 @@ static void on_changePassButtonOk_clicked(GtkButton *button, gpointer data)
     const gchar *new_pass2 = gtk_entry_get_text(entry3);
     gint old_pass_len = gtk_entry_get_text_length(entry1);
     gint new_pass1_len = gtk_entry_get_text_length(entry2);
-    gint new_pass2_len = gtk_entry_get_text_length(entry3);
 
 #ifdef debug
-    assert(old_pass_len <= MAX_STORE_PASSWORD_SIZE && new_pass1_len <= MAX_STORE_PASSWORD_SIZE && new_pass2_len <= MAX_STORE_PASSWORD_SIZE);
+    assert(old_pass_len <= MAX_STORE_PASSWORD_SIZE && new_pass1_len <= MAX_STORE_PASSWORD_SIZE);
 #endif
 
     bool has_err = true;
@@ -623,8 +620,7 @@ static void on_changePassButtonOk_clicked(GtkButton *button, gpointer data)
     }
 
     memcpy(new_pass_buf, new_pass1, new_pass1_len);
-    crypto_memwipe((unsigned char*) new_pass1, new_pass1_len);
-    crypto_memwipe((unsigned char*) new_pass2, new_pass2_len);
+
     new_pass_buf[new_pass1_len++] = '\n';
     new_pass_buf[new_pass1_len] = 0;
 
@@ -842,8 +838,6 @@ static void on_pwButtonEnter_clicked(GtkEntry *button, gpointer data)
     unsigned char password[MAX_STORE_PASSWORD_SIZE + 2];
     memcpy(password, text, length);
 
-    crypto_memwipe((unsigned char *) text, length);
-
     password[length++] = '\n';
     password[length] = 0;
 
@@ -966,8 +960,6 @@ on_exit:
         dialog_box(msg, GTK_MESSAGE_INFO);
         gtk_widget_destroy(cb_data->window);
         crypto_memwipe(passBuff, sizeof(passBuff));
-        crypto_memwipe((unsigned char *) text1, text1_len);
-        crypto_memwipe((unsigned char *) text2, text2_len);
         free(cb_data);
     } else {
         dialog_box(msg, GTK_MESSAGE_ERROR);
