@@ -366,6 +366,8 @@ static void on_deleteEntryButtonYes(GtkButton *button, gpointer data)
             dialog_box("Failed to unlock pass store", GTK_MESSAGE_ERROR);
         }
 
+        g_free(key);
+
         return;
     }
 
@@ -391,9 +393,7 @@ on_exit:
         gtk_widget_destroy(cb_data->window);
     }
 
-    if (key) {
-        g_free(key);
-    }
+    g_free(key);
 }
 
 static void on_buttonExit_clicked(GtkButton *button, gpointer data)
@@ -487,9 +487,7 @@ static void on_buttonCopy_clicked(GtkButton *button, gpointer data)
     vector<tuple<string, string>> result;
     int matches = p->get_matches(key, result, true);
 
-    if (key) {
-        g_free(key);
-    }
+    g_free(key);
 
     if (matches == PASS_STORE_LOCKED) {
         if (password_prompt(*p, *ls) != 0) {

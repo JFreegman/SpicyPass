@@ -164,22 +164,22 @@
           <object class="GtkBox" id="box2">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="margin_left">10</property>
-            <property name="margin_right">10</property>
             <property name="margin_top">10</property>
             <property name="spacing">6</property>
             <child>
               <object class="GtkButton" id="buttonAdd">
                 <property name="label">gtk-add</property>
+                <property name="width_request">100</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="tooltip_text" translatable="yes">Add a new entry</property>
+                <property name="margin_left">10</property>
                 <property name="use_stock">True</property>
                 <property name="always_show_image">True</property>
               </object>
               <packing>
-                <property name="expand">True</property>
+                <property name="expand">False</property>
                 <property name="fill">True</property>
                 <property name="position">0</property>
               </packing>
@@ -187,6 +187,7 @@
             <child>
               <object class="GtkButton" id="buttonDelete">
                 <property name="label">gtk-delete</property>
+                <property name="width_request">100</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -195,7 +196,7 @@
                 <property name="always_show_image">True</property>
               </object>
               <packing>
-                <property name="expand">True</property>
+                <property name="expand">False</property>
                 <property name="fill">True</property>
                 <property name="position">1</property>
               </packing>
@@ -203,6 +204,7 @@
             <child>
               <object class="GtkButton" id="buttonCopy">
                 <property name="label">gtk-copy</property>
+                <property name="width_request">100</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -211,7 +213,7 @@
                 <property name="always_show_image">True</property>
               </object>
               <packing>
-                <property name="expand">True</property>
+                <property name="expand">False</property>
                 <property name="fill">True</property>
                 <property name="position">2</property>
               </packing>
@@ -228,7 +230,6 @@
               <packing>
                 <property name="expand">True</property>
                 <property name="fill">False</property>
-                <property name="pack_type">end</property>
                 <property name="position">3</property>
               </packing>
             </child>
@@ -288,6 +289,7 @@
   </object>
   <object class="GtkWindow" id="addEntryWindow">
     <property name="can_focus">False</property>
+    <property name="resizable">False</property>
     <property name="gravity">center</property>
     <property name="transient_for">window</property>
     <child>
@@ -444,6 +446,7 @@
   </object>
   <object class="GtkWindow" id="changePwWindow">
     <property name="can_focus">False</property>
+    <property name="resizable">False</property>
     <property name="gravity">center</property>
     <property name="transient_for">window</property>
     <child>
@@ -851,6 +854,7 @@
   </object>
   <object class="GtkWindow" id="newPwWindow">
     <property name="can_focus">False</property>
+    <property name="resizable">False</property>
     <property name="gravity">center</property>
     <property name="transient_for">window</property>
     <child>
@@ -1017,6 +1021,7 @@
   </object>
   <object class="GtkWindow" id="passGenWindow">
     <property name="can_focus">False</property>
+    <property name="resizable">False</property>
     <property name="gravity">center</property>
     <property name="transient_for">window</property>
     <child>
