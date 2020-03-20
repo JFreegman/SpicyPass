@@ -91,11 +91,21 @@ int main(int argc, char **argv)
 {
     print_version(argv[0]);
 
+#if GUI_SUPPORT
     if (argc <= 1) {
         print_usage_exit();
     }
 
     bool have_gui = gui_enabled(argv[1]);
+    GUI ui;
+
+#else
+    if (argc > 1) {
+        cerr << "Warning: Unrecognized options" << endl;
+    }
+
+    bool have_gui = false;
+#endif
 
     set_file_permissions();
 
@@ -103,10 +113,6 @@ int main(int argc, char **argv)
         cerr << "crypto_init() failed" << endl;
         return -1;
     }
-
-#ifdef GUI_SUPPORT
-    GUI ui;
-#endif
 
     Pass_Store p;
     int ret = -1;
