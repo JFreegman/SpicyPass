@@ -20,8 +20,8 @@
  *
  */
 
-#ifndef CRYPTO
-#define CRYPTO
+#ifndef CRYPTO_H
+#define CRYPTO_H
 
 #if defined(_WIN32)
     #define SODIUM_STATIC
@@ -147,4 +147,4 @@ int crypto_decrypt_file(std::ifstream &fp, size_t file_size, unsigned char *plai
 int crypto_encrypt_file(std::ofstream &fp, const unsigned char *plaintext, size_t plain_len,
                         unsigned long long *cipher_len, const unsigned char *key);
 
-#endif //CRYPTO
+#endif //CRYPTO_H

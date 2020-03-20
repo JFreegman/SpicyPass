@@ -20,12 +20,14 @@
  *
  */
 
-#ifndef SPICY
-#define SPICY
+#ifndef SPICY_H
+#define SPICY_H
 
 #if defined(_WIN32)
-#define strtok_r strtok_s
-#endif // WIN_32
+    #define strtok_r strtok_s
+#else
+    #include <SpicyPassConfig.h>
+#endif // _WIN32
 
 #include <iostream>
 #include <string>
@@ -46,7 +48,7 @@ using namespace std;
 
 #define MAX_ENTRY_KEY_SIZE        (64)
 #define MAX_STORE_PASSWORD_SIZE   (64)
-#define MIN_STORE_PASSWORD_SIZE   (10)
+#define MIN_STORE_PASSWORD_SIZE   (8)
 
 /* Seconds to wait since last activity before we prompt the user to enter their password again */
 #define IDLE_LOCK_TIMEOUT (60U * 5U)
@@ -74,7 +76,6 @@ private:
     mutex store_m;
     bool idle_lock = false;
     time_t last_active = get_time();
-
 
     /*
      * Returns a string containing a key value entry in file format.
@@ -324,22 +325,33 @@ public:
     }
 
     /*
-     * Puts all full and partial matches for `search_key` in `result`. The first tuple
-     * member is the key and the second member is the password.
+     * Puts matches for `search_key` in `result`. The first tuple member is the key and
+     * the second member is the password.
+     *
+     * If `exact` is false it will return all partial matches.
      *
      * Return 0 on succsess.
      * Return PASS_STORE_LOCKED if pass store is locked.
      */
-    int get_matches(string search_key, vector<tuple<string, string>> &result) {
+    int get_matches(string search_key, vector<tuple<string, string>> &result, bool exact) {
         if (check_lock()) {
             return PASS_STORE_LOCKED;
         }
 
         s_lock();
 
-        for (const auto &[key, value]: store) {
-            if (search_key.compare(0, search_key.length(), key, 0, search_key.length()) == 0) {
-                result.push_back( {key, value->password} );
+        if (exact) {
+            for (const auto &[key, value]: store) {
+                if (search_key == key) {
+                    result.push_back( {key, value->password} );
+                    break;
+                }
+            }
+        } else {
+            for (const auto &[key, value]: store) {
+                if (search_key.compare(0, search_key.length(), key, 0, search_key.length()) == 0) {
+                    result.push_back( {key, value->password} );
+                }
             }
         }
 
@@ -521,6 +533,6 @@ public:
     ~Pass_Store(void) {
         clear();
     }
-};
+};  // class Pass_Store
 
-#endif // SPICY
+#endif // SPICY_H

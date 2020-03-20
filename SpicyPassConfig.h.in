@@ -1,3 +1,5 @@
 #define SpicyPass_VERSION_MAJOR "@SpicyPass_VERSION_MAJOR@"
 #define SpicyPass_VERSION_MINOR "@SpicyPass_VERSION_MINOR@"
 #define SpicyPass_VERSION_PATCH "@SpicyPass_VERSION_PATCH@"
+#define SpicyPass_LOGO_FILE_PATH "@SpicyPass_LOGO_FILE_PATH@"
+#define GLADE_FILE_PATH "@GLADE_FILE_PATH@"

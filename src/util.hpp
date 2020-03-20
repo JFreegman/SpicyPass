@@ -20,14 +20,16 @@
  *
  */
 
-#ifndef UTIL
-#define UTIL
+#ifndef UTIL_H
+#define UTIL_H
 
 #include <string>
 #include <fstream>
 #include <vector>
 
 #include <string.h>
+
+#define UNUSED_VAR(x) ((void) x)
 
 /*
  * Returns true if `s` contains `c`.
@@ -87,4 +89,4 @@ std::vector<char> string_to_vec(const std::string &s);
  */
 bool string_printable(const std::string &s);
 
-#endif // UTIL
+#endif // UTIL_H

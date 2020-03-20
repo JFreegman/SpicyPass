@@ -34,7 +34,7 @@ using namespace std;
  *
  * Set `temp` to true for temp file path instead.
  */
-static const string get_store_path(bool temp)
+const string get_store_path(bool temp)
 {
 #if defined(_WIN32)
     string homedir = getenv("HOMEPATH");

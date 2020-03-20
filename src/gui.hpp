@@ -1,4 +1,4 @@
-/*  password.hpp
+/*  gui.hpp
  *
  *
  *  Copyright (C) 2020 Jfreegman <Jfreegman@gmail.com>
@@ -20,24 +20,32 @@
  *
  */
 
-#ifndef PASSWORD_H
-#define PASSWORD_H
+#ifndef GUI_H
+#define GUI_H
 
-#include <string>
+#ifdef GUI_SUPPORT
 
-#define NUM_PASS_GUARANTEED_CHARS (4)
+#include <gtk/gtk.h>
 
-/* Returns a cryptographically secure randomly generated password.
- *
- * `size` must be greater than or equal to the number of guaranteed characters (4)
- * and less than or equal to the total number of ASCII printable characters.
- *
- * Password is guaranteed to meet minimum requirements as follows:
- * - At least one lower-case and upper-case letter
- * - At least one digit
- * - At least one symbol character
- * - No duplicate characters
- */
-std::string random_password(unsigned int size);
+struct List_Store {
+    GtkListStore        *store;
+    GtkTreeView         *view;
+    GtkTreeViewColumn   *col1;
+    GtkTreeViewColumn   *col2;
+    GtkCellRenderer     *crt1;
+    GtkCellRenderer     *crt2;
+};
 
-#endif // PASSWORD_H
+class GUI {
+private:
+    struct List_Store ls;
+
+    void init_window(GtkBuilder *builder);
+    int load_new(GtkBuilder *builder, Pass_Store &p);
+    int load(Pass_Store &p);
+public:
+    void run(Pass_Store &p);
+}; // class GUI
+
+#endif // GUI_SUPPORT
+#endif // GUI_H

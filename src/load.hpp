@@ -20,8 +20,8 @@
  *
  */
 
-#ifndef LOAD
-#define LOAD
+#ifndef LOAD_H
+#define LOAD_H
 
 #if defined(_WIN32)
     #include <windows.h>
@@ -35,6 +35,13 @@
 #include "crypto.hpp"
 
 #define PASS_STORE_HEADER_SIZE (CRYPTO_HASH_SIZE + CRYPTO_SALT_SIZE + 1)
+
+/*
+ * Returns a string containing pass store file path.
+ *
+ * Set `temp` to true for temp file path instead.
+ */
+const string get_store_path(bool temp);
 
 /*
  * Attempts to validate password, decrypt password store, and load it into `p`.
@@ -89,4 +96,4 @@ int init_pass_hash(const unsigned char *password, size_t length);
  */
 int update_crypto(Pass_Store &p, const unsigned char *password, size_t length);
 
-#endif // LOAD
+#endif // LOAD_H

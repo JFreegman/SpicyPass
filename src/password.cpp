@@ -25,10 +25,9 @@
 
 #include "crypto.hpp"
 #include "util.hpp"
+#include "password.hpp"
 
 using namespace std;
-
-#define NUM_GUARANTEED_CHARS (4)
 
 #define PRINTABLE_CHARS "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890`~!@#$%^&*()=+_-{}[]:;'\",.<>/?\\|"
 
@@ -150,8 +149,8 @@ string random_password(unsigned int size)
     assert(strlen(PRINTABLE_CHARS) == char_vec.size());
 #endif
 
-    if (size < NUM_GUARANTEED_CHARS || size > char_vec.size()) {
-        cout << "random_password() error: invalid size value" << endl;
+    if (size < NUM_PASS_GUARANTEED_CHARS || size > char_vec.size()) {
+        cerr << "random_password() error: invalid size value" << endl;
         return "";
     }
 

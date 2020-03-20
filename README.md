@@ -3,13 +3,15 @@
        src="https://scan.coverity.com/projects/20491/badge.svg"/>
 </a>
 
-**SpicyPass** is a cross-platform minimalist command-line password manager that utilizes state of the art cryptography for secure and simple password storage. It was designed by and for people who think modern software tends to be complicated, and is often bloated with too many unnecessary features. No setup is required to start using SpicyPass, aside from choosing a master password. It also comes equipped with a cryptographically secure random password generator.
+**SpicyPass** is a minimalist password manager that utilizes state of the art cryptography for secure and simple password storage. It was designed by and for people who think modern software tends to be complicated, and is often bloated with unnecessary features. No setup is required aside from choosing a master password. SpicyPass comes equipped with both a graphical and command-line interface, as well as a cryptographically secure random password generator.
+
+[![Spicypass Screenshot](https://i.imgur.com/E2cqUNJ.png "Main Window")](https://i.imgur.com/E2cqUNJ.png)
 
 ## Install
 ### Dependencies
-You will need to [install](https://download.libsodium.org/doc/installation) the libsodium cryptography library (version >= 1.0.13).
+You will need to [install](https://download.libsodium.org/doc/installation) the `libsodium` cryptography library (version >= 1.0.13). If you wish to compile with support for the graphical interface you will additionally need the `GTK3` development library (version >= 3.0).
 
-On Unix-like systems you will also need `cmake` (version >= 3.10) and `pkg-config`. The minimum required version of gcc is 7.0, and the minumum required version of clang is 5.0. Other modern compilers will probably work but are not officially supported.
+On Unix-like systems you will also need `cmake` (version >= 3.10) and `pkg-config`. To compile, you will need either `gcc` (version >= 7.0) or `clang` (version >= 5.0). Other modern C++ compilers will probably work but are not officially supported.
 
 ### Building
 #### Unix-like systems
@@ -21,7 +23,7 @@ Once you have all the dependencies installed on your system, clone this reposito
 4. `sudo make install`
 
 #### Windows
-Windows support is still in an experimental stage; the CMake configuration does not currently support Windows, and only static builds of libsodium work. Building natively with Microsoft© Visual Studio™ is straight-forward. Just be sure to set the appropriate libsodium headers and static libraries, and set the language standard to C++17.
+Windows is presently in an experimental stage and only has support for the command line interface. The CMake configuration does not currently support Windows, and only static builds of libsodium work. Building natively with Microsoft© Visual Studio™ is straight-forward. Just be sure to set the appropriate libsodium headers and static libraries, and set the language standard to C++17.
 
 ### Uninstall
 There is no uninstall command. However you can manually uninstall SpicyPass by deleting all of the files listed in the `install_manifest.txt` file, which resides in the `_build` directory.

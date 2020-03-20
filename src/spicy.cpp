@@ -20,10 +20,6 @@
  *
  */
 
-#ifndef _WIN32
-#include <SpicyPassConfig.h>
-#endif
-
 #include <thread>
 #include <chrono>
 
@@ -33,9 +29,15 @@
 #include "spicy.hpp"
 #include "crypto.hpp"
 #include "cli.hpp"
+#include "gui.hpp"
 
 using namespace std;
 
+static void print_usage_exit(void)
+{
+    cout << "Usage: spicypass [--gui | --cli]" << endl;
+    exit(-1);
+}
 
 static void print_version(const char *binary_name)
 {
@@ -55,6 +57,29 @@ void store_lock_loop(Pass_Store &p)
     }
 }
 
+/*
+ * Return true if the --gui option is set and we have gui support.
+ */
+bool gui_enabled(const char *arg)
+{
+    if (strcmp(arg, "--cli") == 0) {
+        return false;
+    }
+
+    if (strcmp(arg, "--gui") != 0) {
+        print_usage_exit();
+    }
+
+#ifdef GUI_SUPPORT
+    return true;
+#else
+    cout << "This build of spicypass does not support the graphical interface. "
+         << "Refer to the install instructions for further assistance. "
+         << "Proceeding to the command line." << endl;
+    return false;
+#endif
+}
+
 void set_file_permissions(void)
 {
 #ifndef _WIN32
@@ -64,9 +89,13 @@ void set_file_permissions(void)
 
 int main(int argc, char **argv)
 {
-    if (argc > 0) {
-        print_version(argv[0]);
+    print_version(argv[0]);
+
+    if (argc <= 1) {
+        print_usage_exit();
     }
+
+    bool have_gui = gui_enabled(argv[1]);
 
     set_file_permissions();
 
@@ -75,15 +104,22 @@ int main(int argc, char **argv)
         return -1;
     }
 
+#ifdef GUI_SUPPORT
+    GUI ui;
+#endif
+
     Pass_Store p;
-    int ret = cli_new_pass_store(p);
+    int ret = -1;
+
+    if (have_gui) {
+        ret = 0;
+    } else {
+        ret = cli_new_pass_store(p);
+    }
 
     switch (ret) {
         case 0: {
             break;
-        }
-        case -1: {
-            return -1;
         }
         case -2: {
             cerr << "crypto_memlock() failed in new_pass_store()" << endl;
@@ -101,8 +137,12 @@ int main(int argc, char **argv)
             cerr << "Failed to decrypt pass store file" << endl;
             return -1;
         }
+        case -6: {
+            cerr << "GUI failed to initialize" << endl;
+            return -1;
+        }
         default: {
-            cerr << "Unknown error in cli_new_pass_store()" << endl;
+            cerr << "Unknown error" << endl;
             return -1;
         }
     }
@@ -110,7 +150,14 @@ int main(int argc, char **argv)
     thread t(store_lock_loop, ref(p));
     t.detach();
 
-    run_cli_interface(p);
+    if (have_gui) {
+#ifdef GUI_SUPPORT
+        gtk_init(&argc, &argv);
+        ui.run(p);
+#endif
+    } else {
+        run_cli(p);
+    }
 
     return 0;
 }

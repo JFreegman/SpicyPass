@@ -2,9 +2,13 @@ cmake_minimum_required(VERSION 3.10)
 
 project(SpicyPass)
 
+set(SPICYPASS_INSTALL_DIRECTORY ${CMAKE_INSTALL_PREFIX}/share/spicypass)
+set(GLADE_FILE_PATH ${SPICYPASS_INSTALL_DIRECTORY}/gui.glade)
+set(SpicyPass_LOGO_FILE_PATH ${SPICYPASS_INSTALL_DIRECTORY}/spicypass.svg)
+
 set(SpicyPass_VERSION_MAJOR "0")
-set(SpicyPass_VERSION_MINOR "4")
-set(SpicyPass_VERSION_PATCH "1")
+set(SpicyPass_VERSION_MINOR "5")
+set(SpicyPass_VERSION_PATCH "0")
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
@@ -21,15 +25,26 @@ endif()
 
 configure_file(SpicyPassConfig.h.in SpicyPassConfig.h)
 
-find_package(Threads REQUIRED)
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(LIBSODIUM REQUIRED libsodium)
 
+pkg_check_modules(LIBSODIUM REQUIRED libsodium)
+pkg_check_modules(GTK gtk+-3.0)
+
+find_package(Threads REQUIRED)
+
+if(NOT GTK_FOUND)
+    message(WARNING "GTK3 library not found. Compiling without GUI support.")
+else()
+    add_definitions(-DGUI_SUPPORT ${GTK_DEFINITIONS})
+    set(GUI_INSTALL_FILES gui/gui.glade icon/spicypass.svg)
+endif(NOT GTK_FOUND)
 
 add_executable(spicypass src/cli.cpp
                          src/cli.hpp
                          src/crypto.cpp
                          src/crypto.hpp
+                         src/gui.cpp
+                         src/gui.hpp
                          src/load.cpp
                          src/load.hpp
                          src/password.cpp
@@ -40,10 +55,18 @@ add_executable(spicypass src/cli.cpp
                          src/util.hpp
                          )
 
-target_link_libraries (spicypass Threads::Threads)
-target_link_libraries(spicypass ${LIBSODIUM_LIBRARIES})
-target_include_directories(spicypass PUBLIC ${LIBSODIUM_INCLUDE_DIRS})
-target_compile_options(spicypass PUBLIC ${LIBSODIUM_CFLAGS_OTHER})
+target_link_libraries(spicypass Threads::Threads
+                                ${LIBSODIUM_LIBRARIES}
+                                ${GTK_LIBRARIES}
+                                )
+
+target_include_directories(spicypass PUBLIC ${LIBSODIUM_INCLUDE_DIRS}
+                                            ${GTK_INCLUDE_DIRS}
+                                            )
+
+target_compile_options(spicypass PUBLIC ${LIBSODIUM_CFLAGS_OTHER}
+                                        ${GTK_CFLAGS_OTHER}
+                                        )
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
@@ -62,3 +85,4 @@ message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 target_include_directories(spicypass PUBLIC "${SpicyPass_BINARY_DIR}")
 
 install(TARGETS spicypass DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+install(FILES ${GUI_INSTALL_FILES} DESTINATION ${SPICYPASS_INSTALL_DIRECTORY})

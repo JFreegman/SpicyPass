@@ -22,9 +22,9 @@
 
 #include "load.hpp"
 #include "password.hpp"
-#include "spicy.hpp"
 #include "util.hpp"
 #include "crypto.hpp"
+#include "cli.hpp"
 
 typedef enum {
     OPT_EXIT = 0,
@@ -85,14 +85,14 @@ static int new_password_prompt(Pass_Store &p, unsigned char *password, size_t ma
         }
 
         if (input1 == NULL) {
-            cout << "Invalid input." << endl;
+            cout << "Invalid input" << endl;
             continue;
         }
 
         size_t pass_length = strlen(pass1);
 
         if (pass_length < MIN_STORE_PASSWORD_SIZE || pass_length > max_length) {
-            cout << "Password must be between " << MIN_STORE_PASSWORD_SIZE  << " and " << max_length << " characters long." << endl;
+            cout << "Password must be between " << MIN_STORE_PASSWORD_SIZE  << " and " << max_length << " characters long" << endl;
             continue;
         }
 
@@ -106,12 +106,12 @@ static int new_password_prompt(Pass_Store &p, unsigned char *password, size_t ma
         }
 
         if (input2 == NULL) {
-            cout << "Invalid input." << endl;
+            cout << "Invalid input" << endl;
             continue;
         }
 
         if (strcmp(pass1, pass2) != 0) {
-            cout << "Passwords don't match. Try again." << endl;
+            cout << "New passwords don't match" << endl;
             continue;
         }
 
@@ -409,7 +409,7 @@ static int fetch(Pass_Store &p)
     }
 
     vector<tuple<string, string>> result;
-    int matches = p.get_matches(key, result);
+    int matches = p.get_matches(key, result, false);
 
     if (matches == PASS_STORE_LOCKED) {
         return PASS_STORE_LOCKED;
@@ -430,7 +430,7 @@ static int fetch(Pass_Store &p)
 static int list(Pass_Store &p)
 {
     vector<tuple<string, string>> result;
-    int matches = p.get_matches("", result);
+    int matches = p.get_matches("", result, false);
 
     if (matches == PASS_STORE_LOCKED) {
         return PASS_STORE_LOCKED;
@@ -463,11 +463,11 @@ static int generate(Pass_Store &p)
             continue;
         }
 
-        if (size >= MIN_STORE_PASSWORD_SIZE && size <= MAX_STORE_PASSWORD_SIZE) {
+        if (size >= NUM_PASS_GUARANTEED_CHARS && size <= MAX_STORE_PASSWORD_SIZE) {
             break;
         }
 
-        cout << "Password must be between " << to_string(MIN_STORE_PASSWORD_SIZE) << " and " << to_string(MAX_STORE_PASSWORD_SIZE) << " characters in length" << endl;
+        cout << "Password must be between " << to_string(NUM_PASS_GUARANTEED_CHARS) << " and " << to_string(MAX_STORE_PASSWORD_SIZE) << " characters in length" << endl;
     }
 
     string pass = random_password(size);
@@ -544,14 +544,14 @@ static void lock_check(Pass_Store &p)
 static void print_menu(void)
 {
     cout << "Menu:" << endl;
-    cout << "[" << to_string(OPT_ADD) << "] Add entry" << endl;
-    cout << "[" << to_string(OPT_REMOVE) << "] Remove entry" << endl;
-    cout << "[" << to_string(OPT_FETCH) << "] Fetch entry" << endl;
-    cout << "[" << to_string(OPT_LIST) << "] List all entries" << endl;
-    cout << "[" << to_string(OPT_GENERATE) << "] Generate password" << endl;
-    cout << "[" << to_string(OPT_PASSWORD) << "] Change master password" << endl;
-    cout << "[" << to_string(OPT_PRINT) << "] Print menu" << endl;
-    cout << "[" << to_string(OPT_EXIT) << "] Exit" << endl;
+    cout << "[" << to_string(OPT_ADD)        << "] Add entry" << endl;
+    cout << "[" << to_string(OPT_REMOVE)     << "] Remove entry" << endl;
+    cout << "[" << to_string(OPT_FETCH)      << "] Fetch entry" << endl;
+    cout << "[" << to_string(OPT_LIST)       << "] List all entries" << endl;
+    cout << "[" << to_string(OPT_GENERATE)   << "] Generate password" << endl;
+    cout << "[" << to_string(OPT_PASSWORD)   << "] Change master password" << endl;
+    cout << "[" << to_string(OPT_PRINT)      << "] Print menu" << endl;
+    cout << "[" << to_string(OPT_EXIT)       << "] Exit" << endl;
 }
 
 /*
@@ -710,7 +710,7 @@ static void menu_loop(Pass_Store &p)
     }
 }
 
-void run_cli_interface(Pass_Store &p)
+void run_cli(Pass_Store &p)
 {
     menu_loop(p);
     clear_console();

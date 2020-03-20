@@ -20,10 +20,12 @@
  *
  */
 
-#ifndef CLI
-#define CLI
+#ifndef CLI_H
+#define CLI_H
 
-void run_cli_interface(Pass_Store &p);
+#include "spicy.hpp"
+
+void run_cli(Pass_Store &p);
 
 /*
  * Initializes a new `Pass_Store` object and prompts user for password.
@@ -37,4 +39,4 @@ void run_cli_interface(Pass_Store &p);
  */
 int cli_new_pass_store(Pass_Store &p);
 
-#endif // CLI
+#endif // CLI_H
