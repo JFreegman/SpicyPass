@@ -60,24 +60,21 @@ void store_lock_loop(Pass_Store &p)
 /*
  * Return true if the --gui option is set and we have gui support.
  */
-bool gui_enabled(const char *arg)
+bool gui_enabled(int argc, char **argv)
 {
-    if (strcmp(arg, "--cli") == 0) {
+    if (argc <= 1) {
+        return true;
+    }
+
+    if (strcmp(argv[1], "--cli") == 0) {
         return false;
     }
 
-    if (strcmp(arg, "--gui") != 0) {
+    if (strcmp(argv[1], "--gui") != 0) {
         print_usage_exit();
     }
 
-#ifdef GUI_SUPPORT
     return true;
-#else
-    cout << "This build of spicypass does not support the graphical interface. "
-         << "Refer to the install instructions for further assistance. "
-         << "Proceeding to the command line." << endl;
-    return false;
-#endif
 }
 
 void set_file_permissions(void)
@@ -92,11 +89,7 @@ int main(int argc, char **argv)
     print_version(argv[0]);
 
 #if GUI_SUPPORT
-    if (argc <= 1) {
-        print_usage_exit();
-    }
-
-    bool have_gui = gui_enabled(argv[1]);
+    bool have_gui = gui_enabled(argc, argv);
     GUI ui;
 #else
     if (argc > 1) {
