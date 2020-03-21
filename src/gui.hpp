@@ -41,7 +41,7 @@ private:
     struct List_Store ls;
 
     void init_window(GtkBuilder *builder);
-    int load_new(GtkBuilder *builder, Pass_Store &p);
+    int load_new(Pass_Store &p, GtkBuilder *builder);
     int load(Pass_Store &p);
 public:
     void run(Pass_Store &p);
