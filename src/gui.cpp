@@ -1056,9 +1056,13 @@ void GUI::run(Pass_Store &p)
 
     if (first_time_run()) {
         if (load_new(builder, p) != 0) {
+            cerr << "load_new() failed in GUI::run()" << endl;
+            free(cb_data_buttons);
             return;
         }
     } else if (load(p) != 0) {
+        cerr << "load failed in GUI::run()" << endl;
+        free(cb_data_buttons);
         return;
     }
 
