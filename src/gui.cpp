@@ -150,15 +150,17 @@ static void dialog_box(const gchar *message, GtkMessageType type)
 /***
  *** Signal handlers
  ***/
-static void on_key_escape(GtkWidget *widget, GdkEventKey *event, gpointer data)
+static bool on_key_escape(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
     UNUSED_VAR(data);
 
     if (event->keyval != GDK_KEY_Escape) {
-        return;
+        return false;
     }
 
     gtk_widget_destroy(widget);
+
+    return true;
 }
 
 static void on_key_enter(GtkEntry *entry, gpointer data)
