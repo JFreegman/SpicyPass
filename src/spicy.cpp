@@ -51,9 +51,9 @@ static void print_version(const char *binary_name)
 
 void store_lock_loop(Pass_Store &p)
 {
-    while(true) {
+    while(p.running()) {
         p.poll_idle();
-        this_thread::sleep_for(std::chrono::milliseconds(500));
+        this_thread::sleep_for(std::chrono::milliseconds(200));
     }
 }
 
@@ -148,7 +148,6 @@ int main(int argc, char **argv)
     }
 
     thread t(store_lock_loop, ref(p));
-    t.detach();
 
     if (have_gui) {
 #ifdef GUI_SUPPORT
@@ -158,6 +157,10 @@ int main(int argc, char **argv)
     } else {
         run_cli(p);
     }
+
+    p.signal_shutdown();
+
+    t.join();
 
     return 0;
 }

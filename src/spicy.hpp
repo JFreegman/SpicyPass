@@ -76,6 +76,7 @@ private:
     mutex store_m;
     bool gui_enabled = false;
     bool idle_lock = false;
+    bool shutdown_signal = false;
     time_t last_active = get_time();
 
     /*
@@ -167,6 +168,26 @@ private:
     void s_unlock(void) { store_m.unlock(); }
 
 public:
+    /*
+     * Signals shutdown. This is used to notify threads when it's time to stop.
+     */
+    void signal_shutdown(void) {
+        s_lock();
+        shutdown_signal = true;
+        s_unlock();
+    }
+
+    /*
+     * Return false if the shutdown signal has been triggered.
+     */
+    bool running(void)  {
+        s_lock();
+        bool is_running = !shutdown_signal;
+        s_unlock();
+
+        return is_running;
+    }
+
     /*
      *  Set and get gui status respectively.
      */
