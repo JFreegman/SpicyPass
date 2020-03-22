@@ -49,7 +49,7 @@ static void on_key_enter(GtkEntry *entry, gpointer data);
 
 static int load_pass_store_entries(Pass_Store &p, struct List_Store &ls)
 {
-    vector<tuple<string, string>> result;
+    vector<tuple<string, const char *>> result;
     int matches = p.get_matches("", result, false);
 
     if (matches == PASS_STORE_LOCKED) {
@@ -484,7 +484,7 @@ static void on_buttonCopy_clicked(GtkButton *button, gpointer data)
     gchar *key = NULL;
     gtk_tree_model_get(model, &iter, KEY_COLUMN, &key, -1);
 
-    vector<tuple<string, string>> result;
+    vector<tuple<string, const char *>> result;
     int matches = p->get_matches(key, result, true);
 
     g_free(key);
@@ -525,7 +525,7 @@ static void on_buttonShowPass_toggled(GtkToggleButton *button, gpointer data)
     Pass_Store *p = cb_data->p;
     GtkWidget *window = cb_data->window;
 
-    vector<tuple<string, string>> result;
+    vector<tuple<string, const char *>> result;
     int matches = p->get_matches("", result, false);
 
     if (matches == PASS_STORE_LOCKED) {
@@ -542,7 +542,7 @@ static void on_buttonShowPass_toggled(GtkToggleButton *button, gpointer data)
     gtk_tree_model_get_iter_first(GTK_TREE_MODEL(ls->store), &iter);
 
     for (const auto &item: result) {
-        const char *val = toggle_on ? get<1>(item).c_str() : "******";
+        const char *val = toggle_on ? get<1>(item) : "******";
         gtk_list_store_set(ls->store, &iter, KEY_COLUMN, get<0>(item).c_str(), PASS_COLUMN, val, -1);
         gtk_tree_model_iter_next(GTK_TREE_MODEL(ls->store), &iter);
     }
@@ -1085,8 +1085,6 @@ void GUI::run(Pass_Store &p)
     g_signal_connect(menuAbout, "activate", G_CALLBACK(on_menuAbout_activate), NULL);
 
     gtk_main();
-
-    gtk_list_store_clear(ls.store);
 }
 
 GUI::GUI(void)

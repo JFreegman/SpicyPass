@@ -408,7 +408,7 @@ static int fetch(Pass_Store &p)
         return -1;
     }
 
-    vector<tuple<string, string>> result;
+    vector<tuple<string, const char *>> result;
     int matches = p.get_matches(key, result, false);
 
     if (matches == PASS_STORE_LOCKED) {
@@ -429,7 +429,7 @@ static int fetch(Pass_Store &p)
 
 static int list(Pass_Store &p)
 {
-    vector<tuple<string, string>> result;
+    vector<tuple<string, const char *>> result;
     int matches = p.get_matches("", result, false);
 
     if (matches == PASS_STORE_LOCKED) {

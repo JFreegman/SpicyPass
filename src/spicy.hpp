@@ -363,7 +363,7 @@ public:
      * Return 0 on succsess.
      * Return PASS_STORE_LOCKED if pass store is locked.
      */
-    int get_matches(string search_key, vector<tuple<string, string>> &result, bool exact) {
+    int get_matches(string search_key, vector<tuple<string, const char *>> &result, bool exact) {
         if (check_lock()) {
             return PASS_STORE_LOCKED;
         }
