@@ -150,17 +150,17 @@ static void dialog_box(const gchar *message, GtkMessageType type, GtkWidget *par
 /***
  *** Signal handlers
  ***/
-static bool on_key_escape(GtkWidget *widget, GdkEventKey *event, gpointer data)
+static gboolean on_key_escape(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
     UNUSED_VAR(data);
 
     if (event->keyval != GDK_KEY_Escape) {
-        return false;
+        return FALSE;
     }
 
     gtk_widget_destroy(widget);
 
-    return true;
+    return TRUE;
 }
 
 static void on_key_enter(GtkEntry *entry, gpointer data)
@@ -363,12 +363,11 @@ static void on_deleteEntryButtonYes(GtkButton *button, gpointer data)
     removed = p->remove(string(key));
 
     if (removed == PASS_STORE_LOCKED) {
-        gtk_widget_destroy(window);
-
         if (password_prompt(*p, *ls) != 0) {
             dialog_box("Failed to unlock pass store", GTK_MESSAGE_ERROR, window);
         }
 
+        gtk_widget_destroy(window);
         g_free(key);
 
         return;
@@ -544,16 +543,15 @@ static void on_buttonShowPass_toggled(GtkToggleButton *button, gpointer data)
         return;
     }
 
-    gtk_list_store_clear(ls->store);
-
     bool toggle_on = gtk_toggle_button_get_active(button);
 
     GtkTreeIter iter;
+    gtk_tree_model_get_iter_first(GTK_TREE_MODEL(ls->store), &iter);
 
     for (const auto &item: result) {
         const char *val = toggle_on ? get<1>(item).c_str() : "******";
-        gtk_list_store_append(ls->store, &iter);
         gtk_list_store_set(ls->store, &iter, KEY_COLUMN, get<0>(item).c_str(), PASS_COLUMN, val, -1);
+        gtk_tree_model_iter_next(GTK_TREE_MODEL(ls->store), &iter);
     }
 }
 
@@ -800,11 +798,8 @@ static void on_menuPassGen_activate(GtkMenuItem *menuitem, gpointer data)
     gtk_widget_show(window);
 }
 
-static void on_menuAbout_activate(GtkMenuItem *menuitem, gpointer data)
+static void on_menuAbout_activate(void)
 {
-    UNUSED_VAR(menuitem);
-    UNUSED_VAR(data);
-
     GtkBuilder *builder = gtk_builder_new_from_file(GLADE_FILE_PATH);
     GtkWidget *window = GTK_WIDGET(gtk_builder_get_object(builder, "aboutDialog"));
     g_object_unref(builder);
