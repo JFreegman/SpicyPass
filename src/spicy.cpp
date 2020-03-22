@@ -107,6 +107,8 @@ int main(int argc, char **argv)
     }
 
     Pass_Store p;
+    p.set_gui_status(have_gui);
+
     int ret = -1;
 
     if (have_gui) {

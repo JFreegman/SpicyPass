@@ -3,9 +3,18 @@
        src="https://scan.coverity.com/projects/20491/badge.svg"/>
 </a>
 
-**SpicyPass** is a minimalist password manager that utilizes state of the art cryptography for secure and simple password storage. It was designed by and for people who think modern software tends to be complicated, and is often bloated with unnecessary features. No setup is required aside from choosing a master password. SpicyPass comes equipped with both a graphical and command-line interface, as well as a cryptographically secure random password generator.
+**SpicyPass** is a light-weight password manager that utilizes state of the art cryptography and minimalist design principles for secure and simple password storage.
 
 [![Spicypass Screenshot](https://i.imgur.com/2oeSBU9.png "Main Window")](https://i.imgur.com/2oeSBU9.png)
+
+## Features
+* Both a command-line and graphical interface to choose from
+* An idle lock that prompts the user for their password after a period of inactivity
+* A cryptographically secure random password generator that maximizes entropy
+* The ability to copy passwords to the clipboard without revealing them on the screen
+* Data is automatically encrypted on disk - no setup required
+* Completely offline and free of any potential internet-facing attack vectors
+
 
 ## Install
 ### Dependencies

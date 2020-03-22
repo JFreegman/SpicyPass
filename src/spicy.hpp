@@ -74,6 +74,7 @@ private:
     unsigned char password_hash[CRYPTO_HASH_SIZE];
 
     mutex store_m;
+    bool gui_enabled = false;
     bool idle_lock = false;
     time_t last_active = get_time();
 
@@ -167,6 +168,12 @@ private:
 
 public:
     /*
+     *  Set and get gui status respectively.
+     */
+    void set_gui_status(bool have_gui) { gui_enabled = have_gui; }
+    bool get_gui_status(void) { return gui_enabled; }
+
+    /*
      * Return true if `idle_lock` is enabled. If lock is not enabled,
      * the `last_active` timer is reset.
      *
@@ -219,8 +226,10 @@ public:
 
         idle_lock = true;
 
-        clear_console();
-        cout << "Idle lock has been activated. Press enter to unlock." << endl;
+        if (!get_gui_status()) {
+            clear_console();
+            cout << "Idle lock has been activated. Press enter to unlock." << endl;
+        }
 
         s_unlock();
 
