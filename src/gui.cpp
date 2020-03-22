@@ -141,7 +141,10 @@ static void dialog_box(const gchar *message, GtkMessageType type, GtkWidget *par
     GtkWidget *dialog = GTK_WIDGET(gtk_builder_get_object(builder, name));
     g_object_unref(builder);
 
-    gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(parent));
+    if (parent) {
+        gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(parent));
+    }
+
     g_signal_connect_swapped(dialog, "response", G_CALLBACK(gtk_widget_destroy), dialog);
     gtk_message_dialog_set_markup(GTK_MESSAGE_DIALOG(dialog), message);
     gtk_widget_show(dialog);
