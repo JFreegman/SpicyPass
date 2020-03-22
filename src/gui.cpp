@@ -42,18 +42,8 @@ enum {
    N_COLUMNS
 };
 
-struct Callback_Data {
-    GtkWidget         *window;
-    GtkWidget         *widget1;
-    GtkWidget         *widget2;
-    GtkWidget         *widget3;
-    GtkToggleButton   *buttonShowPass;
-    Pass_Store        *p;
-    struct List_Store *ls;
-};
-
 static void on_quit(GtkButton *button, gpointer data);
-static void on_pwButtonEnter_clicked(GtkEntry *button, gpointer data);
+static void on_pwButtonEnter_clicked(GtkButton *button, gpointer data);
 static void on_key_enter(GtkEntry *entry, gpointer data);
 
 
@@ -826,7 +816,7 @@ static void on_menuAbout_activate(void)
     gtk_widget_show(window);
 }
 
-static void on_pwButtonEnter_clicked(GtkEntry *button, gpointer data)
+static void on_pwButtonEnter_clicked(GtkButton *button, gpointer data)
 {
     UNUSED_VAR(button);
 
@@ -1060,24 +1050,15 @@ void GUI::run(Pass_Store &p)
 {
     GtkBuilder *builder = gtk_builder_new_from_file(GLADE_FILE_PATH);
 
-    struct Callback_Data *cb_data = (struct Callback_Data *) calloc(1, sizeof(struct Callback_Data));
-
-    if (cb_data == NULL) {
-        cerr << "calloc() failed in GUI::run()" << endl;
-        return;
-    }
-
     init_window(builder);
 
     if (first_time_run()) {
         if (load_new(p, builder) != 0) {
             cerr << "load_new() failed in GUI::run()" << endl;
-            free(cb_data);
             return;
         }
     } else if (load(p) != 0) {
         cerr << "load failed in GUI::run()" << endl;
-        free(cb_data);
         return;
     }
 
@@ -1089,23 +1070,29 @@ void GUI::run(Pass_Store &p)
     GtkMenuItem *menuPassGen = GTK_MENU_ITEM(gtk_builder_get_object(builder, "menuPassGen"));
     GtkMenuItem *menuAbout = GTK_MENU_ITEM(gtk_builder_get_object(builder, "menuAbout"));
 
-    cb_data->ls = &ls;
-    cb_data->p = &p;
-    cb_data->buttonShowPass = buttonShowPass;
+    g_object_unref(builder);
 
-    g_signal_connect(buttonAdd, "clicked", G_CALLBACK(on_buttonAdd_clicked), cb_data);
-    g_signal_connect(buttonDelete, "clicked", G_CALLBACK(on_buttonDelete_clicked), cb_data);
-    g_signal_connect(buttonCopy, "clicked", G_CALLBACK(on_buttonCopy_clicked), cb_data);
-    g_signal_connect(buttonShowPass, "toggled", G_CALLBACK(on_buttonShowPass_toggled), cb_data);
-    g_signal_connect(menuChangePass, "activate", G_CALLBACK(on_menuChangePassword_activate), cb_data);
-    g_signal_connect(menuPassGen, "activate", G_CALLBACK(on_menuPassGen_activate), cb_data);
+    cb_data.ls = &ls;
+    cb_data.p = &p;
+    cb_data.buttonShowPass = buttonShowPass;
+
+    g_signal_connect(buttonAdd, "clicked", G_CALLBACK(on_buttonAdd_clicked), &cb_data);
+    g_signal_connect(buttonDelete, "clicked", G_CALLBACK(on_buttonDelete_clicked), &cb_data);
+    g_signal_connect(buttonCopy, "clicked", G_CALLBACK(on_buttonCopy_clicked), &cb_data);
+    g_signal_connect(buttonShowPass, "toggled", G_CALLBACK(on_buttonShowPass_toggled), &cb_data);
+    g_signal_connect(menuChangePass, "activate", G_CALLBACK(on_menuChangePassword_activate), &cb_data);
+    g_signal_connect(menuPassGen, "activate", G_CALLBACK(on_menuPassGen_activate), &cb_data);
     g_signal_connect(menuAbout, "activate", G_CALLBACK(on_menuAbout_activate), NULL);
 
     gtk_main();
 
-    g_object_unref(builder);
+    gtk_list_store_clear(ls.store);
+}
 
-    free(cb_data);
+GUI::GUI(void)
+{
+    memset(&cb_data, 0, sizeof(cb_data));
+    memset(&ls, 0, sizeof(ls));
 }
 
 #endif // GUI_SUPPORT

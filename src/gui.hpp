@@ -27,6 +27,16 @@
 
 #include <gtk/gtk.h>
 
+struct Callback_Data {
+    GtkWidget         *window;
+    GtkWidget         *widget1;
+    GtkWidget         *widget2;
+    GtkWidget         *widget3;
+    GtkToggleButton   *buttonShowPass;
+    Pass_Store        *p;
+    struct List_Store *ls;
+};
+
 struct List_Store {
     GtkListStore        *store;
     GtkTreeView         *view;
@@ -39,12 +49,14 @@ struct List_Store {
 class GUI {
 private:
     struct List_Store ls;
+    struct Callback_Data cb_data;
 
     void init_window(GtkBuilder *builder);
     int load_new(Pass_Store &p, GtkBuilder *builder);
     int load(Pass_Store &p);
 public:
     void run(Pass_Store &p);
+    GUI(void);
 }; // class GUI
 
 #endif // GUI_SUPPORT
