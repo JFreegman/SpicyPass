@@ -5,7 +5,7 @@
 
 **SpicyPass** is a light-weight password manager that utilizes state of the art cryptography and minimalist design principles for secure and simple password storage.
 
-[![Spicypass Screenshot](https://i.imgur.com/2oeSBU9.png "Main Window")](https://i.imgur.com/2oeSBU9.png)
+[![Spicypass Screenshot](https://i.imgur.com/D0zLcMj.png "Main Window")](https://i.imgur.com/D0zLcMj.png)
 
 ## Features
 * Both a command-line and graphical interface to choose from

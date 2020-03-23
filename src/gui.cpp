@@ -187,17 +187,13 @@ static void on_addEntryButtonOk(GtkButton *button, gpointer data)
     gint keylen = gtk_entry_get_text_length(loginEntry);
     gint passlen = gtk_entry_get_text_length(passEntry);
 
-    gchar keyBuf[MAX_ENTRY_KEY_SIZE + 1];
     gchar passBuf[MAX_STORE_PASSWORD_SIZE + 1];
 
 #ifdef DEBUG
-    assert((size_t) passlen < sizeof(keyBuf));
-    assert((size_t) keylen < sizeof(passBuf));
+    assert((size_t) passlen < sizeof(passBuf));
 #endif
 
-    memcpy(keyBuf, loginText, keylen);
     memcpy(passBuf, passText, passlen);
-    keyBuf[keylen] = 0;
     passBuf[passlen] = 0;
 
     char msg[128];
@@ -211,15 +207,15 @@ static void on_addEntryButtonOk(GtkButton *button, gpointer data)
     }
 
     if (string_contains(loginText, DELIMITER)) {
-        snprintf(msg, sizeof(msg), "Error: Login may not contain the `%s` character", DELIMITER);
+        snprintf(msg, sizeof(msg), "Login may not contain the `%s` character", DELIMITER);
         goto on_exit;
     }
 
-    if (passlen <= 1) {
+    if (passlen == 0) {
         string password = random_password(16U);
 
         if (password.empty()) {
-            snprintf(msg, sizeof(msg), "Error: Failed to generate random password");
+            snprintf(msg, sizeof(msg), "Failed to generate random password");
             goto on_exit;
         }
 
@@ -228,7 +224,7 @@ static void on_addEntryButtonOk(GtkButton *button, gpointer data)
         passBuf[passlen] = 0;
     }
 
-    exists = p->key_exists(string(keyBuf));
+    exists = p->key_exists(string(loginText));
 
     if (exists == PASS_STORE_LOCKED) {
         if (password_prompt(*p, *ls) != 0) {
@@ -244,14 +240,14 @@ static void on_addEntryButtonOk(GtkButton *button, gpointer data)
         goto on_exit;
     }
 
-    if (p->insert(string(keyBuf), string(passBuf)) != 0) {
+    if (p->insert(string(loginText), string(passBuf)) != 0) {
         snprintf(msg, sizeof(msg), "Failed to add entry");
         goto on_exit;
     }
 
     GtkTreeIter iter;
     gtk_list_store_append(ls->store, &iter);
-    gtk_list_store_set(ls->store, &iter, KEY_COLUMN, keyBuf, PASS_COLUMN,
+    gtk_list_store_set(ls->store, &iter, KEY_COLUMN, loginText, PASS_COLUMN,
                       gtk_toggle_button_get_active(cb_data->buttonShowPass) ? passBuf : "******",
                       -1);
 
@@ -315,6 +311,7 @@ static void on_buttonAdd_clicked(GtkButton *button, gpointer data)
     g_signal_connect(okButton, "clicked", G_CALLBACK(on_addEntryButtonOk), cb_data);
     g_signal_connect(cancelButton, "clicked", G_CALLBACK(on_addEntryButtonCancel), cb_data);
     g_signal_connect(loginEntry, "activate", G_CALLBACK(on_key_enter), okButton);
+    g_signal_connect(passEntry, "activate", G_CALLBACK(on_key_enter), okButton);
     g_signal_connect(window, "key-press-event", G_CALLBACK(on_key_escape), NULL);
 
     gtk_window_set_keep_above(GTK_WINDOW(window), true);
@@ -324,6 +321,212 @@ static void on_buttonAdd_clicked(GtkButton *button, gpointer data)
         if (password_prompt(*p, *ls) != 0) {
             dialog_box("Failed to unlock pass store", GTK_MESSAGE_ERROR, window);
         }
+    }
+}
+
+static void on_editEntryButtonOk(GtkButton *button, gpointer data)
+{
+    if (!data) {
+        return;
+    }
+
+    UNUSED_VAR(button);
+
+    struct Callback_Data *cb_data = (struct Callback_Data *) data;
+    Pass_Store *p = cb_data->p;
+    struct List_Store *ls = cb_data->ls;
+    GtkWidget *window = cb_data->window;
+
+    GtkTreeModel *model = GTK_TREE_MODEL(ls->store);
+    GtkTreeSelection *selection = gtk_tree_view_get_selection(ls->view);
+
+    GtkEntry *loginEntry = GTK_ENTRY(cb_data->widget1);
+    GtkEntry *passEntry = GTK_ENTRY(cb_data->widget2);
+
+    const gchar *loginText = gtk_entry_get_text(loginEntry);
+    const gchar *passText = gtk_entry_get_text(passEntry);
+    gint keylen = gtk_entry_get_text_length(loginEntry);
+    gint passlen = gtk_entry_get_text_length(passEntry);
+
+    gchar passBuf[MAX_STORE_PASSWORD_SIZE + 1];
+
+#ifdef DEBUG
+    assert((size_t) keylen < sizeof(passBuf));
+#endif
+
+    memcpy(passBuf, passText, passlen);
+    passBuf[passlen] = 0;
+
+    char msg[128];
+    bool has_err = true;
+    int ret;
+    GtkTreeIter iter;
+    gchar *old_key = NULL;
+
+    if (keylen == 0) {
+        snprintf(msg, sizeof(msg), "Entry cannot be empty");
+        goto on_exit;
+    }
+
+    if (string_contains(loginText, DELIMITER)) {
+        snprintf(msg, sizeof(msg), "Login may not contain the `%s` character", DELIMITER);
+        goto on_exit;
+    }
+
+    if (passlen == 0) {
+        string password = random_password(16U);
+
+        if (password.empty()) {
+            snprintf(msg, sizeof(msg), "Failed to generate random password");
+            goto on_exit;
+        }
+
+        passlen = password.length();
+        memcpy(passBuf, password.c_str(), passlen);
+        passBuf[passlen] = 0;
+    }
+
+    if (!gtk_tree_selection_get_selected(selection, &model, &iter)) {
+        snprintf(msg, sizeof(msg), "Selection not found");
+        goto on_exit;
+    }
+
+    gtk_tree_model_get(model, &iter, KEY_COLUMN, &old_key, -1);
+
+    ret = p->replace(string(old_key), string(loginText), string(passBuf));
+
+    g_free(old_key);
+
+    if (ret == PASS_STORE_LOCKED) {
+        if (password_prompt(*p, *ls) != 0) {
+            dialog_box("Failed to unlock pass store", GTK_MESSAGE_ERROR, window);
+        }
+
+        gtk_widget_destroy(window);
+        return;
+    }
+
+    if (ret != 0) {
+        snprintf(msg, sizeof(msg), "Failed to update entry");
+        goto on_exit;
+    }
+
+    ret = save_password_store(*p);
+
+    if (ret != 0) {
+        snprintf(msg, sizeof(msg), "Failed to save pass store (error %d)", ret);
+        goto on_exit;
+    }
+
+    gtk_list_store_remove(ls->store, &iter);
+    gtk_list_store_append(ls->store, &iter);
+
+    gtk_list_store_set(ls->store, &iter, KEY_COLUMN, loginText, PASS_COLUMN,
+                      gtk_toggle_button_get_active(cb_data->buttonShowPass) ? passBuf : "******",
+                      -1);
+
+    has_err = false;
+
+on_exit:
+    if (has_err) {
+        dialog_box(msg, GTK_MESSAGE_ERROR, window);
+    } else {
+        gtk_widget_destroy(window);
+    }
+}
+
+static void on_editEntryButtonCancel(GtkButton *button, gpointer data)
+{
+    UNUSED_VAR(button);
+
+    if (data) {
+        struct Callback_Data *cb_data = (struct Callback_Data *) data;
+        gtk_widget_destroy(cb_data->window);
+    }
+}
+
+static void on_buttonEdit_clicked(GtkButton *button, gpointer data)
+{
+    UNUSED_VAR(button);
+
+    struct Callback_Data *cb_data = (struct Callback_Data *) data;
+    struct List_Store *ls = cb_data->ls;
+    Pass_Store *p = cb_data->p;
+
+    GtkBuilder *builder = gtk_builder_new_from_file(GLADE_FILE_PATH);
+    GtkWidget *window = GTK_WIDGET(gtk_builder_get_object(builder, "editEntryWindow"));
+
+    GtkButton *okButton = GTK_BUTTON(gtk_builder_get_object(builder, "editEntryButtonOk"));
+    GtkButton *cancelButton = GTK_BUTTON(gtk_builder_get_object(builder, "editEntryButtonCancel"));
+    GtkEntry *loginEntry = GTK_ENTRY(gtk_builder_get_object(builder, "editEntryLogin"));
+    GtkEntry *passEntry = GTK_ENTRY(gtk_builder_get_object(builder, "editEntryPass"));
+
+    g_object_unref(builder);
+
+    gtk_entry_set_max_length(loginEntry, MAX_ENTRY_KEY_SIZE);
+    gtk_entry_set_max_length(passEntry, MAX_STORE_PASSWORD_SIZE);
+
+    cb_data->widget1 = GTK_WIDGET(loginEntry);
+    cb_data->widget2 = GTK_WIDGET(passEntry);
+    cb_data->window = window;
+
+    g_signal_connect(okButton, "clicked", G_CALLBACK(on_editEntryButtonOk), cb_data);
+    g_signal_connect(cancelButton, "clicked", G_CALLBACK(on_editEntryButtonCancel), cb_data);
+    g_signal_connect(passEntry, "activate", G_CALLBACK(on_key_enter), okButton);
+    g_signal_connect(loginEntry, "activate", G_CALLBACK(on_key_enter), okButton);
+    g_signal_connect(window, "key-press-event", G_CALLBACK(on_key_escape), NULL);
+
+    GtkTreeModel *model = GTK_TREE_MODEL(ls->store);
+    GtkTreeSelection *selection = gtk_tree_view_get_selection(ls->view);
+
+    char msg[128];
+    bool has_err = true;
+    gchar *key = NULL;
+    const gchar *loginText;
+    const gchar *passwordText;
+    int matches = 0;
+    vector<tuple<string, const char *>> result;
+    tuple<string, string> v_item;
+    GtkTreeIter iter;
+
+    if (!gtk_tree_selection_get_selected(selection, &model, &iter)) {
+        snprintf(msg, sizeof(msg), "Selection not found");
+        goto on_exit;
+    }
+
+    gtk_tree_model_get(model, &iter, KEY_COLUMN, &key, -1);
+    matches = p->get_matches(key, result, true);
+
+    g_free(key);
+
+    if (matches == PASS_STORE_LOCKED) {
+        if (password_prompt(*p, *ls) != 0) {
+            dialog_box("Failed to unlock pass store", GTK_MESSAGE_ERROR, window);
+        }
+
+        return;
+    }
+
+    if (result.size() != 1) {
+        snprintf(msg, sizeof(msg), "Key not found");
+        goto on_exit;
+    }
+
+    v_item = result.at(0);
+    loginText = get<0>(v_item).c_str();
+    passwordText = get<1>(v_item).c_str();
+
+    gtk_entry_set_text(loginEntry, loginText);
+    gtk_entry_set_text(passEntry, passwordText);
+
+    has_err = false;
+
+on_exit:
+    if (has_err) {
+        dialog_box(msg, GTK_MESSAGE_ERROR, window);
+        gtk_widget_destroy(window);
+    } else {
+        gtk_widget_show(window);
     }
 }
 
@@ -341,13 +544,13 @@ static void on_deleteEntryButtonYes(GtkButton *button, gpointer data)
 
     char msg[128];
     bool has_err = true;
-    GtkTreeIter iter;
     int removed;
     int ret;
     gchar *key = NULL;
+    GtkTreeIter iter;
 
     if (!gtk_tree_selection_get_selected(selection, &model, &iter)) {
-        snprintf(msg, sizeof(msg), "Error: Selection not found");
+        snprintf(msg, sizeof(msg), "Selection not found");
         goto on_exit;
     }
 
@@ -413,11 +616,10 @@ static void on_buttonDelete_clicked(GtkButton *button, gpointer data)
 
     struct List_Store *ls = cb_data->ls;
     Pass_Store *p = cb_data->p;
-    GtkWidget *window = cb_data->window;
 
     if (p->check_lock()) {
         if (password_prompt(*p, *ls) != 0) {
-            dialog_box("Failed to unlock pass store", GTK_MESSAGE_ERROR, window);
+            dialog_box("Failed to unlock pass store", GTK_MESSAGE_ERROR, NULL);
         }
 
         return;
@@ -471,7 +673,6 @@ static void on_buttonCopy_clicked(GtkButton *button, gpointer data)
 
     struct List_Store *ls = cb_data->ls;
     Pass_Store *p = cb_data->p;
-    GtkWidget *window = cb_data->window;
 
     GtkTreeModel *model = GTK_TREE_MODEL(ls->store);
     GtkTreeSelection *selection = gtk_tree_view_get_selection(ls->view);
@@ -491,14 +692,14 @@ static void on_buttonCopy_clicked(GtkButton *button, gpointer data)
 
     if (matches == PASS_STORE_LOCKED) {
         if (password_prompt(*p, *ls) != 0) {
-            dialog_box("Failed to unlock pass store", GTK_MESSAGE_ERROR, window);
+            dialog_box("Failed to unlock pass store", GTK_MESSAGE_ERROR, NULL);
         }
 
         return;
     }
 
     if (result.size() != 1) {
-        cerr << "Warning: copy invoked invalid key request" << endl;
+        dialog_box("Key not found", GTK_MESSAGE_ERROR, NULL);
         return;
     }
 
@@ -511,7 +712,7 @@ static void on_buttonCopy_clicked(GtkButton *button, gpointer data)
 
     char msg[128];
     snprintf(msg, sizeof(msg), "Copied password for \"%s\" to clipboard", login);
-    dialog_box(msg, GTK_MESSAGE_INFO, window);
+    dialog_box(msg, GTK_MESSAGE_INFO, NULL);
 }
 
 static void on_buttonShowPass_toggled(GtkToggleButton *button, gpointer data)
@@ -694,6 +895,8 @@ static void on_menuChangePassword_activate(GtkMenuItem *menuitem, gpointer data)
 
     g_signal_connect(buttonOk, "clicked", G_CALLBACK(on_changePassButtonOk_clicked), cb_data);
     g_signal_connect(buttonCancel, "clicked", G_CALLBACK(on_buttonExit_clicked), cb_data);
+    g_signal_connect(entry1, "activate", G_CALLBACK(on_key_enter), buttonOk);
+    g_signal_connect(entry2, "activate", G_CALLBACK(on_key_enter), buttonOk);
     g_signal_connect(entry3, "activate", G_CALLBACK(on_key_enter), buttonOk);
     g_signal_connect(window, "key-press-event", G_CALLBACK(on_key_escape), NULL);
 
@@ -1040,6 +1243,7 @@ int GUI::load_new(Pass_Store &p, GtkBuilder *builder)
     g_signal_connect(newPwButtonEnter, "clicked", G_CALLBACK(on_newPwButtonEnter_clicked), cb_data);
     g_signal_connect(newPwButtonQuit, "clicked", G_CALLBACK(on_quit), cb_data);
     g_signal_connect(newPwEntry1, "activate", G_CALLBACK(on_key_enter), newPwButtonEnter);
+    g_signal_connect(newPwEntry2, "activate", G_CALLBACK(on_key_enter), newPwButtonEnter);
 
     gtk_widget_show(newPwWindow);
 
@@ -1065,6 +1269,7 @@ void GUI::run(Pass_Store &p)
     GtkButton *buttonAdd = GTK_BUTTON(gtk_builder_get_object(builder, "buttonAdd"));
     GtkButton *buttonDelete = GTK_BUTTON(gtk_builder_get_object(builder, "buttonDelete"));
     GtkButton *buttonCopy = GTK_BUTTON(gtk_builder_get_object(builder, "buttonCopy"));
+    GtkButton *buttonEdit = GTK_BUTTON(gtk_builder_get_object(builder, "buttonEdit"));
     GtkToggleButton *buttonShowPass = GTK_TOGGLE_BUTTON(gtk_builder_get_object(builder, "buttonShowPass"));
     GtkMenuItem *menuChangePass = GTK_MENU_ITEM(gtk_builder_get_object(builder, "menuChangePass"));
     GtkMenuItem *menuPassGen = GTK_MENU_ITEM(gtk_builder_get_object(builder, "menuPassGen"));
@@ -1079,6 +1284,7 @@ void GUI::run(Pass_Store &p)
     g_signal_connect(buttonAdd, "clicked", G_CALLBACK(on_buttonAdd_clicked), &cb_data);
     g_signal_connect(buttonDelete, "clicked", G_CALLBACK(on_buttonDelete_clicked), &cb_data);
     g_signal_connect(buttonCopy, "clicked", G_CALLBACK(on_buttonCopy_clicked), &cb_data);
+    g_signal_connect(buttonEdit, "clicked", G_CALLBACK(on_buttonEdit_clicked), &cb_data);
     g_signal_connect(buttonShowPass, "toggled", G_CALLBACK(on_buttonShowPass_toggled), &cb_data);
     g_signal_connect(menuChangePass, "activate", G_CALLBACK(on_menuChangePassword_activate), &cb_data);
     g_signal_connect(menuPassGen, "activate", G_CALLBACK(on_menuPassGen_activate), &cb_data);

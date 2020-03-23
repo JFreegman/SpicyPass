@@ -51,7 +51,7 @@ using namespace std;
 #define MIN_STORE_PASSWORD_SIZE   (8)
 
 /* Seconds to wait since last activity before we prompt the user to enter their password again */
-#define IDLE_LOCK_TIMEOUT (60U * 5U)
+#define IDLE_LOCK_TIMEOUT (60U * 10U)
 
 /* Return code indicating that `idle_lock` is set to true */
 #define PASS_STORE_LOCKED (INT_MIN)
@@ -162,6 +162,30 @@ private:
     }
 
     /*
+     * Deletes entry for `key` from pass store if it exists.
+     *
+     * This method does not check the idle lock so care must be taken when using it.
+     *
+     * Return false if key was not found.
+     */
+    bool delete_entry(string key)
+    {
+        s_lock();
+
+        bool exists = store.find(key) != store.end();
+
+        if (exists) {
+            crypto_memunlock((unsigned char *) store.at(key)->password, sizeof(store.at(key)->password));
+            free(store.at(key));
+            store.erase(key);
+        }
+
+        s_unlock();
+
+        return exists;
+    }
+
+    /*
      * Lock and unlock the pass store mutex.
      */
     void s_lock(void)   { store_m.lock();   }
@@ -189,7 +213,7 @@ public:
     }
 
     /*
-     *  Set and get gui status respectively.
+     *  Set and get gui status respectively. These methods are not thread safe.
      */
     void set_gui_status(bool have_gui) { gui_enabled = have_gui; }
     bool get_gui_status(void) { return gui_enabled; }
@@ -292,12 +316,12 @@ public:
         }
 
         // manually delete key if it already exists so that memory is properly wiped and freed
-        remove(key);
+        delete_entry(key);
 
         s_lock();
 
         try {
-            store.insert({key, pass});
+            store.insert( {key, pass} );
         } catch (const exception &e) {
             free(pass);
             s_unlock();
@@ -322,17 +346,49 @@ public:
             return PASS_STORE_LOCKED;
         }
 
-        if (!key_exists(key)) {
+        if (!delete_entry(key)) {
             return -1;
         }
 
+        return 0;
+    }
+
+    /*
+     * Replaces `old_key` with `new_key` and `value`.
+     *
+     * Return 0 on success.
+     * Return -1 if new_key already exists.
+     * Return -2 if insert() fails.
+     * Return PASS_STORE_LOCKED if pass store is locked.
+     */
+    int replace(string old_key, string new_key, string value)
+    {
+        if (check_lock()) {
+            return PASS_STORE_LOCKED;
+        }
+
+        bool keys_are_same = old_key == new_key;
+
         s_lock();
 
-        crypto_memunlock((unsigned char *) store.at(key)->password, sizeof(store.at(key)->password));
-        free(store.at(key));
-        store.erase(key);
+        if (!keys_are_same) {
+            bool new_exists = store.find(new_key) != store.end();
+
+            if (new_exists) {
+                s_unlock();
+                return -1;
+            }
+        }
 
         s_unlock();
+
+        if (insert(new_key, value) != 0) {
+            return -2;
+        }
+
+        if (!keys_are_same) {
+            delete_entry(old_key);
+        }
 
         return 0;
     }
