@@ -397,18 +397,26 @@ static void on_editEntryButtonOk(GtkButton *button, gpointer data)
 
     g_free(old_key);
 
-    if (ret == PASS_STORE_LOCKED) {
-        if (password_prompt(*p, *ls) != 0) {
-            dialog_box("Failed to unlock pass store", GTK_MESSAGE_ERROR, window);
+    switch (ret) {
+        case 0: {
+            break;
         }
+        case PASS_STORE_LOCKED: {
+            if (password_prompt(*p, *ls) != 0) {
+                dialog_box("Failed to unlock pass store", GTK_MESSAGE_ERROR, window);
+            }
 
-        gtk_widget_destroy(window);
-        return;
-    }
-
-    if (ret != 0) {
-        snprintf(msg, sizeof(msg), "Failed to update entry");
-        goto on_exit;
+            gtk_widget_destroy(window);
+            return;
+        }
+        case -1: {
+            snprintf(msg, sizeof(msg), "Entry \"%s\" already exists", loginText);
+            goto on_exit;
+        }
+        default: {
+            snprintf(msg, sizeof(msg), "Failed to update entry");
+            goto on_exit;
+        }
     }
 
     ret = save_password_store(*p);
