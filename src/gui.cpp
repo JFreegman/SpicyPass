@@ -100,7 +100,6 @@ static int password_prompt(Pass_Store &p, struct List_Store &ls)
     g_signal_connect(pwEntry, "activate", G_CALLBACK(on_key_enter), pwButtonEnter);
 
     gtk_window_set_keep_above(GTK_WINDOW(pwWindow), true);
-
     gtk_widget_show(pwWindow);
 
     return 0;
@@ -164,7 +163,7 @@ static gboolean on_special_key_press(GtkWidget *widget, GdkEventKey *event, gpoi
         return FALSE;
     }
 
-    if (event->state & GDK_CONTROL_MASK && event->keyval == 'c') {
+    if ((event->state & GDK_CONTROL_MASK) && event->keyval == 'c') {
         on_buttonCopy_clicked(NULL, data);
         return TRUE;
     }
@@ -540,14 +539,15 @@ static void on_buttonEdit_clicked(GtkButton *button, gpointer data)
     gtk_entry_set_text(loginEntry, loginText);
     gtk_entry_set_text(passEntry, passwordText);
 
+    gtk_window_set_keep_above(GTK_WINDOW(window), true);
+    gtk_widget_show(window);
+
     has_err = false;
 
 on_exit:
     if (has_err) {
         dialog_box(msg, GTK_MESSAGE_ERROR, window);
         gtk_widget_destroy(window);
-    } else {
-        gtk_widget_show(window);
     }
 }
 
@@ -1197,10 +1197,10 @@ void GUI::init_window(GtkBuilder *builder)
     GtkWidget *window = GTK_WIDGET(gtk_builder_get_object(builder, "window"));
     gtk_builder_connect_signals(builder, NULL);
     g_signal_connect(window , "destroy", G_CALLBACK(gtk_main_quit), NULL);
+    g_signal_connect(window, "key-press-event", G_CALLBACK(on_special_key_press), &cb_data);
 
     GtkMenuItem *menuExit = GTK_MENU_ITEM(gtk_builder_get_object(builder, "menuExit"));
     g_signal_connect(menuExit, "activate", G_CALLBACK(gtk_main_quit), NULL);
-    g_signal_connect(window, "key-press-event", G_CALLBACK(on_special_key_press), &cb_data);
 
     ls.store = GTK_LIST_STORE(gtk_builder_get_object(builder, "liststore1"));
     ls.view = GTK_TREE_VIEW(gtk_builder_get_object(builder, "treeview1"));

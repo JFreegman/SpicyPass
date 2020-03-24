@@ -266,6 +266,7 @@
     <property name="modal">True</property>
     <property name="destroy_with_parent">True</property>
     <property name="type_hint">dialog</property>
+    <property name="skip_taskbar_hint">True</property>
     <property name="transient_for">window</property>
     <property name="program_name">SpicyPass</property>
     <property name="copyright" translatable="yes">Copyright © 2020 Jfreegman &lt;Jfreegman@gmail.com&gt;</property>
@@ -310,6 +311,7 @@
     <property name="resizable">False</property>
     <property name="modal">True</property>
     <property name="destroy_with_parent">True</property>
+    <property name="skip_taskbar_hint">True</property>
     <property name="gravity">center</property>
     <property name="transient_for">window</property>
     <child>
@@ -468,6 +470,8 @@
     <property name="can_focus">False</property>
     <property name="resizable">False</property>
     <property name="modal">True</property>
+    <property name="destroy_with_parent">True</property>
+    <property name="skip_taskbar_hint">True</property>
     <property name="gravity">center</property>
     <property name="transient_for">window</property>
     <child>
@@ -680,6 +684,7 @@
     <property name="resizable">False</property>
     <property name="modal">True</property>
     <property name="type_hint">dialog</property>
+    <property name="skip_taskbar_hint">True</property>
     <property name="transient_for">window</property>
     <property name="message_type">error</property>
     <property name="buttons">close</property>
@@ -720,6 +725,7 @@
     <property name="resizable">False</property>
     <property name="modal">True</property>
     <property name="type_hint">dialog</property>
+    <property name="skip_taskbar_hint">True</property>
     <property name="transient_for">window</property>
     <property name="buttons">close</property>
     <property name="text" translatable="yes">This is just a test you shouldn't see this</property>
@@ -759,6 +765,7 @@
     <property name="resizable">False</property>
     <property name="modal">True</property>
     <property name="type_hint">dialog</property>
+    <property name="skip_taskbar_hint">True</property>
     <property name="transient_for">window</property>
     <property name="message_type">warning</property>
     <property name="buttons">close</property>
@@ -874,6 +881,7 @@
     <property name="resizable">False</property>
     <property name="modal">True</property>
     <property name="destroy_with_parent">True</property>
+    <property name="skip_taskbar_hint">True</property>
     <property name="gravity">center</property>
     <property name="transient_for">window</property>
     <child>
@@ -1033,6 +1041,7 @@
     <property name="resizable">False</property>
     <property name="modal">True</property>
     <property name="destroy_with_parent">True</property>
+    <property name="skip_taskbar_hint">True</property>
     <property name="gravity">center</property>
     <property name="transient_for">window</property>
     <child>
@@ -1202,6 +1211,7 @@
     <property name="resizable">False</property>
     <property name="modal">True</property>
     <property name="destroy_with_parent">True</property>
+    <property name="skip_taskbar_hint">True</property>
     <property name="gravity">center</property>
     <property name="transient_for">window</property>
     <child>
