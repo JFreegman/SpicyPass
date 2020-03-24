@@ -44,6 +44,8 @@ enum {
 
 static void on_quit(GtkButton *button, gpointer data);
 static void on_pwButtonEnter_clicked(GtkButton *button, gpointer data);
+static void on_buttonCopy_clicked(GtkButton *button, gpointer data);
+static void on_buttonDelete_clicked(GtkButton *button, gpointer data);
 static void on_key_enter(GtkEntry *entry, gpointer data);
 
 
@@ -143,17 +145,48 @@ static void dialog_box(const gchar *message, GtkMessageType type, GtkWidget *par
 /***
  *** Signal handlers
  ***/
+static void on_buttonCancel_clicked(GtkButton *button, gpointer data)
+{
+    UNUSED_VAR(button);
+
+    if (data) {
+        struct Callback_Data *cb_data = (struct Callback_Data *) data;
+        gtk_widget_destroy(cb_data->window);
+    }
+}
+
+static gboolean on_special_key_press(GtkWidget *widget, GdkEventKey *event, gpointer data)
+{
+    UNUSED_VAR(widget);
+
+    if (!data) {
+        cerr << "Warning: on_special_key_press invoked with null data pointer" << endl;
+        return FALSE;
+    }
+
+    if (event->state & GDK_CONTROL_MASK && event->keyval == 'c') {
+        on_buttonCopy_clicked(NULL, data);
+        return TRUE;
+    }
+
+    if (event->keyval == GDK_KEY_Delete) {
+        on_buttonDelete_clicked(NULL, data);
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
 static gboolean on_key_escape(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
     UNUSED_VAR(data);
 
-    if (event->keyval != GDK_KEY_Escape) {
-        return FALSE;
+    if (event->keyval == GDK_KEY_Escape) {
+        gtk_widget_destroy(widget);
+        return TRUE;
     }
 
-    gtk_widget_destroy(widget);
-
-    return TRUE;
+    return FALSE;
 }
 
 static void on_key_enter(GtkEntry *entry, gpointer data)
@@ -268,16 +301,6 @@ on_exit:
     }
 }
 
-static void on_addEntryButtonCancel(GtkButton *button, gpointer data)
-{
-    UNUSED_VAR(button);
-
-    if (data) {
-        struct Callback_Data *cb_data = (struct Callback_Data *) data;
-        gtk_widget_destroy(cb_data->window);
-    }
-}
-
 static void on_buttonAdd_clicked(GtkButton *button, gpointer data)
 {
     UNUSED_VAR(button);
@@ -309,7 +332,7 @@ static void on_buttonAdd_clicked(GtkButton *button, gpointer data)
     cb_data->window = window;
 
     g_signal_connect(okButton, "clicked", G_CALLBACK(on_addEntryButtonOk), cb_data);
-    g_signal_connect(cancelButton, "clicked", G_CALLBACK(on_addEntryButtonCancel), cb_data);
+    g_signal_connect(cancelButton, "clicked", G_CALLBACK(on_buttonCancel_clicked), cb_data);
     g_signal_connect(loginEntry, "activate", G_CALLBACK(on_key_enter), okButton);
     g_signal_connect(passEntry, "activate", G_CALLBACK(on_key_enter), okButton);
     g_signal_connect(window, "key-press-event", G_CALLBACK(on_key_escape), NULL);
@@ -443,16 +466,6 @@ on_exit:
     }
 }
 
-static void on_editEntryButtonCancel(GtkButton *button, gpointer data)
-{
-    UNUSED_VAR(button);
-
-    if (data) {
-        struct Callback_Data *cb_data = (struct Callback_Data *) data;
-        gtk_widget_destroy(cb_data->window);
-    }
-}
-
 static void on_buttonEdit_clicked(GtkButton *button, gpointer data)
 {
     UNUSED_VAR(button);
@@ -479,7 +492,7 @@ static void on_buttonEdit_clicked(GtkButton *button, gpointer data)
     cb_data->window = window;
 
     g_signal_connect(okButton, "clicked", G_CALLBACK(on_editEntryButtonOk), cb_data);
-    g_signal_connect(cancelButton, "clicked", G_CALLBACK(on_editEntryButtonCancel), cb_data);
+    g_signal_connect(cancelButton, "clicked", G_CALLBACK(on_buttonCancel_clicked), cb_data);
     g_signal_connect(passEntry, "activate", G_CALLBACK(on_key_enter), okButton);
     g_signal_connect(loginEntry, "activate", G_CALLBACK(on_key_enter), okButton);
     g_signal_connect(window, "key-press-event", G_CALLBACK(on_key_escape), NULL);
@@ -602,16 +615,6 @@ on_exit:
     g_free(key);
 }
 
-static void on_buttonExit_clicked(GtkButton *button, gpointer data)
-{
-    UNUSED_VAR(button);
-
-    if (data) {
-        struct Callback_Data *cb_data = (struct Callback_Data *) data;
-        gtk_widget_destroy(cb_data->window);
-    }
-}
-
 static void on_buttonDelete_clicked(GtkButton *button, gpointer data)
 {
     UNUSED_VAR(button);
@@ -648,7 +651,7 @@ static void on_buttonDelete_clicked(GtkButton *button, gpointer data)
     cb_data->window = dialog;
 
     g_signal_connect(yesButton, "clicked", G_CALLBACK(on_deleteEntryButtonYes), cb_data);
-    g_signal_connect(noButton, "clicked", G_CALLBACK(on_buttonExit_clicked), cb_data);
+    g_signal_connect(noButton, "clicked", G_CALLBACK(on_buttonCancel_clicked), cb_data);
 
     GtkTreeIter iter;
 
@@ -902,7 +905,7 @@ static void on_menuChangePassword_activate(GtkMenuItem *menuitem, gpointer data)
     cb_data->widget3 = GTK_WIDGET(entry3);
 
     g_signal_connect(buttonOk, "clicked", G_CALLBACK(on_changePassButtonOk_clicked), cb_data);
-    g_signal_connect(buttonCancel, "clicked", G_CALLBACK(on_buttonExit_clicked), cb_data);
+    g_signal_connect(buttonCancel, "clicked", G_CALLBACK(on_buttonCancel_clicked), cb_data);
     g_signal_connect(entry1, "activate", G_CALLBACK(on_key_enter), buttonOk);
     g_signal_connect(entry2, "activate", G_CALLBACK(on_key_enter), buttonOk);
     g_signal_connect(entry3, "activate", G_CALLBACK(on_key_enter), buttonOk);
@@ -995,8 +998,10 @@ static void on_menuPassGen_activate(GtkMenuItem *menuitem, gpointer data)
     cb_data->widget2 = GTK_WIDGET(entry2);
 
     g_signal_connect(buttonGen, "clicked", G_CALLBACK(on_menuPassGenGenerate_clicked), cb_data);
-    g_signal_connect(buttonExit, "clicked", G_CALLBACK(on_buttonExit_clicked), cb_data);
+    g_signal_connect(buttonExit, "clicked", G_CALLBACK(on_buttonCancel_clicked), cb_data);
     g_signal_connect(window, "key-press-event", G_CALLBACK(on_key_escape), NULL);
+    g_signal_connect(entry1, "activate", G_CALLBACK(on_key_enter), buttonGen);
+    g_signal_connect(entry2, "activate", G_CALLBACK(on_key_enter), buttonGen);
 
     gtk_window_set_keep_above(GTK_WINDOW(window), true);
     gtk_widget_show(window);
@@ -1195,6 +1200,7 @@ void GUI::init_window(GtkBuilder *builder)
 
     GtkMenuItem *menuExit = GTK_MENU_ITEM(gtk_builder_get_object(builder, "menuExit"));
     g_signal_connect(menuExit, "activate", G_CALLBACK(gtk_main_quit), NULL);
+    g_signal_connect(window, "key-press-event", G_CALLBACK(on_special_key_press), &cb_data);
 
     ls.store = GTK_LIST_STORE(gtk_builder_get_object(builder, "liststore1"));
     ls.view = GTK_TREE_VIEW(gtk_builder_get_object(builder, "treeview1"));
@@ -1227,6 +1233,7 @@ int GUI::load_new(Pass_Store &p, GtkBuilder *builder)
     GtkWidget *newPwWindow = GTK_WIDGET(gtk_builder_get_object(builder, "newPwWindow"));
     GtkEntry *newPwEntry1 = GTK_ENTRY(gtk_builder_get_object(builder, "newPwEntry1"));
     GtkEntry *newPwEntry2 = GTK_ENTRY(gtk_builder_get_object(builder, "newPwEntry2"));
+
     gtk_entry_set_visibility(newPwEntry1, false);
     gtk_entry_set_visibility(newPwEntry2, false);
     gtk_entry_set_max_length(newPwEntry1, MAX_STORE_PASSWORD_SIZE);
