@@ -61,8 +61,7 @@ static int load_pass_store_entries(Pass_Store &p, struct List_Store &ls)
     GtkTreeIter iter;
 
     for (const auto &item: result) {
-        gtk_list_store_append(ls.store, &iter);
-        gtk_list_store_set(ls.store, &iter, KEY_COLUMN, get<0>(item).c_str(), PASS_COLUMN, "******", -1);
+        gtk_list_store_insert_with_values(ls.store, &iter, -1, KEY_COLUMN, get<0>(item).c_str(), PASS_COLUMN, "******", -1);
     }
 
     return 0;
@@ -278,10 +277,8 @@ static void on_addEntryButtonOk(GtkButton *button, gpointer data)
     }
 
     GtkTreeIter iter;
-    gtk_list_store_append(ls->store, &iter);
-    gtk_list_store_set(ls->store, &iter, KEY_COLUMN, loginText, PASS_COLUMN,
-                      gtk_toggle_button_get_active(cb_data->buttonShowPass) ? passBuf : "******",
-                      -1);
+    gtk_list_store_insert_with_values(ls->store, &iter, 0, KEY_COLUMN, loginText, PASS_COLUMN,
+                      gtk_toggle_button_get_active(cb_data->buttonShowPass) ? passBuf : "******", -1);
 
     ret = save_password_store(*p);
 
@@ -449,11 +446,9 @@ static void on_editEntryButtonOk(GtkButton *button, gpointer data)
     }
 
     gtk_list_store_remove(ls->store, &iter);
-    gtk_list_store_append(ls->store, &iter);
 
-    gtk_list_store_set(ls->store, &iter, KEY_COLUMN, loginText, PASS_COLUMN,
-                      gtk_toggle_button_get_active(cb_data->buttonShowPass) ? passBuf : "******",
-                      -1);
+    gtk_list_store_insert_with_values(ls->store, &iter, 0, KEY_COLUMN, loginText, PASS_COLUMN,
+                      gtk_toggle_button_get_active(cb_data->buttonShowPass) ? passBuf : "******", -1);
 
     has_err = false;
 
@@ -660,7 +655,7 @@ static void on_buttonDelete_clicked(GtkButton *button, gpointer data)
         return;
     }
 
-    gchar *key;
+    gchar *key = NULL;
     gtk_tree_model_get(model, &iter, KEY_COLUMN, &key, -1);
 
     gchar msg[128];
@@ -751,12 +746,18 @@ static void on_buttonShowPass_toggled(GtkToggleButton *button, gpointer data)
     bool toggle_on = gtk_toggle_button_get_active(button);
 
     GtkTreeIter iter;
-    gtk_tree_model_get_iter_first(GTK_TREE_MODEL(ls->store), &iter);
+
+    if (!gtk_tree_model_get_iter_first(GTK_TREE_MODEL(ls->store), &iter)) {
+        return;
+    }
 
     for (const auto &item: result) {
         const char *val = toggle_on ? get<1>(item) : "******";
         gtk_list_store_set(ls->store, &iter, KEY_COLUMN, get<0>(item).c_str(), PASS_COLUMN, val, -1);
-        gtk_tree_model_iter_next(GTK_TREE_MODEL(ls->store), &iter);
+
+        if (!gtk_tree_model_iter_next(GTK_TREE_MODEL(ls->store), &iter)) {
+            break;
+        }
     }
 }
 
