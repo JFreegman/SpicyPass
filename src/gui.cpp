@@ -236,7 +236,7 @@ static void on_addEntryButtonOk(GtkButton *button, gpointer data)
     int exists;
     int ret;
 
-    if (keylen == 0) {
+    if (keylen == 0 || passlen == 0) {
         snprintf(msg, sizeof(msg), "Entry cannot be empty");
         goto on_exit;
     }
@@ -244,19 +244,6 @@ static void on_addEntryButtonOk(GtkButton *button, gpointer data)
     if (string_contains(loginText, DELIMITER)) {
         snprintf(msg, sizeof(msg), "Login may not contain the `%s` character", DELIMITER);
         goto on_exit;
-    }
-
-    if (passlen == 0) {
-        string password = random_password(16U);
-
-        if (password.empty()) {
-            snprintf(msg, sizeof(msg), "Failed to generate random password");
-            goto on_exit;
-        }
-
-        passlen = password.length();
-        memcpy(passBuf, password.c_str(), passlen);
-        passBuf[passlen] = 0;
     }
 
     exists = p->key_exists(string(loginText));
@@ -335,6 +322,12 @@ static void on_buttonAdd_clicked(GtkButton *button, gpointer data)
     g_signal_connect(cancelButton, "clicked", G_CALLBACK(on_buttonCancel_clicked), cb_data);
     g_signal_connect(loginEntry, "activate", G_CALLBACK(on_key_enter), okButton);
     g_signal_connect(passEntry, "activate", G_CALLBACK(on_key_enter), okButton);
+
+    string password = random_password(16U);
+
+    if (!password.empty()) {
+        gtk_entry_set_text(passEntry, password.c_str());
+    }
 
     gtk_widget_show(window);
 
@@ -506,8 +499,8 @@ static void on_buttonEdit_clicked(GtkButton *button, gpointer data)
     GtkTreeIter iter;
 
     if (!gtk_tree_selection_get_selected(selection, &model, &iter)) {
-        snprintf(msg, sizeof(msg), "Selection not found");
-        goto on_exit;
+        gtk_widget_destroy(window);
+        return;
     }
 
     gtk_tree_model_get(model, &iter, KEY_COLUMN, &key, -1);

@@ -12,6 +12,8 @@
   </object>
   <object class="GtkWindow" id="window">
     <property name="can_focus">False</property>
+    <property name="modal">True</property>
+    <property name="window_position">center</property>
     <property name="default_width">640</property>
     <property name="default_height">480</property>
     <property name="destroy_with_parent">True</property>
@@ -41,16 +43,16 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
-                      <object class="GtkImageMenuItem" id="menuChangePass">
-                        <property name="label" translatable="yes">Change Master Password</property>
+                      <object class="GtkImageMenuItem" id="menuPassGen">
+                        <property name="label" translatable="yes">Password Generator</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_stock">False</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem" id="menuPassGen">
-                        <property name="label" translatable="yes">Password Generator</property>
+                      <object class="GtkImageMenuItem" id="menuChangePass">
+                        <property name="label" translatable="yes">Change Master Password</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_stock">False</property>
@@ -264,7 +266,7 @@
     </child>
   </object>
   <object class="GtkAboutDialog" id="aboutDialog">
-    <property name="can_focus">False</property>
+    <property name="can_focus">True</property>
     <property name="modal">True</property>
     <property name="destroy_with_parent">True</property>
     <property name="type_hint">dialog</property>
@@ -452,7 +454,7 @@
                     <property name="width_request">250</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <property name="tooltip_text" translatable="yes">Input your password. If this is left empty a random password will be generated.</property>
+                    <property name="tooltip_text" translatable="yes">Input your password</property>
                     <property name="halign">end</property>
                     <property name="margin_left">10</property>
                     <property name="hexpand">True</property>
