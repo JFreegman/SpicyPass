@@ -14,8 +14,8 @@
     <property name="can_focus">False</property>
     <property name="modal">True</property>
     <property name="window_position">center</property>
-    <property name="default_width">640</property>
-    <property name="default_height">480</property>
+    <property name="default_width">500</property>
+    <property name="default_height">500</property>
     <property name="destroy_with_parent">True</property>
     <property name="has_resize_grip">True</property>
     <child>
@@ -139,21 +139,6 @@
                     </child>
                   </object>
                 </child>
-                <child>
-                  <object class="GtkTreeViewColumn" id="treeviewcolumn2">
-                    <property name="resizable">True</property>
-                    <property name="spacing">1</property>
-                    <property name="sizing">autosize</property>
-                    <property name="title" translatable="yes">Password</property>
-                    <property name="expand">True</property>
-                    <property name="clickable">True</property>
-                    <child>
-                      <object class="GtkCellRendererText" id="cr2">
-                        <property name="editable">True</property>
-                      </object>
-                    </child>
-                  </object>
-                </child>
               </object>
             </child>
           </object>
@@ -169,6 +154,7 @@
             <property name="can_focus">False</property>
             <property name="margin_top">10</property>
             <property name="spacing">6</property>
+            <property name="homogeneous">True</property>
             <child>
               <object class="GtkButton" id="buttonAdd">
                 <property name="label">gtk-add</property>
@@ -205,23 +191,6 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="buttonDelete">
-                <property name="label">gtk-delete</property>
-                <property name="width_request">100</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="tooltip_text" translatable="yes">Delete selected entry</property>
-                <property name="use_stock">True</property>
-                <property name="always_show_image">True</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">2</property>
-              </packing>
-            </child>
-            <child>
               <object class="GtkButton" id="buttonCopy">
                 <property name="label">gtk-copy</property>
                 <property name="width_request">100</property>
@@ -235,24 +204,25 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">3</property>
+                <property name="position">2</property>
               </packing>
             </child>
             <child>
-              <object class="GtkCheckButton" id="buttonShowPass">
-                <property name="label" translatable="yes">Show Passwords</property>
+              <object class="GtkButton" id="buttonDelete">
+                <property name="label">gtk-delete</property>
+                <property name="width_request">100</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="receives_default">False</property>
-                <property name="tooltip_text" translatable="yes">Check box to unhide passwords</property>
+                <property name="receives_default">True</property>
+                <property name="tooltip_text" translatable="yes">Delete selected entry</property>
                 <property name="margin_right">10</property>
-                <property name="draw_indicator">True</property>
+                <property name="use_stock">True</property>
+                <property name="always_show_image">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="pack_type">end</property>
-                <property name="position">4</property>
+                <property name="position">3</property>
               </packing>
             </child>
           </object>

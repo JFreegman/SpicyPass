@@ -62,7 +62,7 @@ static int load_pass_store_entries(Pass_Store &p, struct List_Store &ls)
     GtkTreeIter iter;
 
     for (const auto &item: result) {
-        gtk_list_store_insert_with_values(ls.store, &iter, -1, KEY_COLUMN, get<0>(item).c_str(), PASS_COLUMN, "******", -1);
+        gtk_list_store_insert_with_values(ls.store, &iter, -1, KEY_COLUMN, get<0>(item).c_str(), -1);
     }
 
     return 0;
@@ -268,8 +268,7 @@ static void on_addEntryButtonOk(GtkButton *button, gpointer data)
     }
 
     GtkTreeIter iter;
-    gtk_list_store_insert_with_values(ls->store, &iter, 0, KEY_COLUMN, loginText, PASS_COLUMN,
-                      gtk_toggle_button_get_active(cb_data->buttonShowPass) ? passBuf : "******", -1);
+    gtk_list_store_insert_with_values(ls->store, &iter, -1, KEY_COLUMN, loginText, -1);
 
     ret = save_password_store(*p);
 
@@ -442,8 +441,7 @@ static void on_editEntryButtonOk(GtkButton *button, gpointer data)
 
     gtk_list_store_remove(ls->store, &iter);
 
-    gtk_list_store_insert_with_values(ls->store, &iter, 0, KEY_COLUMN, loginText, PASS_COLUMN,
-                      gtk_toggle_button_get_active(cb_data->buttonShowPass) ? passBuf : "******", -1);
+    gtk_list_store_insert_with_values(ls->store, &iter, -1, KEY_COLUMN, loginText, -1);
 
     has_err = false;
 
@@ -712,46 +710,6 @@ static void on_buttonCopy_clicked(GtkButton *button, gpointer data)
     char msg[128];
     snprintf(msg, sizeof(msg), "Copied password for \"%s\" to clipboard", login);
     dialog_box(msg, GTK_MESSAGE_INFO, NULL);
-}
-
-static void on_buttonShowPass_toggled(GtkToggleButton *button, gpointer data)
-{
-    if (!data) {
-        return;
-    }
-
-    struct Callback_Data *cb_data = (struct Callback_Data *) data;
-    struct List_Store *ls = cb_data->ls;
-    Pass_Store *p = cb_data->p;
-    GtkWidget *window = cb_data->window;
-
-    vector<tuple<string, const char *>> result;
-    int matches = p->get_matches("", result, false);
-
-    if (matches == PASS_STORE_LOCKED) {
-        if (password_prompt(*p, *ls) != 0) {
-            dialog_box("Failed to unlock pass store", GTK_MESSAGE_ERROR, window);
-        }
-
-        return;
-    }
-
-    bool toggle_on = gtk_toggle_button_get_active(button);
-
-    GtkTreeIter iter;
-
-    if (!gtk_tree_model_get_iter_first(GTK_TREE_MODEL(ls->store), &iter)) {
-        return;
-    }
-
-    for (const auto &item: result) {
-        const char *val = toggle_on ? get<1>(item) : "******";
-        gtk_list_store_set(ls->store, &iter, KEY_COLUMN, get<0>(item).c_str(), PASS_COLUMN, val, -1);
-
-        if (!gtk_tree_model_iter_next(GTK_TREE_MODEL(ls->store), &iter)) {
-            break;
-        }
-    }
 }
 
 static void on_quit(GtkButton *button, gpointer data)
@@ -1195,11 +1153,9 @@ void GUI::init_window(GtkBuilder *builder)
     ls.view = GTK_TREE_VIEW(gtk_builder_get_object(builder, "treeview1"));
     ls.col1 = GTK_TREE_VIEW_COLUMN(gtk_builder_get_object(builder, "treeviewcolumn1"));
     ls.col2 = GTK_TREE_VIEW_COLUMN(gtk_builder_get_object(builder, "treeviewcolumn2"));
-    ls.crt1 = GTK_CELL_RENDERER(gtk_builder_get_object(builder, "cr1"));
-    ls.crt2 = GTK_CELL_RENDERER(gtk_builder_get_object(builder, "cr2"));
+    ls.cr1 = GTK_CELL_RENDERER(gtk_builder_get_object(builder, "cr1"));
 
-    gtk_tree_view_column_add_attribute(ls.col1, ls.crt1, "text", KEY_COLUMN);
-    gtk_tree_view_column_add_attribute(ls.col2, ls.crt2, "text", PASS_COLUMN);
+    gtk_tree_view_column_add_attribute(ls.col1, ls.cr1, "text", KEY_COLUMN);
     gtk_tree_view_set_grid_lines(ls.view, GTK_TREE_VIEW_GRID_LINES_NONE);
 
     GError *err = NULL;
@@ -1275,7 +1231,6 @@ void GUI::run(Pass_Store &p)
     GtkButton *buttonDelete = GTK_BUTTON(gtk_builder_get_object(builder, "buttonDelete"));
     GtkButton *buttonCopy = GTK_BUTTON(gtk_builder_get_object(builder, "buttonCopy"));
     GtkButton *buttonEdit = GTK_BUTTON(gtk_builder_get_object(builder, "buttonEdit"));
-    GtkToggleButton *buttonShowPass = GTK_TOGGLE_BUTTON(gtk_builder_get_object(builder, "buttonShowPass"));
     GtkMenuItem *menuChangePass = GTK_MENU_ITEM(gtk_builder_get_object(builder, "menuChangePass"));
     GtkMenuItem *menuPassGen = GTK_MENU_ITEM(gtk_builder_get_object(builder, "menuPassGen"));
     GtkMenuItem *menuAbout = GTK_MENU_ITEM(gtk_builder_get_object(builder, "menuAbout"));
@@ -1284,13 +1239,11 @@ void GUI::run(Pass_Store &p)
 
     cb_data.ls = &ls;
     cb_data.p = &p;
-    cb_data.buttonShowPass = buttonShowPass;
 
     g_signal_connect(buttonAdd, "clicked", G_CALLBACK(on_buttonAdd_clicked), &cb_data);
     g_signal_connect(buttonDelete, "clicked", G_CALLBACK(on_buttonDelete_clicked), &cb_data);
     g_signal_connect(buttonCopy, "clicked", G_CALLBACK(on_buttonCopy_clicked), &cb_data);
     g_signal_connect(buttonEdit, "clicked", G_CALLBACK(on_buttonEdit_clicked), &cb_data);
-    g_signal_connect(buttonShowPass, "toggled", G_CALLBACK(on_buttonShowPass_toggled), &cb_data);
     g_signal_connect(menuChangePass, "activate", G_CALLBACK(on_menuChangePassword_activate), &cb_data);
     g_signal_connect(menuPassGen, "activate", G_CALLBACK(on_menuPassGen_activate), &cb_data);
     g_signal_connect(menuAbout, "activate", G_CALLBACK(on_menuAbout_activate), NULL);

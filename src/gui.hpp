@@ -32,7 +32,6 @@ struct Callback_Data {
     GtkWidget         *widget1;
     GtkWidget         *widget2;
     GtkWidget         *widget3;
-    GtkToggleButton   *buttonShowPass;
     Pass_Store        *p;
     struct List_Store *ls;
 };
@@ -42,8 +41,7 @@ struct List_Store {
     GtkTreeView         *view;
     GtkTreeViewColumn   *col1;
     GtkTreeViewColumn   *col2;
-    GtkCellRenderer     *crt1;
-    GtkCellRenderer     *crt2;
+    GtkCellRenderer     *cr1;
 };
 
 class GUI {
