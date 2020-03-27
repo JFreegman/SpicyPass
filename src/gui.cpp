@@ -1136,6 +1136,56 @@ on_exit:
     }
 }
 
+static void show_popup_menu(GdkEventButton *event, struct Callback_Data *cb_data)
+{
+    GtkWidget *menu = gtk_menu_new();
+    GtkWidget *menuCopy = gtk_menu_item_new_with_label("Copy Password");
+    GtkWidget *menuEdit = gtk_menu_item_new_with_label("Edit");
+    GtkWidget *menuDelete = gtk_menu_item_new_with_label("Delete");
+
+    g_signal_connect(menuCopy, "activate", G_CALLBACK(on_buttonCopy_clicked), cb_data);
+    g_signal_connect(menuEdit, "activate", G_CALLBACK(on_buttonEdit_clicked), cb_data);
+    g_signal_connect(menuDelete, "activate", G_CALLBACK(on_buttonDelete_clicked), cb_data);
+
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuCopy);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuEdit);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuDelete);
+
+    gtk_widget_show_all(menu);
+
+    gtk_menu_popup_at_pointer(GTK_MENU(menu), (const GdkEvent *) event);
+}
+
+static gboolean on_right_click_view(GtkTreeView *treeview, GdkEventButton *event, gpointer data)
+{
+    UNUSED_VAR(treeview);
+
+    if (!data) {
+        return FALSE;
+    }
+
+    if (! (event->type == GDK_BUTTON_PRESS  &&  event->button == 3) ) {
+        return FALSE;
+    }
+
+    struct Callback_Data *cb_data = (struct Callback_Data *) data;
+
+    struct List_Store *ls = cb_data->ls;
+    Pass_Store *p = cb_data->p;
+
+    if (p->check_lock()) {
+        if (password_prompt(*p, *ls) != 0) {
+            dialog_box("Failed to unlock pass store", GTK_MESSAGE_ERROR, NULL);
+        }
+
+        return FALSE;
+    }
+
+    show_popup_menu(event, cb_data);
+
+    return FALSE;  // we still want the signal to be caught by the default handler so the row gets selected
+}
+
 /***
  *** GUI class methods
  ***/
@@ -1227,6 +1277,9 @@ void GUI::run(Pass_Store &p)
         return;
     }
 
+    cb_data.ls = &ls;
+    cb_data.p = &p;
+
     GtkButton *buttonAdd = GTK_BUTTON(gtk_builder_get_object(builder, "buttonAdd"));
     GtkButton *buttonDelete = GTK_BUTTON(gtk_builder_get_object(builder, "buttonDelete"));
     GtkButton *buttonCopy = GTK_BUTTON(gtk_builder_get_object(builder, "buttonCopy"));
@@ -1237,9 +1290,7 @@ void GUI::run(Pass_Store &p)
 
     g_object_unref(builder);
 
-    cb_data.ls = &ls;
-    cb_data.p = &p;
-
+    g_signal_connect(ls.view, "button-press-event", G_CALLBACK(on_right_click_view), &cb_data);
     g_signal_connect(buttonAdd, "clicked", G_CALLBACK(on_buttonAdd_clicked), &cb_data);
     g_signal_connect(buttonDelete, "clicked", G_CALLBACK(on_buttonDelete_clicked), &cb_data);
     g_signal_connect(buttonCopy, "clicked", G_CALLBACK(on_buttonCopy_clicked), &cb_data);
