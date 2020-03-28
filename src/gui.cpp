@@ -887,7 +887,7 @@ static void on_menuPassGenGenerate_clicked(GtkButton *button, gpointer data)
     int length = 0;
     bool has_err = true;
     char msg[128];
-    snprintf(msg, sizeof(msg), "Length must be a value between 4 and 64");
+    snprintf(msg, sizeof(msg), "Length must be a value between %d and %d", NUM_RAND_PASS_GUARANTEED_CHARS, NUM_RAND_PASS_MAX_CHARS);
     string password;
 
     if (text_length > 2 || text_length < 1) {
@@ -900,7 +900,7 @@ static void on_menuPassGenGenerate_clicked(GtkButton *button, gpointer data)
         goto on_exit;
     }
 
-    if (length < NUM_PASS_GUARANTEED_CHARS || length > MAX_STORE_PASSWORD_SIZE) {
+    if (length < NUM_RAND_PASS_GUARANTEED_CHARS || length > NUM_RAND_PASS_MAX_CHARS) {
         goto on_exit;
     }
 
@@ -941,7 +941,7 @@ static void on_menuPassGen_activate(GtkMenuItem *menuitem, gpointer data)
     g_object_unref(builder);
 
     gtk_entry_set_max_length(entry1, 2);
-    gtk_entry_set_max_length(entry2, MAX_STORE_PASSWORD_SIZE);
+    gtk_entry_set_max_length(entry2, NUM_RAND_PASS_MAX_CHARS);
 
     cb_data->window = window;
     cb_data->widget1 = GTK_WIDGET(entry1);

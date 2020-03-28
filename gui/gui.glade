@@ -560,7 +560,6 @@
                     <property name="halign">end</property>
                     <property name="margin_left">10</property>
                     <property name="hexpand">True</property>
-                    <property name="max_length">64</property>
                     <property name="visibility">False</property>
                     <property name="invisible_char">•</property>
                     <property name="input_purpose">password</property>
@@ -604,7 +603,6 @@
                     <property name="halign">end</property>
                     <property name="margin_left">10</property>
                     <property name="hexpand">True</property>
-                    <property name="max_length">64</property>
                     <property name="visibility">False</property>
                     <property name="invisible_char">•</property>
                     <property name="input_purpose">password</property>
@@ -648,7 +646,6 @@
                     <property name="halign">end</property>
                     <property name="margin_left">10</property>
                     <property name="hexpand">True</property>
-                    <property name="max_length">64</property>
                     <property name="visibility">False</property>
                     <property name="invisible_char">•</property>
                     <property name="input_purpose">password</property>
@@ -1153,7 +1150,6 @@
                     <property name="halign">end</property>
                     <property name="margin_left">10</property>
                     <property name="hexpand">True</property>
-                    <property name="max_length">64</property>
                     <property name="visibility">False</property>
                     <property name="invisible_char">•</property>
                     <property name="input_purpose">password</property>
@@ -1198,7 +1194,6 @@
                     <property name="halign">end</property>
                     <property name="margin_left">10</property>
                     <property name="hexpand">True</property>
-                    <property name="max_length">64</property>
                     <property name="visibility">False</property>
                     <property name="invisible_char">•</property>
                     <property name="input_purpose">password</property>
@@ -1330,7 +1325,7 @@
                     <property name="width_request">250</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <property name="tooltip_text" translatable="yes">The length of the generated password. Must be between 4 and 64.</property>
+                    <property name="tooltip_text" translatable="yes">The length of the randomly generated password. </property>
                     <property name="halign">end</property>
                     <property name="margin_left">10</property>
                     <property name="hexpand">True</property>
@@ -1378,7 +1373,6 @@
                     <property name="margin_left">10</property>
                     <property name="hexpand">True</property>
                     <property name="editable">False</property>
-                    <property name="max_length">64</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -1494,7 +1488,6 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="tooltip_text" translatable="yes">Type your master password here</property>
-                <property name="max_length">64</property>
                 <property name="input_purpose">password</property>
               </object>
               <packing>

@@ -46,8 +46,8 @@ using namespace std;
 
 #define DELIMITER ":"
 
-#define MAX_ENTRY_KEY_SIZE        (64)
-#define MAX_STORE_PASSWORD_SIZE   (64)
+#define MAX_ENTRY_KEY_SIZE        (256)
+#define MAX_STORE_PASSWORD_SIZE   (256)
 #define MIN_STORE_PASSWORD_SIZE   (8)
 
 /* Seconds to wait since last activity before we prompt the user to enter their password again */

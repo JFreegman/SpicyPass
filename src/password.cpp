@@ -29,8 +29,6 @@
 
 using namespace std;
 
-#define PRINTABLE_CHARS "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890`~!@#$%^&*()=+_-{}[]:;'\",.<>/?\\|"
-
 typedef enum {
     CHAR_UPPERCASE = 0,
     CHAR_LOWERCASE,
@@ -146,10 +144,10 @@ string random_password(unsigned int size)
     vector<char> char_vec = string_to_vec(string(PRINTABLE_CHARS));
 
 #ifdef DEBUG
-    assert(strlen(PRINTABLE_CHARS) == char_vec.size());
+    assert(NUM_RAND_PASS_MAX_CHARS == char_vec.size());
 #endif
 
-    if (size < NUM_PASS_GUARANTEED_CHARS || size > char_vec.size()) {
+    if (size < NUM_RAND_PASS_GUARANTEED_CHARS || size > NUM_RAND_PASS_MAX_CHARS) {
         cerr << "random_password() error: invalid size value" << endl;
         return "";
     }

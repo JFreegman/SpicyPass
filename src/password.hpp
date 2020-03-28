@@ -25,7 +25,11 @@
 
 #include <string>
 
-#define NUM_PASS_GUARANTEED_CHARS (4)
+#define PRINTABLE_CHARS "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890`~!@#$%^&*()=+_-{}[]:;'\",.<>/?\\|"
+
+#define NUM_RAND_PASS_MAX_CHARS ((int) strlen(PRINTABLE_CHARS))
+#define NUM_RAND_PASS_GUARANTEED_CHARS (4)
+
 
 /* Returns a cryptographically secure randomly generated password.
  *

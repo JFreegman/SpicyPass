@@ -74,8 +74,9 @@ static int new_password_prompt(Pass_Store &p, unsigned char *password, size_t ma
     while (true) {
         cout << "Enter new master password: ";
 
-        char pass1[MAX_STORE_PASSWORD_SIZE + 2];
-        char pass2[MAX_STORE_PASSWORD_SIZE + 2];
+        // buffers are oversized by one byte for proper error reporting due to fgets weirdness
+        char pass1[MAX_STORE_PASSWORD_SIZE + 3];
+        char pass2[MAX_STORE_PASSWORD_SIZE + 3];
 
         const char *input1 = fgets(pass1, sizeof(pass1), stdin);
         cout << endl;
@@ -92,7 +93,7 @@ static int new_password_prompt(Pass_Store &p, unsigned char *password, size_t ma
         size_t pass_length = strlen(pass1);
 
         if (pass_length < MIN_STORE_PASSWORD_SIZE || pass_length > max_length) {
-            cout << "Password must be between " << MIN_STORE_PASSWORD_SIZE  << " and " << max_length << " characters long" << endl;
+            cout << "Password must be between " << MIN_STORE_PASSWORD_SIZE  << " and " << (max_length - 1) << " characters long" << endl;
             continue;
         }
 
@@ -463,11 +464,11 @@ static int generate(Pass_Store &p)
             continue;
         }
 
-        if (size >= NUM_PASS_GUARANTEED_CHARS && size <= MAX_STORE_PASSWORD_SIZE) {
+        if (size >= NUM_RAND_PASS_GUARANTEED_CHARS && size <= NUM_RAND_PASS_MAX_CHARS) {
             break;
         }
 
-        cout << "Password must be between " << to_string(NUM_PASS_GUARANTEED_CHARS) << " and " << to_string(MAX_STORE_PASSWORD_SIZE) << " characters in length" << endl;
+        cout << "Password must be between " << to_string(NUM_RAND_PASS_GUARANTEED_CHARS) << " and " << to_string(NUM_RAND_PASS_MAX_CHARS) << " characters in length" << endl;
     }
 
     string pass = random_password(size);
