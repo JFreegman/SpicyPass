@@ -549,7 +549,7 @@ static void on_deleteEntryButtonYes(GtkButton *button, gpointer data)
     GtkTreeModel *model = GTK_TREE_MODEL(ls->store);
     GtkTreeSelection *selection = gtk_tree_view_get_selection(ls->view);
 
-    char msg[128];
+    char msg[MAX_ENTRY_KEY_SIZE + 128];
     bool has_err = true;
     int removed;
     int ret;
@@ -649,7 +649,7 @@ static void on_buttonDelete_clicked(GtkButton *button, gpointer data)
     gchar *key = NULL;
     gtk_tree_model_get(model, &iter, KEY_COLUMN, &key, -1);
 
-    gchar msg[128];
+    gchar msg[MAX_ENTRY_KEY_SIZE + 128];
     snprintf(msg, sizeof(msg), "Are you sure you want to delete \"%s\"?", key);
     gtk_label_set_text(label, msg);
 
