@@ -701,15 +701,10 @@ static void on_buttonCopy_clicked(GtkButton *button, gpointer data)
     }
 
     tuple<string, string> v_item = result.at(0);
-    const gchar *login = get<0>(v_item).c_str();
     const gchar *password = get<1>(v_item).c_str();
 
     GtkClipboard *clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
     gtk_clipboard_set_text(clipboard, password, -1);
-
-    char msg[128];
-    snprintf(msg, sizeof(msg), "Copied password for \"%s\" to clipboard", login);
-    dialog_box(msg, GTK_MESSAGE_INFO, NULL);
 }
 
 static void on_quit(GtkButton *button, gpointer data)
