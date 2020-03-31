@@ -525,15 +525,15 @@ public:
 
             switch (ret) {
                 case -1: {
-                    cout << "Decryption failed: Out of memory" << endl;
+                    cerr << "Decryption failed: Out of memory" << endl;
                     return -2;
                 }
                 case -2: {
-                    cout << "Decryption failed: Corrupt file or bad key" << endl;
+                    cerr << "Decryption failed: Corrupt file or bad key" << endl;
                     return -2;
                 }
                 case -3: {
-                    cout << "Decryption failed: File corrupt" << endl;
+                    cerr << "Decryption failed: File corrupt" << endl;
                     return -2;
                 }
                 default: {

@@ -105,7 +105,7 @@ static int password_prompt(Pass_Store &p, struct List_Store &ls)
     return 0;
 }
 
-static void dialog_box(const gchar *message, GtkMessageType type, GtkWidget *parent)
+static void dialog_box(const char *message, GtkMessageType type, GtkWidget *parent)
 {
     const gchar *name = NULL;
 
@@ -649,7 +649,7 @@ static void on_buttonDelete_clicked(GtkButton *button, gpointer data)
     gchar *key = NULL;
     gtk_tree_model_get(model, &iter, KEY_COLUMN, &key, -1);
 
-    gchar msg[MAX_ENTRY_KEY_SIZE + 128];
+    char msg[MAX_ENTRY_KEY_SIZE + 128];
     snprintf(msg, sizeof(msg), "Are you sure you want to delete \"%s\"?", key);
     gtk_label_set_text(label, msg);
 
@@ -1134,7 +1134,7 @@ on_exit:
 static void show_popup_menu(GdkEventButton *event, struct Callback_Data *cb_data)
 {
     GtkWidget *menu = gtk_menu_new();
-    GtkWidget *menuCopy = gtk_menu_item_new_with_label("Copy Password");
+    GtkWidget *menuCopy = gtk_menu_item_new_with_label("Copy");
     GtkWidget *menuEdit = gtk_menu_item_new_with_label("Edit");
     GtkWidget *menuDelete = gtk_menu_item_new_with_label("Delete");
 

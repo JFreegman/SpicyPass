@@ -120,7 +120,7 @@ static int write_header(ofstream &fp, const unsigned char *hash, const unsigned 
     }
 
     unsigned char m = MAGIC_NUMBER;
-    fp.write((const char *) &m, sizeof(unsigned char));
+    fp.write((char *) &m, sizeof(unsigned char));
     fp.write((char *) hash, CRYPTO_HASH_SIZE);
     fp.write((char *) salt, CRYPTO_SALT_SIZE);
 
