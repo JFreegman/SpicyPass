@@ -260,11 +260,6 @@ static int add(Pass_Store &p)
         return -1;
     }
 
-    if (string_contains(key, DELIMITER)) {
-        cout << "Key may not contain the \"" << DELIMITER << "\" character" << endl;
-        return -1;
-    }
-
     cout << "Enter password (leave empty for a random password): ";
     getline(cin, password);
 

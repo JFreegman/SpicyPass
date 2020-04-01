@@ -241,11 +241,6 @@ static void on_addEntryButtonOk(GtkButton *button, gpointer data)
         goto on_exit;
     }
 
-    if (string_contains(loginText, DELIMITER)) {
-        snprintf(msg, sizeof(msg), "Login may not contain the `%s` character", DELIMITER);
-        goto on_exit;
-    }
-
     exists = p->key_exists(string(loginText));
 
     if (exists == PASS_STORE_LOCKED) {

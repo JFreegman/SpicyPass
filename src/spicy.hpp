@@ -44,8 +44,6 @@
 using namespace std;
 
 
-#define DELIMITER ":"
-
 #define MAX_ENTRY_KEY_SIZE        (256)
 #define MAX_STORE_PASSWORD_SIZE   (256)
 #define MIN_STORE_PASSWORD_SIZE   (8)
@@ -55,6 +53,17 @@ using namespace std;
 
 /* Return code indicating that `idle_lock` is set to true */
 #define PASS_STORE_LOCKED (INT_MIN)
+
+#define DELIMITER "\r"
+#define LEGACY_DELIMITER ":"
+
+/*
+ * File format version is indicated by the first byte in the pass store file.
+ */
+enum {
+    FILE_FORMAT_VERSION_1       = 0x88U,
+    FILE_FORMAT_VERSION_CURRENT = 0x89U
+};
 
 /*
  * We used this struct to store passwords in the store map so that
@@ -134,14 +143,15 @@ private:
      *
      * Returns the number of entries loaded to the store map.
      */
-    size_t load_buffer(char *buf) {
+    size_t load_buffer(char *buf, unsigned char format_version) {
+        const char *delimiter = (format_version == FILE_FORMAT_VERSION_CURRENT) ? DELIMITER : LEGACY_DELIMITER;
         size_t count = 0;
         char *s = NULL;
         char *t = strtok_r((char *) buf, "\n", &s);
 
         while (t) {
             string entry = t;
-            auto d = entry.find(DELIMITER);
+            auto d = entry.find(delimiter);
 
             if (d != string::npos) {
                 string key = entry.substr(0, d);
@@ -504,7 +514,7 @@ public:
      * Return -2 on decryption error.
      * Return PASS_STORE_LOCKED if pass store is locked.
      */
-    int load(ifstream &fp, size_t length) {
+    int load(ifstream &fp, size_t length, unsigned char format_version) {
         if (check_lock()) {
             return PASS_STORE_LOCKED;
         }
@@ -543,7 +553,7 @@ public:
         }
 
         plaintext[plain_length] = 0;
-        size_t num_entries = load_buffer((char *) plaintext);
+        size_t num_entries = load_buffer((char *) plaintext, format_version);
 
         crypto_memwipe(plaintext, plain_length);
         free(plaintext);

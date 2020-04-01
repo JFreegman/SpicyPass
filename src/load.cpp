@@ -27,7 +27,13 @@ using namespace std;
 
 #define DEFAULT_FILENAME ".spicypass"
 
-#define MAGIC_NUMBER (0x88U)  // Identifies pass store file
+/*
+ * Return true if `format_version` matches a known file format version.
+ */
+static bool valid_format_version(unsigned char format_version)
+{
+    return format_version >= FILE_FORMAT_VERSION_1 && format_version <= FILE_FORMAT_VERSION_CURRENT;
+}
 
 /*
  * Returns a string containing pass store file path.
@@ -119,7 +125,7 @@ static int write_header(ofstream &fp, const unsigned char *hash, const unsigned 
         return -1;
     }
 
-    unsigned char m = MAGIC_NUMBER;
+    unsigned char m = FILE_FORMAT_VERSION_CURRENT;
     fp.write((char *) &m, sizeof(unsigned char));
     fp.write((char *) hash, CRYPTO_HASH_SIZE);
     fp.write((char *) salt, CRYPTO_SALT_SIZE);
@@ -138,13 +144,13 @@ static int write_header(ofstream &fp, const unsigned char *hash, const unsigned 
  * Return 0 on succes.
  * Return -1 on read fail or if file stream is not at the beginning of file.
  */
-static int read_header(ifstream &fp, unsigned char *magic_number, unsigned char *hash, unsigned char *salt)
+static int read_header(ifstream &fp, unsigned char *format_version, unsigned char *hash, unsigned char *salt)
 {
     if (fp.tellg() != 0) {
         return -1;
     }
 
-    fp.read((char *) magic_number, sizeof(unsigned char));
+    fp.read((char *) format_version, sizeof(unsigned char));
     fp.read((char *) hash, CRYPTO_HASH_SIZE);
     fp.read((char *) salt, CRYPTO_SALT_SIZE);
 
@@ -288,15 +294,15 @@ int load_password_store(Pass_Store &p, const unsigned char *password, size_t len
         return -1;
     }
 
-    unsigned char magic_number;
+    unsigned char format_version;
     unsigned char hash[CRYPTO_HASH_SIZE];
     unsigned char salt[CRYPTO_SALT_SIZE];
 
-    if (read_header(fp, &magic_number, hash, salt) != 0) {
+    if (read_header(fp, &format_version, hash, salt) != 0) {
         return -1;
     }
 
-    if (magic_number != MAGIC_NUMBER) {
+    if (!valid_format_version(format_version)) {
         fp.close();
         return -4;
     }
@@ -344,7 +350,7 @@ int load_password_store(Pass_Store &p, const unsigned char *password, size_t len
     int num_entries = 0;
 
     if (file_length > PASS_STORE_HEADER_SIZE) {
-        num_entries = p.load(fp, file_length - PASS_STORE_HEADER_SIZE);
+        num_entries = p.load(fp, file_length - PASS_STORE_HEADER_SIZE, format_version);
 
 #ifdef DEBUG
         assert(num_entries != PASS_STORE_LOCKED);
