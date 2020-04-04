@@ -305,7 +305,7 @@ static void on_buttonAdd_clicked(GtkButton *button, gpointer data)
 
     g_object_unref(builder);
 
-    gtk_entry_set_max_length(loginEntry, MAX_ENTRY_KEY_SIZE);
+    gtk_entry_set_max_length(loginEntry, MAX_STORE_KEY_SIZE);
     gtk_entry_set_max_length(passEntry, MAX_STORE_PASSWORD_SIZE);
 
     cb_data->widget1 = GTK_WIDGET(loginEntry);
@@ -466,7 +466,7 @@ static void on_buttonEdit_clicked(GtkButton *button, gpointer data)
 
     g_object_unref(builder);
 
-    gtk_entry_set_max_length(loginEntry, MAX_ENTRY_KEY_SIZE);
+    gtk_entry_set_max_length(loginEntry, MAX_STORE_KEY_SIZE);
     gtk_entry_set_max_length(passEntry, MAX_STORE_PASSWORD_SIZE);
 
     cb_data->widget1 = GTK_WIDGET(loginEntry);
@@ -544,7 +544,7 @@ static void on_deleteEntryButtonYes(GtkButton *button, gpointer data)
     GtkTreeModel *model = GTK_TREE_MODEL(ls->store);
     GtkTreeSelection *selection = gtk_tree_view_get_selection(ls->view);
 
-    char msg[MAX_ENTRY_KEY_SIZE + 128];
+    char msg[MAX_STORE_KEY_SIZE + 128];
     bool has_err = true;
     int removed;
     int ret;
@@ -644,7 +644,7 @@ static void on_buttonDelete_clicked(GtkButton *button, gpointer data)
     gchar *key = NULL;
     gtk_tree_model_get(model, &iter, KEY_COLUMN, &key, -1);
 
-    char msg[MAX_ENTRY_KEY_SIZE + 128];
+    char msg[MAX_STORE_KEY_SIZE + 128];
     snprintf(msg, sizeof(msg), "Are you sure you want to delete \"%s\"?", key);
     gtk_label_set_text(label, msg);
 
@@ -754,8 +754,8 @@ static void on_changePassButtonOk_clicked(GtkButton *button, gpointer data)
     unsigned char old_pass_buf[MAX_STORE_PASSWORD_SIZE + 2];
     unsigned char new_pass_buf[MAX_STORE_PASSWORD_SIZE + 2];
 
-    if (new_pass1_len < MIN_STORE_PASSWORD_SIZE) {
-        snprintf(msg, sizeof(msg), "Password must be at least %d characters long", MIN_STORE_PASSWORD_SIZE);
+    if (new_pass1_len < MIN_MASTER_PASSWORD_SIZE) {
+        snprintf(msg, sizeof(msg), "Password must be at least %d characters long", MIN_MASTER_PASSWORD_SIZE);
         goto on_exit;
     }
 
@@ -1087,8 +1087,8 @@ static void on_newPwButtonEnter_clicked(GtkEntry *button, gpointer data)
                                 "It is strongly recommended that you regularly create backups of the store file, "\
                                 "located at: %s", path.c_str());
 
-    if (text1_len < MIN_STORE_PASSWORD_SIZE) {
-        snprintf(msg, sizeof(msg), "Password must be at least %d characters long", MIN_STORE_PASSWORD_SIZE);
+    if (text1_len < MIN_MASTER_PASSWORD_SIZE) {
+        snprintf(msg, sizeof(msg), "Password must be at least %d characters long", MIN_MASTER_PASSWORD_SIZE);
         goto on_exit;
     }
 

@@ -43,10 +43,14 @@
 
 using namespace std;
 
+/* The maximum number of characters for a pass store entry key/login */
+#define MAX_STORE_KEY_SIZE        (256)
 
-#define MAX_ENTRY_KEY_SIZE        (256)
+/* The maximum number of characters for a pass store entry value/password */
 #define MAX_STORE_PASSWORD_SIZE   (256)
-#define MIN_STORE_PASSWORD_SIZE   (8)
+
+/* The minimum number of characters for a master password */
+#define MIN_MASTER_PASSWORD_SIZE  (8)
 
 /* Seconds to wait since last activity before we prompt the user to enter their password again */
 #define IDLE_LOCK_TIMEOUT (60U * 10U)
@@ -54,6 +58,7 @@ using namespace std;
 /* Return code indicating that `idle_lock` is set to true */
 #define PASS_STORE_LOCKED (INT_MIN)
 
+/* The byte used to separate the key:value pairs in file format. Legacy delimiter is used for all versions <= 0.5.2 */
 #define DELIMITER "\r"
 #define LEGACY_DELIMITER ":"
 
@@ -223,10 +228,21 @@ public:
     }
 
     /*
-     *  Set and get gui status respectively. These methods are not thread safe.
+     *  Set and get gui status respectively.
      */
-    void set_gui_status(bool have_gui) { gui_enabled = have_gui; }
-    bool get_gui_status(void) { return gui_enabled; }
+    void set_gui_status(bool have_gui) {
+        s_lock();
+        gui_enabled = have_gui;
+        s_unlock();
+    }
+
+    bool get_gui_status(void) {
+        s_lock();
+        bool enabled = gui_enabled;
+        s_unlock();
+
+        return enabled;
+    }
 
     /*
      * Return true if `idle_lock` is enabled. If lock is not enabled,

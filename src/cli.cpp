@@ -92,8 +92,8 @@ static int new_password_prompt(Pass_Store &p, unsigned char *password, size_t ma
 
         size_t pass_length = strlen(pass1);
 
-        if (pass_length < MIN_STORE_PASSWORD_SIZE || pass_length > max_length) {
-            cout << "Password must be between " << MIN_STORE_PASSWORD_SIZE  << " and " << (max_length - 1) << " characters long" << endl;
+        if (pass_length < MIN_MASTER_PASSWORD_SIZE || pass_length > max_length) {
+            cout << "Password must be between " << MIN_MASTER_PASSWORD_SIZE  << " and " << (max_length - 1) << " characters long" << endl;
             continue;
         }
 
@@ -245,7 +245,7 @@ static int add(Pass_Store &p)
         return PASS_STORE_LOCKED;
     }
 
-    if (key.length() > MAX_ENTRY_KEY_SIZE) {
+    if (key.length() > MAX_STORE_KEY_SIZE) {
         cout << "Key is too long" << endl;
         return -1;
     }
