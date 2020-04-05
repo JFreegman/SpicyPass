@@ -297,12 +297,12 @@ public:
 
         idle_lock = true;
 
+        s_unlock();
+
         if (!get_gui_status()) {
             clear_console();
             cout << "Idle lock has been activated. Press enter to unlock." << endl;
         }
-
-        s_unlock();
 
         clear();
     }
