@@ -222,19 +222,15 @@ static void on_addEntryButtonOk(GtkButton *button, gpointer data)
     gint keylen = gtk_entry_get_text_length(loginEntry);
     gint passlen = gtk_entry_get_text_length(passEntry);
 
-    gchar passBuf[MAX_STORE_PASSWORD_SIZE + 1];
-
-#ifdef DEBUG
-    assert((size_t) passlen < sizeof(passBuf));
-#endif
-
-    memcpy(passBuf, passText, passlen);
-    passBuf[passlen] = 0;
-
     char msg[128];
     bool has_err = true;
     int exists;
     int ret;
+
+    if (strlen(passText) > MAX_STORE_PASSWORD_SIZE) {  // byte size does not always match passlen
+        snprintf(msg, sizeof(msg), "Password is too long");
+        goto on_exit;
+    }
 
     if (keylen == 0 || passlen == 0) {
         snprintf(msg, sizeof(msg), "Entry cannot be empty");
@@ -257,7 +253,7 @@ static void on_addEntryButtonOk(GtkButton *button, gpointer data)
         goto on_exit;
     }
 
-    if (p->insert(string(loginText), string(passBuf)) != 0) {
+    if (p->insert(string(loginText), string(passText)) != 0) {
         snprintf(msg, sizeof(msg), "Failed to add entry");
         goto on_exit;
     }
@@ -356,20 +352,16 @@ static void on_editEntryButtonOk(GtkButton *button, gpointer data)
     gint keylen = gtk_entry_get_text_length(loginEntry);
     gint passlen = gtk_entry_get_text_length(passEntry);
 
-    gchar passBuf[MAX_STORE_PASSWORD_SIZE + 1];
-
-#ifdef DEBUG
-    assert((size_t) keylen < sizeof(passBuf));
-#endif
-
-    memcpy(passBuf, passText, passlen);
-    passBuf[passlen] = 0;
-
     char msg[128];
     bool has_err = true;
     int ret;
     GtkTreeIter iter;
     gchar *old_key = NULL;
+
+    if (strlen(passText) > MAX_STORE_PASSWORD_SIZE) {  // byte size does not always match passlen
+        snprintf(msg, sizeof(msg), "Password is too long");
+        goto on_exit;
+    }
 
     if (keylen == 0) {
         snprintf(msg, sizeof(msg), "Entry cannot be empty");
@@ -381,19 +373,6 @@ static void on_editEntryButtonOk(GtkButton *button, gpointer data)
         goto on_exit;
     }
 
-    if (passlen == 0) {
-        string password = random_password(16U);
-
-        if (password.empty()) {
-            snprintf(msg, sizeof(msg), "Failed to generate random password");
-            goto on_exit;
-        }
-
-        passlen = password.length();
-        memcpy(passBuf, password.c_str(), passlen);
-        passBuf[passlen] = 0;
-    }
-
     if (!gtk_tree_selection_get_selected(selection, &model, &iter)) {
         snprintf(msg, sizeof(msg), "Selection not found");
         goto on_exit;
@@ -401,7 +380,18 @@ static void on_editEntryButtonOk(GtkButton *button, gpointer data)
 
     gtk_tree_model_get(model, &iter, KEY_COLUMN, &old_key, -1);
 
-    ret = p->replace(string(old_key), string(loginText), string(passBuf));
+    if (passlen == 0) {
+        string randPass = random_password(16U);
+
+        if (randPass.empty()) {
+            snprintf(msg, sizeof(msg), "Failed to generate random password");
+            goto on_exit;
+        }
+
+        ret = p->replace(string(old_key), string(loginText), randPass);
+    } else {
+        ret = p->replace(string(old_key), string(loginText), string(passText));
+    }
 
     g_free(old_key);
 
@@ -422,7 +412,7 @@ static void on_editEntryButtonOk(GtkButton *button, gpointer data)
             goto on_exit;
         }
         default: {
-            snprintf(msg, sizeof(msg), "Failed to update entry");
+            snprintf(msg, sizeof(msg), "Failed to update entry (error code %d)", ret);
             goto on_exit;
         }
     }
