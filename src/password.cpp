@@ -126,7 +126,8 @@ static void shuffle_vec(vector<char> &vec)
     }
 }
 
-/* Returns a cryptographically secure randomly generated password.
+/*
+ * Returns a cryptographically secure randomly generated password.
  *
  * `size` must be greater than or equal to the number of guaranteed characters (4)
  * and less than or equal to the total number of ASCII printable characters.

@@ -416,9 +416,13 @@ static int fetch(Pass_Store &p)
         return -1;
     }
 
+    p.s_lock();
+
     for (const auto &item: result) {
         cout << get<0>(item) << ": " << get<1>(item) << endl;
     }
+
+    p.s_unlock();
 
     return 0;
 }

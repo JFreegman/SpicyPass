@@ -87,7 +87,9 @@ private:
     unsigned char key_salt[CRYPTO_SALT_SIZE];
     unsigned char password_hash[CRYPTO_HASH_SIZE];
 
+    /* This mutex is responsible for protecting all variables and data stored within the Pass_Store instance. */
     mutex store_m;
+
     bool gui_enabled = false;
     bool idle_lock = false;
     bool shutdown_signal = false;
@@ -200,13 +202,13 @@ private:
         return exists;
     }
 
+public:
     /*
-     * Lock and unlock the pass store mutex.
+     * Lock and unlock the pass store mutex respectively.
      */
     void s_lock(void)   { store_m.lock();   }
     void s_unlock(void) { store_m.unlock(); }
 
-public:
     /*
      * Signals shutdown. This is used to notify threads when it's time to stop.
      */
@@ -438,9 +440,11 @@ public:
 
     /*
      * Puts matches for `search_key` in `result`. The first tuple member is the key and
-     * the second member is the password.
+     * the second member is the password. If `exact` is false it will return all partial matches.
      *
-     * If `exact` is false it will return all partial matches.
+     * Note: The second second tuple items (passwords) must be locked by the pass store mutex before
+     * they are accessed, as they are pointers owned by the pass store object and can theoretically
+     * be accessed by other threads.
      *
      * Return 0 on succsess.
      * Return PASS_STORE_LOCKED if pass store is locked.

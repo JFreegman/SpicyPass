@@ -478,7 +478,7 @@ static void on_buttonEdit_clicked(GtkButton *button, gpointer data)
     const gchar *passwordText;
     int matches = 0;
     vector<tuple<string, const char *>> result;
-    tuple<string, string> v_item;
+    tuple<string, const char *> v_item;
     GtkTreeIter iter;
 
     if (!gtk_tree_selection_get_selected(selection, &model, &iter)) {
@@ -506,10 +506,13 @@ static void on_buttonEdit_clicked(GtkButton *button, gpointer data)
 
     v_item = result.at(0);
     loginText = get<0>(v_item).c_str();
-    passwordText = get<1>(v_item).c_str();
+
+    p->s_lock();
+    passwordText = get<1>(v_item);
+    gtk_entry_set_text(passEntry, passwordText);
+    p->s_unlock();
 
     gtk_entry_set_text(loginEntry, loginText);
-    gtk_entry_set_text(passEntry, passwordText);
 
     gtk_widget_show(window);
 
@@ -685,11 +688,15 @@ static void on_buttonCopy_clicked(GtkButton *button, gpointer data)
         return;
     }
 
-    tuple<string, string> v_item = result.at(0);
-    const gchar *password = get<1>(v_item).c_str();
-
     GtkClipboard *clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
+    tuple<string, const char *> v_item = result.at(0);
+
+    p->s_lock();
+
+    const gchar *password = get<1>(v_item);
     gtk_clipboard_set_text(clipboard, password, -1);
+
+    p->s_unlock();
 }
 
 static void on_quit(GtkButton *button, gpointer data)
