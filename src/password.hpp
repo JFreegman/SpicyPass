@@ -25,13 +25,14 @@
 
 #include <string>
 
-#define PRINTABLE_CHARS "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890`~!@#$%^&*()=+_-{}[]:;'\",.<>/?\\|"
+/* The maximum number of characters a randomly generated password can have. */
+#define NUM_RAND_PASS_MAX_CHARS (256)
 
-#define NUM_RAND_PASS_MAX_CHARS ((int) strlen(PRINTABLE_CHARS))
+/* The minimum number of characters a randomly generated password can have. */
 #define NUM_RAND_PASS_GUARANTEED_CHARS (4)
 
-
-/* Returns a cryptographically secure randomly generated password.
+/*
+ * Returns a cryptographically secure randomly generated password.
  *
  * `size` must be greater than or equal to the number of guaranteed characters (4)
  * and less than or equal to the total number of ASCII printable characters.
@@ -39,8 +40,8 @@
  * Password is guaranteed to meet minimum requirements as follows:
  * - At least one lower-case and upper-case letter
  * - At least one digit
- * - At least one symbol character
- * - No duplicate characters
+ * - At least one symbol
+ * - No repeating sequences
  */
 std::string random_password(unsigned int size);
 

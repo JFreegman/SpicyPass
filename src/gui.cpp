@@ -36,6 +36,9 @@
 #define GLADE_FILE_PATH "../gui/gui.glade"
 #endif
 
+/* The max number of characters the random password generator length entry field can contain */
+#define RAND_PASS_ENTRY_MAX_LENGTH (3)
+
 enum {
    KEY_COLUMN,
    PASS_COLUMN,
@@ -877,7 +880,7 @@ static void on_menuPassGenGenerate_clicked(GtkButton *button, gpointer data)
     snprintf(msg, sizeof(msg), "Length must be a value between %d and %d", NUM_RAND_PASS_GUARANTEED_CHARS, NUM_RAND_PASS_MAX_CHARS);
     string password;
 
-    if (text_length > 2 || text_length < 1) {
+    if (text_length > RAND_PASS_ENTRY_MAX_LENGTH || text_length < 1) {
         goto on_exit;
     }
 
@@ -927,7 +930,7 @@ static void on_menuPassGen_activate(GtkMenuItem *menuitem, gpointer data)
 
     g_object_unref(builder);
 
-    gtk_entry_set_max_length(entry1, 2);
+    gtk_entry_set_max_length(entry1, RAND_PASS_ENTRY_MAX_LENGTH);
     gtk_entry_set_max_length(entry2, NUM_RAND_PASS_MAX_CHARS);
 
     cb_data->window = window;

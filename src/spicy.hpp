@@ -442,7 +442,7 @@ public:
      * Puts matches for `search_key` in `result`. The first tuple member is the key and
      * the second member is the password. If `exact` is false it will return all partial matches.
      *
-     * Note: The second second tuple items (passwords) must be locked by the pass store mutex before
+     * Note: The second tuple items (passwords) must be locked by the pass store mutex before
      * they are accessed, as they are pointers owned by the pass store object and can theoretically
      * be accessed by other threads.
      *

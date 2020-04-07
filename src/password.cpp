@@ -29,6 +29,8 @@
 
 using namespace std;
 
+#define PRINTABLE_CHARS "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890`~!@#$%^&*()=+_-{}[]:;'\",.<>/?\\|"
+
 typedef enum {
     CHAR_UPPERCASE = 0,
     CHAR_LOWERCASE,
@@ -135,18 +137,14 @@ static void shuffle_vec(vector<char> &vec)
  * Password is guaranteed to meet minimum requirements as follows:
  * - At least one lower-case and upper-case letter
  * - At least one digit
- * - At least one symbol character
- * - No duplicate characters
+ * - At least one symbol
+ * - No repeating sequences
  */
 string random_password(unsigned int size)
 {
     vector<char> result;
-    vector<char> discarded;
     vector<char> char_vec = string_to_vec(string(PRINTABLE_CHARS));
-
-#ifdef DEBUG
-    assert(NUM_RAND_PASS_MAX_CHARS == char_vec.size());
-#endif
+    auto char_vec_size = char_vec.size();
 
     if (size < NUM_RAND_PASS_GUARANTEED_CHARS || size > NUM_RAND_PASS_MAX_CHARS) {
         cerr << "random_password() error: invalid size value" << endl;
@@ -157,27 +155,21 @@ string random_password(unsigned int size)
     bool have_upper = false;
     bool have_digit = false;
     bool have_symbol = false;
+    char last_char = 0;
 
     do {
-        auto vec_size = char_vec.size();
+        auto index = crypto_random_number(char_vec_size);
+        auto c = char_vec.at(index);
 
-        if (vec_size == 0) {
-            char_vec = discarded;
-#ifdef DEBUG
-            assert(char_vec.size() != 0);
-#endif
+        if (c == last_char) {
             continue;
         }
 
-        auto index = crypto_random_number(vec_size);
-        auto c = char_vec.at(index);
-        char_vec.erase(char_vec.begin() + index);
-
         if (good_char(c, &have_lower, &have_upper, &have_digit, &have_symbol)) {
             result.push_back(c);
-        } else {
-            discarded.push_back(c);
+            last_char = c;
         }
+
     } while (result.size() < size);
 
     shuffle_vec(result);
