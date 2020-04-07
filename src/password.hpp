@@ -29,7 +29,7 @@
 #define NUM_RAND_PASS_MAX_CHARS (256)
 
 /* The minimum number of characters a randomly generated password can have. */
-#define NUM_RAND_PASS_GUARANTEED_CHARS (4)
+#define NUM_RAND_PASS_GUARANTEED_CHARS (10)
 
 /*
  * Returns a cryptographically secure randomly generated password.
