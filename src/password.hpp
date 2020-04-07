@@ -29,7 +29,7 @@
 #define NUM_RAND_PASS_MAX_CHARS (256)
 
 /* The minimum number of characters a randomly generated password can have. */
-#define NUM_RAND_PASS_GUARANTEED_CHARS (10)
+#define NUM_RAND_PASS_MIN_CHARS (10)
 
 /*
  * Returns a cryptographically secure randomly generated password.
@@ -41,7 +41,7 @@
  * - At least one lower-case and upper-case letter
  * - At least one digit
  * - At least one symbol
- * - No repeating sequences
+ * - No repeating characters
  */
 std::string random_password(unsigned int size);
 

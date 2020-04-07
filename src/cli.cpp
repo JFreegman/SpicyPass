@@ -463,11 +463,11 @@ static int generate(Pass_Store &p)
             continue;
         }
 
-        if (size >= NUM_RAND_PASS_GUARANTEED_CHARS && size <= NUM_RAND_PASS_MAX_CHARS) {
+        if (size >= NUM_RAND_PASS_MIN_CHARS && size <= NUM_RAND_PASS_MAX_CHARS) {
             break;
         }
 
-        cout << "Password must be between " << to_string(NUM_RAND_PASS_GUARANTEED_CHARS) << " and " << to_string(NUM_RAND_PASS_MAX_CHARS) << " characters in length" << endl;
+        cout << "Password must be between " << to_string(NUM_RAND_PASS_MIN_CHARS) << " and " << to_string(NUM_RAND_PASS_MAX_CHARS) << " characters in length" << endl;
     }
 
     string pass = random_password(size);

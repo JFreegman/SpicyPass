@@ -123,7 +123,7 @@ static bool good_char(const char c, bool *have_lower, bool *have_upper,
  * - At least one lower-case and upper-case letter
  * - At least one digit
  * - At least one symbol
- * - No repeating sequences
+ * - No repeating characters
  */
 string random_password(unsigned int size)
 {
@@ -131,7 +131,7 @@ string random_password(unsigned int size)
     vector<char> char_vec = string_to_vec(string(PRINTABLE_CHARS));
     auto char_vec_size = char_vec.size();
 
-    if (size < NUM_RAND_PASS_GUARANTEED_CHARS || size > NUM_RAND_PASS_MAX_CHARS) {
+    if (size < NUM_RAND_PASS_MIN_CHARS || size > NUM_RAND_PASS_MAX_CHARS) {
         cerr << "random_password() error: invalid size value" << endl;
         return "";
     }

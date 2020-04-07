@@ -877,7 +877,7 @@ static void on_menuPassGenGenerate_clicked(GtkButton *button, gpointer data)
     int length = 0;
     bool has_err = true;
     char msg[128];
-    snprintf(msg, sizeof(msg), "Length must be a value between %d and %d", NUM_RAND_PASS_GUARANTEED_CHARS, NUM_RAND_PASS_MAX_CHARS);
+    snprintf(msg, sizeof(msg), "Length must be a value between %d and %d", NUM_RAND_PASS_MIN_CHARS, NUM_RAND_PASS_MAX_CHARS);
     string password;
 
     if (text_length > RAND_PASS_ENTRY_MAX_LENGTH || text_length < 1) {
@@ -890,7 +890,7 @@ static void on_menuPassGenGenerate_clicked(GtkButton *button, gpointer data)
         goto on_exit;
     }
 
-    if (length < NUM_RAND_PASS_GUARANTEED_CHARS || length > NUM_RAND_PASS_MAX_CHARS) {
+    if (length < NUM_RAND_PASS_MIN_CHARS || length > NUM_RAND_PASS_MAX_CHARS) {
         goto on_exit;
     }
 
