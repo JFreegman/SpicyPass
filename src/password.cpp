@@ -114,6 +114,21 @@ static bool good_char(const char c, bool *have_lower, bool *have_upper,
 }
 
 /*
+ * Shuffles items in `vec`.
+ */
+static void shuffle_vec(vector<char> &vec)
+{
+    auto vec_size = vec.size();
+
+    for (size_t i = 0; i < vec_size; ++i) {
+        auto index = crypto_random_number(vec_size);
+        auto a = vec.at(i);
+        vec.at(i) = vec.at(index);
+        vec.at(index) = a;
+    }
+}
+
+/*
  * Returns a cryptographically secure randomly generated password.
  *
  * `size` must be greater than or equal to the number of guaranteed characters (4)
@@ -123,7 +138,6 @@ static bool good_char(const char c, bool *have_lower, bool *have_upper,
  * - At least one lower-case and upper-case letter
  * - At least one digit
  * - At least one symbol
- * - No repeating characters
  */
 string random_password(unsigned int size)
 {
@@ -156,6 +170,8 @@ string random_password(unsigned int size)
         }
 
     } while (result.size() < size);
+
+    shuffle_vec(result);
 
     return vec_to_string(result);
 }

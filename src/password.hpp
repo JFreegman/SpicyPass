@@ -41,7 +41,6 @@
  * - At least one lower-case and upper-case letter
  * - At least one digit
  * - At least one symbol
- * - No repeating characters
  */
 std::string random_password(unsigned int size);
 

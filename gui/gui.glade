@@ -1367,7 +1367,7 @@
                     <property name="width_request">250</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <property name="tooltip_text" translatable="yes">Password is guaranteed to have at least one digit, one symbol, one lower-case and one upper-case character, and no repeating characters.</property>
+                    <property name="tooltip_text" translatable="yes">Password is guaranteed to have at least one digit, one symbol, one lower-case and one upper-case character.</property>
                     <property name="halign">end</property>
                     <property name="margin_left">10</property>
                     <property name="hexpand">True</property>
