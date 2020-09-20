@@ -151,7 +151,7 @@ private:
      * Returns the number of entries loaded to the store map.
      */
     size_t load_buffer(char *buf, unsigned char format_version) {
-        const char *delimiter = (format_version == FILE_FORMAT_VERSION_CURRENT) ? DELIMITER : LEGACY_DELIMITER;
+        const char *delimiter = (format_version == FILE_FORMAT_VERSION_1) ? LEGACY_DELIMITER : DELIMITER;
         size_t count = 0;
         char *s = NULL;
         char *t = strtok_r((char *) buf, "\n", &s);
