@@ -32,6 +32,9 @@ struct Callback_Data {
     GtkWidget         *widget1;
     GtkWidget         *widget2;
     GtkWidget         *widget3;
+    GtkWidget         *main_window;
+    GtkApplication    *app;
+
     Pass_Store        *p;
     struct List_Store *ls;
 };
@@ -46,12 +49,14 @@ struct List_Store {
 
 class GUI {
 private:
-    struct List_Store ls;
-    struct Callback_Data cb_data;
+    struct List_Store     ls;
+    struct Callback_Data  cb_data;
+    GtkWidget             *main_window;
+    GtkApplication        *app;
 
     void init_window(GtkBuilder *builder);
     int load_new(Pass_Store &p, GtkBuilder *builder);
-    int load(Pass_Store &p);
+    int load(struct Callback_Data *cb_data);
 public:
     void run(Pass_Store &p);
     GUI(void);
