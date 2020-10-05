@@ -329,12 +329,12 @@ static void on_buttonAdd_clicked(GtkButton *button, gpointer data)
         gtk_entry_set_text(passEntry, password.c_str());
     }
 
-    show_window(cb_data->app, window);
-
     if (p->check_lock()) {
         if (password_prompt(cb_data) != 0) {
             dialog_box(cb_data->app, "Failed to unlock pass store", GTK_MESSAGE_ERROR, window);
         }
+    } else {
+        show_window(cb_data->app, window);
     }
 }
 
@@ -740,6 +740,7 @@ static void on_changePassButtonOk_clicked(GtkButton *button, gpointer data)
             dialog_box(cb_data->app, "Failed to unlock pass store", GTK_MESSAGE_ERROR, window);
         }
 
+        gtk_widget_destroy(window);
         return;
     }
 
@@ -1207,6 +1208,11 @@ static gboolean on_right_click_view(GtkTreeView *treeview, GdkEventButton *event
     return FALSE;  // we still want the signal to be caught by the default handler so the row gets selected
 }
 
+
+/*
+ * Toggles visible status of application when tray icon is clicked. All windows
+ * are treated as a single unit, and focus order is always maintained.
+ */
 static void on_tray_icon_left_click(GtkStatusIcon *status_icon, gpointer data)
 {
     UNUSED_VAR(status_icon);
@@ -1217,21 +1223,27 @@ static void on_tray_icon_left_click(GtkStatusIcon *status_icon, gpointer data)
 
     struct Callback_Data *cb_data = (struct Callback_Data *) data;
 
-    bool main_window_visible = gtk_widget_get_visible(cb_data->main_window);
+    GList *windows = gtk_application_get_windows(cb_data->app);
 
-    // Don't allow minimize to tray if pass store is locked - this causes scary bugs
-    if (cb_data->p->check_lock() && main_window_visible) {
+    if (!windows) {
         return;
     }
 
-    gtk_widget_set_visible(cb_data->main_window, !main_window_visible);
+    if (!cb_data->app_hidden) {
+        for (GList *list = windows; list; list = g_list_next(list)) {
+            GtkWidget *win = GTK_WIDGET(list->data);
+            gtk_widget_set_visible(win, false);
+        }
+    } else {
+        windows = g_list_last(windows);
 
-    GList *windows = gtk_application_get_windows(cb_data->app);
-
-    for (GList *list = windows; list; list = g_list_next(list)) {
-        GtkWidget *win = GTK_WIDGET(list->data);
-        gtk_widget_set_visible(win, !gtk_widget_get_visible(win));
+        for (GList *list = windows; list; list = g_list_previous(list)) {
+            GtkWidget *win = GTK_WIDGET(list->data);
+            gtk_widget_set_visible(win, true);
+        }
     }
+
+    cb_data->app_hidden = !cb_data->app_hidden;
 }
 
 static gboolean on_tray_icon_right_click(GtkStatusIcon *status_icon, GdkEventButton *event, gpointer data)
@@ -1258,7 +1270,7 @@ static gboolean on_tray_icon_right_click(GtkStatusIcon *status_icon, GdkEventBut
  ***/
 void GUI::init_window(GtkBuilder *builder)
 {
-    main_window = GTK_WIDGET(gtk_builder_get_object(builder, "window"));
+    GtkWidget *main_window = GTK_WIDGET(gtk_builder_get_object(builder, "window"));
     gtk_builder_connect_signals(builder, NULL);
     g_signal_connect(main_window , "destroy", G_CALLBACK(gtk_main_quit), NULL);
     g_signal_connect(main_window, "key-press-event", G_CALLBACK(on_special_key_press), &cb_data);
@@ -1282,7 +1294,7 @@ void GUI::init_window(GtkBuilder *builder)
         fprintf(stderr, "%s\n", err->message);
     }
 
-    gtk_widget_show(main_window);
+    show_window(app, main_window);
 }
 
 int GUI::load(struct Callback_Data *cb_data)
@@ -1311,7 +1323,6 @@ int GUI::load_new(Pass_Store &p, GtkBuilder *builder)
         return -1;
     }
 
-    cb_data->window = newPwWindow;
     cb_data->widget1 = GTK_WIDGET(newPwEntry1);
     cb_data->widget2 = GTK_WIDGET(newPwEntry2);
     cb_data->ls = &ls;
@@ -1354,8 +1365,6 @@ void GUI::run(Pass_Store &p)
         cerr << "load failed in GUI::run()" << endl;
         return;
     }
-
-    cb_data.main_window = main_window;
 
     GtkStatusIcon *tray_icon = GTK_STATUS_ICON(g_object_ref_sink(gtk_builder_get_object(builder, "tray_icon")));
     gtk_status_icon_set_from_file(tray_icon, SpicyPass_LOGO_FILE_PATH);
