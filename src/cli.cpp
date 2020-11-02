@@ -338,8 +338,6 @@ static int add(Pass_Store &p)
             return -1;
         }
     }
-
-    return 0;
 }
 
 static int remove(Pass_Store &p)
