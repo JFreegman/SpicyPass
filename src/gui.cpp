@@ -1483,6 +1483,7 @@ GUI::GUI(void)
 {
     memset(&cb_data, 0, sizeof(cb_data));
     memset(&ls, 0, sizeof(ls));
+    app = NULL;
 }
 
 #endif // GUI_SUPPORT
