@@ -49,7 +49,7 @@ static void print_version(const char *binary_name)
 #endif // _WIN32
 }
 
-void store_lock_loop(Pass_Store &p)
+static void store_lock_loop(Pass_Store &p)
 {
     while (p.running()) {
         p.poll_idle();
@@ -58,9 +58,9 @@ void store_lock_loop(Pass_Store &p)
 }
 
 /*
- * Return true if the --gui option is set and we have gui support.
+ * Return true if the --gui option is set.
  */
-bool gui_enabled(int argc, char **argv)
+static bool gui_enabled(int argc, char **argv)
 {
     if (argc <= 1) {
         return true;
@@ -77,7 +77,7 @@ bool gui_enabled(int argc, char **argv)
     return true;
 }
 
-void set_file_permissions(void)
+static void set_file_permissions(void)
 {
 #ifndef _WIN32
     umask(S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);

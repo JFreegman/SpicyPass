@@ -90,7 +90,6 @@ private:
 
     /* This mutex is responsible for protecting all variables and data stored within the Pass_Store instance. */
     mutex store_m;
-
     bool gui_enabled = false;
     bool idle_lock = false;
     bool shutdown_signal = false;
@@ -99,7 +98,7 @@ private:
     /*
      * Returns a string containing a key value entry in file format.
      */
-    string format_entry(string key, const char *value)
+    string format_entry(const string &key, const char *value)
     {
         return key + DELIMITER + value + '\n';
     }
@@ -190,7 +189,7 @@ private:
      *
      * Return false if key was not found.
      */
-    bool delete_entry(string key)
+    bool delete_entry(const string &key)
     {
         s_lock();
 
@@ -208,6 +207,12 @@ private:
     }
 
 public:
+    Pass_Store(void) {
+        memset(encryption_key, 0, sizeof(encryption_key));
+        memset(key_salt, 0, sizeof(key_salt));
+        memset(password_hash, 0, sizeof(password_hash));
+    }
+
     /*
      * Lock and unlock the pass store mutex respectively.
      */
@@ -335,7 +340,7 @@ public:
      * Return -1 on failure.
      * Return PASS_STORE_LOCKED if pass store is locked.
      */
-    int insert(string key, string value)
+    int insert(const string &key, const string &value)
     {
         if (check_lock()) {
             return PASS_STORE_LOCKED;
@@ -388,7 +393,7 @@ public:
      * Return -1 if key does not exist.
      * Return PASS_STORE_LOCKED if pass store is locked.
      */
-    int remove(string key)
+    int remove(const string &key)
     {
         if (check_lock()) {
             return PASS_STORE_LOCKED;
@@ -409,7 +414,7 @@ public:
      * Return -2 if insert() fails.
      * Return PASS_STORE_LOCKED if pass store is locked.
      */
-    int replace(string old_key, string new_key, string value)
+    int replace(const string &old_key, const string &new_key, const string &value)
     {
         if (check_lock()) {
             return PASS_STORE_LOCKED;
@@ -446,7 +451,7 @@ public:
      * Return 0 if key does not exist.
      * Return PASS_STORE_LOCKED if pass store is locked.
      */
-    int key_exists(string key)
+    int key_exists(const string &key)
     {
         if (check_lock()) {
             return PASS_STORE_LOCKED;
@@ -470,7 +475,7 @@ public:
      * Return 0 on succsess.
      * Return PASS_STORE_LOCKED if pass store is locked.
      */
-    int get_matches(string search_key, vector<tuple<string, const char *>> &result, bool exact)
+    int get_matches(const string &search_key, vector<tuple<string, const char *>> &result, bool exact)
     {
         if (check_lock()) {
             return PASS_STORE_LOCKED;

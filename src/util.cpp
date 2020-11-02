@@ -70,7 +70,7 @@ off_t file_size(const char *path)
  * Attempts to remove file located at `path`. This is just a wrapper for the stdio.h remove()
  * function. We use this for when we only want a stderr warning on failure.
  */
-void remove_file(const std::string path)
+void remove_file(const std::string &path)
 {
     if (remove(path.c_str()) != 0) {
         std::cerr << "Warning: remove() failed on path: " << path << std::endl;
