@@ -201,12 +201,22 @@ int crypto_decrypt_file(std::ifstream &fp, size_t file_size, unsigned char *plai
 
     fp.read((char *) header, sizeof(header));
 
+    if (!fp) {
+        free(buf_cipher);
+        return -3;
+    }
+
     if (crypto_secretstream_xchacha20poly1305_init_pull(&state, header, key) != 0) {
         free(buf_cipher);
         return -2;
     }
 
     fp.read((char *) buf_cipher, cipher_len);
+
+    if (!fp) {
+        free(buf_cipher);
+        return -3;
+    }
 
     if (crypto_secretstream_xchacha20poly1305_pull(&state, plaintext, plain_len, &tag,
             buf_cipher, fp.gcount(), NULL, 0) != 0) {

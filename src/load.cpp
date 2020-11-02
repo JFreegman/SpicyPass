@@ -160,8 +160,22 @@ static int read_header(ifstream &fp, unsigned char *format_version, unsigned cha
     }
 
     fp.read((char *) format_version, sizeof(unsigned char));
+
+    if (!fp) {
+        return -1;
+    }
+
     fp.read((char *) hash, CRYPTO_HASH_SIZE);
+
+    if (!fp) {
+        return -1;
+    }
+
     fp.read((char *) salt, CRYPTO_SALT_SIZE);
+
+    if (!fp) {
+        return -1;
+    }
 
     if (fp.tellg() != PASS_STORE_HEADER_SIZE) {
         return -1;
