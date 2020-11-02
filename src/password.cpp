@@ -168,7 +168,6 @@ string random_password(unsigned int size)
             result.push_back(c);
             last_char = c;
         }
-
     } while (result.size() < size);
 
     shuffle_vec(result);

@@ -128,17 +128,7 @@ void terminal_echo(bool enable)
 
 void clear_console(void)
 {
-    int ret;
-
-#if defined(_WIN32)
-    ret = system("CLS");
-#else
-    ret = system("clear");
-#endif // _WIN32
-
-    if (ret != 0) {
-        std::cerr << "Warning: system() returned non-zero code: " << std::to_string(ret) << std::endl;
-    }
+    printf("\033[2J\033[1;1H");
 }
 
 /*

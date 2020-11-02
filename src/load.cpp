@@ -21,6 +21,8 @@
  */
 
 #include <errno.h>
+#include <sys/types.h>
+
 #include "load.hpp"
 
 using namespace std;
@@ -46,13 +48,18 @@ const string get_store_path(bool temp)
     string homedir = getenv("HOMEPATH");
     string path = homedir + "\\" + DEFAULT_FILENAME;
 #else
-    struct passwd *pw = getpwuid(getuid());
+    char buf[1024];
+    struct passwd pwd;
+    struct passwd *result;
 
-    if (!pw) {
+    int ret = getpwuid_r(getuid(), &pwd, buf, sizeof(buf), &result);
+
+    if (ret != 0) {
+        cerr << "getpwuid_r() failed with error code: " << to_string(ret) << endl;
         return "";
-    }
+    };
 
-    string homedir = string(pw->pw_dir);
+    string homedir = string(pwd.pw_dir);
     string path = homedir + "/" + DEFAULT_FILENAME;
 #endif // _WIN_32
     if (temp) {

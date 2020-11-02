@@ -323,7 +323,6 @@ static int add(Pass_Store &p)
         case -2: {
             cerr << "Failed to save password store: Encryption error" << endl;
             return -1;
-
         }
         case -3: {
             cerr << "Failed to save password store: File save error" << endl;
