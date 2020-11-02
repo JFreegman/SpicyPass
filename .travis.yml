@@ -1,0 +1,30 @@
+language: c++
+dist: xenial
+os: linux
+
+jobs:
+  include:
+    - stage: "Stage 1"
+      env: JOB=cmake-linux
+      compiler:
+        - gcc
+      addons:
+        apt:
+          source:
+            - ubuntu-toolchain-r-test
+          packages:
+            - libgtk-3-dev
+            - libsodium-dev
+            - g++-7
+      script:
+        - sudo ln -s /usr/bin/g++-7 /usr/local/bin/g++
+        - .travis/$JOB script
+  fast_finish: true
+
+cache:
+  directories:
+    - $HOME/cache
+
+# Only build pull requests and releases, don't build master on pushes,
+# except through api or cron.
+if: type IN (pull_request, api, cron) OR tag IS present

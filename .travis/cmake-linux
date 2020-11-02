@@ -1,0 +1,23 @@
+#!/bin/bash
+
+ACTION="$1"
+
+set -eu
+
+CACHEDIR="$HOME/cache"
+NPROC=$(nproc)
+
+travis_script() {
+  . ".travis/flags-gcc.sh"
+
+  add_ld_flag -Wl,-z,defs
+
+  cmake -B_build -H. -DCMAKE_CXX_FLAGS="$CXX_FLAGS" \
+    -DCMAKE_EXE_LINKER_FLAGS="$LD_FLAGS" \
+    -DCMAKE_SHARED_LINKER_FLAGS="$LD_FLAGS" \
+    -DCMAKE_INSTALL_PREFIX:PATH="$PWD/_install" \
+
+  cmake --build _build --parallel "$NPROC" --target install -- -k 0
+}
+
+travis_script

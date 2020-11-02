@@ -91,7 +91,7 @@ static int get_pass_store_if(ifstream &fp)
         return 0;
     } catch (const exception &e) {
         cerr << "Caught exception in get_pass_store_if(): " << e.what() << endl;
-        return -2;
+        return -2
     }
 }
 

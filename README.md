@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.com/JFreegman/SpicyPass.svg?branch=master)](https://travis-ci.com/JFreegman/SpicyPass)
 [![CodeFactor](https://www.codefactor.io/repository/github/jfreegman/spicypass/badge)](https://www.codefactor.io/repository/github/jfreegman/spicypass)
 [![deepcode](https://www.deepcode.ai/api/gh/badge?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwbGF0Zm9ybTEiOiJnaCIsIm93bmVyMSI6IkpGcmVlZ21hbiIsInJlcG8xIjoiU3BpY3lQYXNzIiwiaW5jbHVkZUxpbnQiOmZhbHNlLCJhdXRob3JJZCI6MTc3NjIsImlhdCI6MTYwNDI5ODY5M30.P4Kx-Q2Qbe_Egy8wwXlhbQqP-RGo6D8bEj7pxNdCdAY)](https://www.deepcode.ai/app/gh/JFreegman/SpicyPass/_/dashboard?utm_content=gh%2FJFreegman%2FSpicyPass)
 <a href="https://scan.coverity.com/projects/jfreegman-spicypass">
