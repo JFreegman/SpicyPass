@@ -24,9 +24,9 @@
 #define SPICY_H
 
 #if defined(_WIN32)
-    #define strtok_r strtok_s
+#define strtok_r strtok_s
 #else
-    #include <SpicyPassConfig.h>
+#include <SpicyPassConfig.h>
 #endif // _WIN32
 
 #include <iostream>
@@ -79,7 +79,8 @@ struct Password {
 };
 
 
-class Pass_Store {
+class Pass_Store
+{
 private:
     map<string, struct Password *> store;
 
@@ -98,19 +99,21 @@ private:
     /*
      * Returns a string containing a key value entry in file format.
      */
-    string format_entry(string key, const char *value) {
+    string format_entry(string key, const char *value)
+    {
         return key + DELIMITER + value + '\n';
     }
 
     /*
      * Returns the size of the store map in file format.
      */
-    size_t size(void) {
+    size_t size(void)
+    {
         size_t size = 0;
 
         s_lock();
 
-        for (const auto &[key, value]: store) {
+        for (const auto &[key, value] : store) {
             string entry = format_entry(key, value->password);
             size += entry.length();
         }
@@ -128,12 +131,13 @@ private:
      *
      * Returns the number of bytes copied to the buffer.
      */
-    size_t copy(char *buf) {
+    size_t copy(char *buf)
+    {
         size_t pos = 0;
 
         s_lock();
 
-        for (const auto &[key, value]: store) {
+        for (const auto &[key, value] : store) {
             string entry = format_entry(key, value->password);
             memcpy(buf + pos, entry.c_str(), entry.length());
             pos += entry.length();
@@ -150,7 +154,8 @@ private:
      *
      * Returns the number of entries loaded to the store map.
      */
-    size_t load_buffer(char *buf, unsigned char format_version) {
+    size_t load_buffer(char *buf, unsigned char format_version)
+    {
         const char *delimiter = (format_version == FILE_FORMAT_VERSION_1) ? LEGACY_DELIMITER : DELIMITER;
         size_t count = 0;
         char *s = NULL;
@@ -206,13 +211,20 @@ public:
     /*
      * Lock and unlock the pass store mutex respectively.
      */
-    void s_lock(void)   { store_m.lock();   }
-    void s_unlock(void) { store_m.unlock(); }
+    void s_lock(void)
+    {
+        store_m.lock();
+    }
+    void s_unlock(void)
+    {
+        store_m.unlock();
+    }
 
     /*
      * Signals shutdown. This is used to notify threads when it's time to stop.
      */
-    void signal_shutdown(void) {
+    void signal_shutdown(void)
+    {
         s_lock();
         shutdown_signal = true;
         s_unlock();
@@ -221,7 +233,8 @@ public:
     /*
      * Return false if the shutdown signal has been triggered.
      */
-    bool running(void)  {
+    bool running(void)
+    {
         s_lock();
         bool is_running = !shutdown_signal;
         s_unlock();
@@ -232,13 +245,15 @@ public:
     /*
      *  Set and get gui status respectively.
      */
-    void set_gui_status(bool have_gui) {
+    void set_gui_status(bool have_gui)
+    {
         s_lock();
         gui_enabled = have_gui;
         s_unlock();
     }
 
-    bool get_gui_status(void) {
+    bool get_gui_status(void)
+    {
         s_lock();
         bool enabled = gui_enabled;
         s_unlock();
@@ -253,7 +268,8 @@ public:
      * This should be used to block all user-prompted operations when the lock
      * in enabled.
      */
-    bool check_lock(void) {
+    bool check_lock(void)
+    {
         s_lock();
 
         if (idle_lock) {
@@ -271,7 +287,8 @@ public:
      * Sets `idle_lock` to false and resets the last active timer. This should only
      * be called immediately after the user has entered a valid master password.
      */
-    void disable_lock(void) {
+    void disable_lock(void)
+    {
         s_lock();
 
         idle_lock = false;
@@ -284,7 +301,8 @@ public:
      * Polls the `last_active` timer. Upon timeout `idle_lock` is enabled and
      * all pass store functionality is disabled until `disable_lock()` is called.
      */
-    void poll_idle(void) {
+    void poll_idle(void)
+    {
         s_lock();
 
         if (idle_lock) {
@@ -317,7 +335,8 @@ public:
      * Return -1 on failure.
      * Return PASS_STORE_LOCKED if pass store is locked.
      */
-    int insert(string key, string value) {
+    int insert(string key, string value)
+    {
         if (check_lock()) {
             return PASS_STORE_LOCKED;
         }
@@ -349,7 +368,7 @@ public:
         s_lock();
 
         try {
-            store.insert( {key, pass} );
+            store.insert({key, pass});
         } catch (const exception &e) {
             free(pass);
             s_unlock();
@@ -369,7 +388,8 @@ public:
      * Return -1 if key does not exist.
      * Return PASS_STORE_LOCKED if pass store is locked.
      */
-    int remove(string key) {
+    int remove(string key)
+    {
         if (check_lock()) {
             return PASS_STORE_LOCKED;
         }
@@ -426,7 +446,8 @@ public:
      * Return 0 if key does not exist.
      * Return PASS_STORE_LOCKED if pass store is locked.
      */
-    int key_exists(string key) {
+    int key_exists(string key)
+    {
         if (check_lock()) {
             return PASS_STORE_LOCKED;
         }
@@ -449,7 +470,8 @@ public:
      * Return 0 on succsess.
      * Return PASS_STORE_LOCKED if pass store is locked.
      */
-    int get_matches(string search_key, vector<tuple<string, const char *>> &result, bool exact) {
+    int get_matches(string search_key, vector<tuple<string, const char *>> &result, bool exact)
+    {
         if (check_lock()) {
             return PASS_STORE_LOCKED;
         }
@@ -457,16 +479,16 @@ public:
         s_lock();
 
         if (exact) {
-            for (const auto &[key, value]: store) {
+            for (const auto &[key, value] : store) {
                 if (search_key == key) {
-                    result.push_back( {key, value->password} );
+                    result.push_back({key, value->password});
                     break;
                 }
             }
         } else {
-            for (const auto &[key, value]: store) {
+            for (const auto &[key, value] : store) {
                 if (search_key.compare(0, search_key.length(), key, 0, search_key.length()) == 0) {
-                    result.push_back( {key, value->password} );
+                    result.push_back({key, value->password});
                 }
             }
         }
@@ -481,7 +503,8 @@ public:
      *
      * buf must have room for at least CRYPTO_SALT_SIZE bytes.
      */
-    void get_key_salt(unsigned char *buf) {
+    void get_key_salt(unsigned char *buf)
+    {
         s_lock();
         memcpy(buf, key_salt, CRYPTO_SALT_SIZE);
         s_unlock();
@@ -492,7 +515,8 @@ public:
      *
      * buf must have room for at least CRYPTO_HASH_SIZE bytes.
      */
-    void get_password_hash(unsigned char *buf) {
+    void get_password_hash(unsigned char *buf)
+    {
         s_lock();
         memcpy(buf, password_hash, CRYPTO_HASH_SIZE);
         s_unlock();
@@ -505,7 +529,8 @@ public:
      * Return -1 if memory lock fails.
      * Return PASS_STORE_LOCKED is pass store is locked.
      */
-    int init_crypto(const unsigned char *key, const unsigned char *salt, const unsigned char *hash) {
+    int init_crypto(const unsigned char *key, const unsigned char *salt, const unsigned char *hash)
+    {
         if (check_lock()) {
             return PASS_STORE_LOCKED;
         }
@@ -534,7 +559,8 @@ public:
      * Return -2 on decryption error.
      * Return PASS_STORE_LOCKED if pass store is locked.
      */
-    int load(ifstream &fp, size_t length, unsigned char format_version) {
+    int load(ifstream &fp, size_t length, unsigned char format_version)
+    {
         if (check_lock()) {
             return PASS_STORE_LOCKED;
         }
@@ -558,14 +584,17 @@ public:
                     cerr << "Decryption failed: Out of memory" << endl;
                     return -2;
                 }
+
                 case -2: {
                     cerr << "Decryption failed: Corrupt file or bad key" << endl;
                     return -2;
                 }
+
                 case -3: {
                     cerr << "Decryption failed: File corrupt" << endl;
                     return -2;
                 }
+
                 default: {
                     return -2;
                 }
@@ -590,7 +619,8 @@ public:
      * Return -2 if encryption fails.
      * Return PASS_STORE_LOCKED if pass store is locked.
      */
-    int save(ofstream &fp) {
+    int save(ofstream &fp)
+    {
         if (check_lock()) {
             return PASS_STORE_LOCKED;
         }
@@ -631,12 +661,13 @@ public:
     /*
      * Securely wipes all sensitive pass store data from memory.
      */
-    void clear(void) {
+    void clear(void)
+    {
         s_lock();
 
         crypto_memunlock(encryption_key, CRYPTO_KEY_SIZE);
 
-        for (const auto &[key, value]: store) {
+        for (const auto &[key, value] : store) {
             crypto_memunlock((unsigned char *) value->password, sizeof(value->password));
             free(store.at(key));
         }
@@ -646,7 +677,8 @@ public:
         s_unlock();
     }
 
-    ~Pass_Store(void) {
+    ~Pass_Store(void)
+    {
         clear();
     }
 };  // class Pass_Store

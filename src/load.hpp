@@ -24,11 +24,11 @@
 #define LOAD_H
 
 #if defined(_WIN32)
-    #include <windows.h>
-    #include <io.h>
+#include <windows.h>
+#include <io.h>
 #else
-    #include <unistd.h>
-    #include <pwd.h>
+#include <unistd.h>
+#include <pwd.h>
 #endif // _WIN32
 
 #include "spicy.hpp"

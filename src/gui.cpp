@@ -40,9 +40,9 @@
 #define RAND_PASS_ENTRY_MAX_LENGTH (3)
 
 enum {
-   KEY_COLUMN,
-   PASS_COLUMN,
-   N_COLUMNS
+    KEY_COLUMN,
+    PASS_COLUMN,
+    N_COLUMNS
 };
 
 static void on_quit(GtkButton *button, gpointer data);
@@ -70,7 +70,7 @@ static int load_pass_store_entries(Pass_Store &p, struct List_Store &ls)
 
     GtkTreeIter iter;
 
-    for (const auto &item: result) {
+    for (const auto &item : result) {
         gtk_list_store_insert_with_values(ls.store, &iter, -1, KEY_COLUMN, get<0>(item).c_str(), -1);
     }
 
@@ -124,14 +124,17 @@ static void dialog_box(GtkApplication *app, const char *message, GtkMessageType 
             name = "dialogInfo";
             break;
         }
+
         case GTK_MESSAGE_WARNING: {
             name = "dialogWarning";
             break;
         }
+
         case GTK_MESSAGE_ERROR: {
             name = "dialogError";
             break;
         }
+
         default: {
             name = "dialogInfo";
             break;
@@ -282,6 +285,7 @@ static void on_addEntryButtonOk(GtkButton *button, gpointer data)
     has_err = false;
 
 on_exit:
+
     if (has_err) {
         dialog_box(cb_data->app, msg, GTK_MESSAGE_ERROR, window);
     } else {
@@ -302,25 +306,35 @@ static void on_buttonAdd_clicked(GtkButton *button, gpointer data)
     Pass_Store *p = cb_data->p;
 
     GtkBuilder *builder = gtk_builder_new_from_file(GLADE_FILE_PATH);
+
     GtkWidget *window = GTK_WIDGET(gtk_builder_get_object(builder, "addEntryWindow"));
 
     GtkButton *okButton = GTK_BUTTON(gtk_builder_get_object(builder, "addEntryButtonOk"));
+
     GtkButton *cancelButton = GTK_BUTTON(gtk_builder_get_object(builder, "addEntryButtonCancel"));
+
     GtkEntry *loginEntry = GTK_ENTRY(gtk_builder_get_object(builder, "loginEntry"));
+
     GtkEntry *passEntry = GTK_ENTRY(gtk_builder_get_object(builder, "passEntry"));
 
     g_object_unref(builder);
 
     gtk_entry_set_max_length(loginEntry, MAX_STORE_KEY_SIZE);
+
     gtk_entry_set_max_length(passEntry, MAX_STORE_PASSWORD_SIZE);
 
     cb_data->widget1 = GTK_WIDGET(loginEntry);
+
     cb_data->widget2 = GTK_WIDGET(passEntry);
+
     cb_data->window = window;
 
     g_signal_connect(okButton, "clicked", G_CALLBACK(on_addEntryButtonOk), cb_data);
+
     g_signal_connect(cancelButton, "clicked", G_CALLBACK(on_buttonCancel_clicked), cb_data);
+
     g_signal_connect(loginEntry, "activate", G_CALLBACK(on_key_enter), okButton);
+
     g_signal_connect(passEntry, "activate", G_CALLBACK(on_key_enter), okButton);
 
     string password = random_password(16U);
@@ -409,6 +423,7 @@ static void on_editEntryButtonOk(GtkButton *button, gpointer data)
         case 0: {
             break;
         }
+
         case PASS_STORE_LOCKED: {
             if (password_prompt(cb_data) != 0) {
                 dialog_box(cb_data->app, "Failed to unlock pass store", GTK_MESSAGE_ERROR, window);
@@ -417,10 +432,12 @@ static void on_editEntryButtonOk(GtkButton *button, gpointer data)
             gtk_widget_destroy(window);
             return;
         }
+
         case -1: {
             snprintf(msg, sizeof(msg), "Entry \"%s\" already exists", loginText);
             goto on_exit;
         }
+
         default: {
             snprintf(msg, sizeof(msg), "Failed to update entry (error code %d)", ret);
             goto on_exit;
@@ -441,6 +458,7 @@ static void on_editEntryButtonOk(GtkButton *button, gpointer data)
     has_err = false;
 
 on_exit:
+
     if (has_err) {
         dialog_box(cb_data->app, msg, GTK_MESSAGE_ERROR, window);
     } else {
@@ -529,6 +547,7 @@ static void on_buttonEdit_clicked(GtkButton *button, gpointer data)
     has_err = false;
 
 on_exit:
+
     if (has_err) {
         dialog_box(cb_data->app, msg, GTK_MESSAGE_ERROR, window);
         gtk_widget_destroy(window);
@@ -590,6 +609,7 @@ static void on_deleteEntryButtonYes(GtkButton *button, gpointer data)
 
     has_err = false;
 on_exit:
+
     if (has_err) {
         dialog_box(cb_data->app, msg, GTK_MESSAGE_ERROR, window);
     } else {
@@ -610,6 +630,7 @@ static void on_buttonDelete_clicked(GtkButton *button, gpointer data)
     struct Callback_Data *cb_data = (struct Callback_Data *) data;
 
     struct List_Store *ls = cb_data->ls;
+
     Pass_Store *p = cb_data->p;
 
     if (p->check_lock()) {
@@ -667,10 +688,13 @@ static void on_buttonCopy_clicked(GtkButton *button, gpointer data)
     struct Callback_Data *cb_data = (struct Callback_Data *) data;
 
     struct List_Store *ls = cb_data->ls;
+
     Pass_Store *p = cb_data->p;
 
     GtkTreeModel *model = GTK_TREE_MODEL(ls->store);
+
     GtkTreeSelection *selection = gtk_tree_view_get_selection(ls->view);
+
     GtkTreeIter iter;
 
     if (!gtk_tree_selection_get_selected(selection, &model, &iter)) {
@@ -814,6 +838,7 @@ static void on_changePassButtonOk_clicked(GtkButton *button, gpointer data)
     has_err = false;
 
 on_exit:
+
     if (!has_err) {
         gtk_widget_destroy(window);
         dialog_box(cb_data->app, msg, GTK_MESSAGE_INFO, window);
@@ -835,30 +860,47 @@ static void on_menuChangePassword_activate(GtkMenuItem *menuitem, gpointer data)
     GtkBuilder *builder = gtk_builder_new_from_file(GLADE_FILE_PATH);
 
     GtkWidget *window = GTK_WIDGET(gtk_builder_get_object(builder, "changePwWindow"));
+
     GtkButton *buttonOk = GTK_BUTTON(gtk_builder_get_object(builder, "changePwButtonOk"));
+
     GtkButton *buttonCancel = GTK_BUTTON(gtk_builder_get_object(builder, "changePwButtonCancel"));
+
     GtkEntry *entry1 = GTK_ENTRY(gtk_builder_get_object(builder, "changePwEntry1"));
+
     GtkEntry *entry2 = GTK_ENTRY(gtk_builder_get_object(builder, "changePwEntry2"));
+
     GtkEntry *entry3 = GTK_ENTRY(gtk_builder_get_object(builder, "changePwEntry3"));
 
     g_object_unref(builder);
 
     gtk_entry_set_max_length(entry1, MAX_STORE_PASSWORD_SIZE);
+
     gtk_entry_set_max_length(entry2, MAX_STORE_PASSWORD_SIZE);
+
     gtk_entry_set_max_length(entry3, MAX_STORE_PASSWORD_SIZE);
+
     gtk_entry_set_visibility(entry1, false);
+
     gtk_entry_set_visibility(entry2, false);
+
     gtk_entry_set_visibility(entry3, false);
 
     cb_data->window = window;
+
     cb_data->widget1 = GTK_WIDGET(entry1);
+
     cb_data->widget2 = GTK_WIDGET(entry2);
+
     cb_data->widget3 = GTK_WIDGET(entry3);
 
     g_signal_connect(buttonOk, "clicked", G_CALLBACK(on_changePassButtonOk_clicked), cb_data);
+
     g_signal_connect(buttonCancel, "clicked", G_CALLBACK(on_buttonCancel_clicked), cb_data);
+
     g_signal_connect(entry1, "activate", G_CALLBACK(on_key_enter), buttonOk);
+
     g_signal_connect(entry2, "activate", G_CALLBACK(on_key_enter), buttonOk);
+
     g_signal_connect(entry3, "activate", G_CALLBACK(on_key_enter), buttonOk);
 
     show_window(cb_data->app, window);
@@ -886,7 +928,8 @@ static void on_menuPassGenGenerate_clicked(GtkButton *button, gpointer data)
     int length = 0;
     bool has_err = true;
     char msg[128];
-    snprintf(msg, sizeof(msg), "Length must be a value between %d and %d", NUM_RAND_PASS_MIN_CHARS, NUM_RAND_PASS_MAX_CHARS);
+    snprintf(msg, sizeof(msg), "Length must be a value between %d and %d", NUM_RAND_PASS_MIN_CHARS,
+             NUM_RAND_PASS_MAX_CHARS);
     string password;
 
     if (text_length > RAND_PASS_ENTRY_MAX_LENGTH || text_length < 1) {
@@ -914,6 +957,7 @@ static void on_menuPassGenGenerate_clicked(GtkButton *button, gpointer data)
     has_err = false;
 
 on_exit:
+
     if (has_err) {
         dialog_box(cb_data->app, msg, GTK_MESSAGE_WARNING, window);
     }
@@ -932,23 +976,33 @@ static void on_menuPassGen_activate(GtkMenuItem *menuitem, gpointer data)
     GtkBuilder *builder = gtk_builder_new_from_file(GLADE_FILE_PATH);
 
     GtkWidget *window = GTK_WIDGET(gtk_builder_get_object(builder, "passGenWindow"));
+
     GtkButton *buttonGen = GTK_BUTTON(gtk_builder_get_object(builder, "passGenButtonGen"));
+
     GtkButton *buttonExit = GTK_BUTTON(gtk_builder_get_object(builder, "passGenButtonExit"));
+
     GtkEntry *entry1 = GTK_ENTRY(gtk_builder_get_object(builder, "passGenEntry1"));
+
     GtkEntry *entry2 = GTK_ENTRY(gtk_builder_get_object(builder, "passGenEntry2"));
 
     g_object_unref(builder);
 
     gtk_entry_set_max_length(entry1, RAND_PASS_ENTRY_MAX_LENGTH);
+
     gtk_entry_set_max_length(entry2, NUM_RAND_PASS_MAX_CHARS);
 
     cb_data->window = window;
+
     cb_data->widget1 = GTK_WIDGET(entry1);
+
     cb_data->widget2 = GTK_WIDGET(entry2);
 
     g_signal_connect(buttonGen, "clicked", G_CALLBACK(on_menuPassGenGenerate_clicked), cb_data);
+
     g_signal_connect(buttonExit, "clicked", G_CALLBACK(on_buttonCancel_clicked), cb_data);
+
     g_signal_connect(entry1, "activate", G_CALLBACK(on_key_enter), buttonGen);
+
     g_signal_connect(entry2, "activate", G_CALLBACK(on_key_enter), buttonGen);
 
     show_window(cb_data->app, window);
@@ -965,14 +1019,20 @@ static void on_menuAbout_activate(GtkMenuItem *menuitem, gpointer data)
     struct Callback_Data *cb_data = (struct Callback_Data *) data;
 
     GtkBuilder *builder = gtk_builder_new_from_file(GLADE_FILE_PATH);
+
     GtkWidget *window = GTK_WIDGET(gtk_builder_get_object(builder, "aboutDialog"));
+
     g_object_unref(builder);
 
     char version[256];
-    snprintf(version, sizeof(version), "Version %s.%s.%s", SpicyPass_VERSION_MAJOR, SpicyPass_VERSION_MINOR, SpicyPass_VERSION_PATCH);
+
+    snprintf(version, sizeof(version), "Version %s.%s.%s", SpicyPass_VERSION_MAJOR, SpicyPass_VERSION_MINOR,
+             SpicyPass_VERSION_PATCH);
+
     gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(window), version);
 
     GError *err = NULL;
+
     GdkPixbuf *logo = gdk_pixbuf_new_from_file(SpicyPass_LOGO_FILE_PATH, &err);
 
     if (err) {
@@ -995,25 +1055,34 @@ static void on_pwButtonEnter_clicked(GtkButton *button, gpointer data)
     }
 
     struct Callback_Data *cb_data = (struct Callback_Data *) data;
+
     Pass_Store *p = cb_data->p;
 
     GtkWidget *window = cb_data->window;
+
     GtkEntry *entry = GTK_ENTRY(cb_data->widget1);
 
     const gchar *text = gtk_entry_get_text(entry);
+
     gint length = gtk_entry_get_text_length(entry);
 
 #ifdef DEBUG
     assert(length <= MAX_STORE_PASSWORD_SIZE);
+
 #endif
 
     char msg[128];
+
     bool has_err = true;
+
     int ret;
+
     unsigned char password[MAX_STORE_PASSWORD_SIZE + 2];
+
     memcpy(password, text, length);
 
     password[length++] = '\n';
+
     password[length] = 0;
 
     ret = load_password_store(*p, password, length);
@@ -1026,18 +1095,22 @@ static void on_pwButtonEnter_clicked(GtkButton *button, gpointer data)
                 snprintf(msg, sizeof(msg), "Failed to open pass store file");
                 goto on_exit;
             }
+
             case -2: {
                 snprintf(msg, sizeof(msg), "Invalid password");
                 goto on_exit;
             }
+
             case -3: {
                 snprintf(msg, sizeof(msg), "Failed to decrypt pass store file");
                 goto on_exit;
             }
+
             case -4: {
                 snprintf(msg, sizeof(msg), "Failed to load pass store: Invalid file format");
                 goto on_exit;
             }
+
             default: {
                 snprintf(msg, sizeof(msg), "Unknown error in load_password_store()");
                 goto on_exit;
@@ -1056,6 +1129,7 @@ static void on_pwButtonEnter_clicked(GtkButton *button, gpointer data)
     has_err = false;
 
 on_exit:
+
     if (has_err) {
         dialog_box(cb_data->app, msg, GTK_MESSAGE_ERROR, window);
     } else {
@@ -1073,35 +1147,46 @@ static void on_newPwButtonEnter_clicked(GtkEntry *button, gpointer data)
     }
 
     struct Callback_Data *cb_data = (struct Callback_Data *) data;
+
     Pass_Store *p = cb_data->p;
+
     GtkWidget *window = cb_data->window;
 
     GtkEntry *entry1 = GTK_ENTRY(cb_data->widget1);
+
     GtkEntry *entry2 = GTK_ENTRY(cb_data->widget2);
 
     const gchar *text1 = gtk_entry_get_text(entry1);
+
     const gchar *text2 = gtk_entry_get_text(entry2);
+
     gint text1_len = gtk_entry_get_text_length(entry1);
+
     gint text2_len = gtk_entry_get_text_length(entry2);
 
 #ifdef DEBUG
     assert(text1_len <= MAX_STORE_PASSWORD_SIZE && text2_len <= MAX_STORE_PASSWORD_SIZE);
+
 #endif
 
     unsigned char passBuff[MAX_STORE_PASSWORD_SIZE + 2];
+
     size_t passLen = text1_len;
+
     bool has_err = true;
+
     int ret;
 
     const string path = get_store_path(false);
 
     char msg[1024];
+
     snprintf(msg, sizeof(msg),  "Profile successfully created.\n\n"\
-                                "Please remember that the store file is encrypted on your disk, "\
-                                "and that it is impossible to recover your data if you lose "\
-                                "or forget your master password.\n\n"\
-                                "It is strongly recommended that you regularly create backups of the store file, "\
-                                "located at: %s", path.c_str());
+             "Please remember that the store file is encrypted on your disk, "\
+             "and that it is impossible to recover your data if you lose "\
+             "or forget your master password.\n\n"\
+             "It is strongly recommended that you regularly create backups of the store file, "\
+             "located at: %s", path.c_str());
 
     if (text1_len < MIN_MASTER_PASSWORD_SIZE) {
         snprintf(msg, sizeof(msg), "Password must be at least %d characters long", MIN_MASTER_PASSWORD_SIZE);
@@ -1132,6 +1217,7 @@ static void on_newPwButtonEnter_clicked(GtkEntry *button, gpointer data)
     has_err = false;
 
 on_exit:
+
     if (!has_err) {
         dialog_box(cb_data->app, msg, GTK_MESSAGE_INFO, window);
         gtk_widget_destroy(window);
@@ -1187,7 +1273,7 @@ static gboolean on_right_click_view(GtkTreeView *treeview, GdkEventButton *event
         return FALSE;
     }
 
-    if (! (event->type == GDK_BUTTON_PRESS  &&  event->button == 3) ) {
+    if (!(event->type == GDK_BUTTON_PRESS  &&  event->button == 3)) {
         return FALSE;
     }
 
@@ -1254,7 +1340,7 @@ static gboolean on_tray_icon_right_click(GtkStatusIcon *status_icon, GdkEventBut
         return FALSE;
     }
 
-    if (! (event->type == GDK_BUTTON_PRESS  &&  event->button == 3) ) {
+    if (!(event->type == GDK_BUTTON_PRESS  &&  event->button == 3)) {
         return FALSE;
     }
 
@@ -1272,7 +1358,7 @@ void GUI::init_window(GtkBuilder *builder)
 {
     GtkWidget *main_window = GTK_WIDGET(gtk_builder_get_object(builder, "window"));
     gtk_builder_connect_signals(builder, NULL);
-    g_signal_connect(main_window , "destroy", G_CALLBACK(gtk_main_quit), NULL);
+    g_signal_connect(main_window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
     g_signal_connect(main_window, "key-press-event", G_CALLBACK(on_special_key_press), &cb_data);
 
     GtkMenuItem *menuExit = GTK_MENU_ITEM(gtk_builder_get_object(builder, "menuExit"));
@@ -1343,7 +1429,7 @@ void GUI::run(Pass_Store &p)
 {
     app = gtk_application_new("spicy.pass", (GApplicationFlags) 0);
 
-    if (!g_application_register (G_APPLICATION(app), NULL, NULL)) {
+    if (!g_application_register(G_APPLICATION(app), NULL, NULL)) {
         cerr << "Failed to register GApplication" << endl;
         return;
     }

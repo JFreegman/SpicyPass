@@ -21,12 +21,12 @@
  */
 
 #if defined(_WIN32)
-    #include <io.h>
-    #include <windows.h>
+#include <io.h>
+#include <windows.h>
 #else
-    #include <unistd.h>
-    #include <termios.h>
-    #include <errno.h>
+#include <unistd.h>
+#include <termios.h>
+#include <errno.h>
 #endif // _WIN32
 
 #include <iostream>
@@ -105,6 +105,7 @@ void terminal_echo(bool enable)
         std::cerr << "Warning: SetConsoleMode() returned error: " << std::to_string(ret) << std::endl;
         return;
     }
+
 #else
     struct termios tty;
 
@@ -123,6 +124,7 @@ void terminal_echo(bool enable)
         std::cerr << "Warning: tcsetattr() returned error. errno: " << std::to_string(errno) << std::endl;
         return;
     }
+
 #endif // _WIN32
 }
 
@@ -158,7 +160,7 @@ std::vector<std::string> string_split(const std::string &s, const std::string &t
     size_t next = 0;
 
     while ((next = s.find(token, last)) != std::string::npos) {
-        std::string tok = s.substr(last, next-last);
+        std::string tok = s.substr(last, next - last);
         result.push_back(tok);
         last = next + 1;
     }
@@ -173,7 +175,7 @@ std::string vec_to_string(const std::vector<char> &vec)
 {
     std::string s;
 
-    for (const char c: vec) {
+    for (const char c : vec) {
         s += c;
     }
 
@@ -187,7 +189,7 @@ std::vector<char> string_to_vec(const std::string &s)
 {
     std::vector<char> result;
 
-    for (const char c: s) {
+    for (const char c : s) {
         result.push_back(c);
     }
 
@@ -199,7 +201,7 @@ std::vector<char> string_to_vec(const std::string &s)
  */
 bool string_printable(const std::string &s)
 {
-    for (const char c: s) {
+    for (const char c : s) {
         if (!isprint(c)) {
             return false;
         }

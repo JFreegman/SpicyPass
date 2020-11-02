@@ -60,7 +60,9 @@ const string get_store_path(bool temp)
     };
 
     string homedir = string(pwd.pw_dir);
+
     string path = homedir + "/" + DEFAULT_FILENAME;
+
 #endif // _WIN_32
     if (temp) {
         path += ".tmp";
@@ -251,7 +253,7 @@ static int get_hash_params(const string &hash, Hash_Parameters *params)
 {
     auto tokens = string_split(hash, "$");
 
-    for (auto &tok: tokens) {
+    for (auto &tok : tokens) {
         if (string_contains(tok, "argon")) {
             if (tok == "argon2id") {
                 params->algorithm = crypto_pwhash_ALG_ARGON2ID13;
@@ -362,6 +364,7 @@ int load_password_store(Pass_Store &p, const unsigned char *password, size_t len
 #ifdef DEBUG
         assert(num_entries != PASS_STORE_LOCKED);
 #endif
+
         if (num_entries < 0) {
             fp.close();
             return -3;

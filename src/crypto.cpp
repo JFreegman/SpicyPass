@@ -59,7 +59,7 @@ int crypto_make_pass_hash(const unsigned char *hash, const unsigned char *passwo
 #endif
 
     if (crypto_pwhash_str((char *) hash, (const char *) password, length,
-                         CRYPTO_DEFAULT_OPSLIMIT, CRYPTO_DEFAULT_MEMLIMIT) != 0) {
+                          CRYPTO_DEFAULT_OPSLIMIT, CRYPTO_DEFAULT_MEMLIMIT) != 0) {
         return -1;
     }
 
@@ -209,7 +209,7 @@ int crypto_decrypt_file(std::ifstream &fp, size_t file_size, unsigned char *plai
     fp.read((char *) buf_cipher, cipher_len);
 
     if (crypto_secretstream_xchacha20poly1305_pull(&state, plaintext, plain_len, &tag,
-                                                   buf_cipher, fp.gcount(), NULL, 0) != 0) {
+            buf_cipher, fp.gcount(), NULL, 0) != 0) {
         free(buf_cipher);
         return -2;
     }
@@ -256,7 +256,7 @@ int crypto_encrypt_file(std::ofstream &fp, const unsigned char *plaintext, size_
     fp.write((char *)header, sizeof(header));
 
     crypto_secretstream_xchacha20poly1305_push(&state, buf_out, cipher_len, plaintext, plain_len, NULL, 0,
-                                               crypto_secretstream_xchacha20poly1305_TAG_FINAL);
+            crypto_secretstream_xchacha20poly1305_TAG_FINAL);
 
     if (*cipher_len != plain_len + crypto_secretstream_xchacha20poly1305_ABYTES) {
         free(buf_out);

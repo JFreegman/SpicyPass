@@ -24,8 +24,8 @@
 #define CRYPTO_H
 
 #if defined(_WIN32)
-    #define SODIUM_STATIC
-    #pragma comment (lib, "libsodium.lib")
+#define SODIUM_STATIC
+#pragma comment (lib, "libsodium.lib")
 #endif
 
 #include <sodium.h>
@@ -43,8 +43,7 @@
 #define CRYPTO_DEFAULT_OPSLIMIT (crypto_pwhash_OPSLIMIT_SENSITIVE)
 #define CRYPTO_DEFAULT_MEMLIMIT (crypto_pwhash_MEMLIMIT_MODERATE)
 
-typedef struct Hash_Parameters
-{
+typedef struct Hash_Parameters {
     size_t memory_limit;
     unsigned long long ops_limit;
     int algorithm;

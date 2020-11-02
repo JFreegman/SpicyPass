@@ -93,7 +93,8 @@ static int new_password_prompt(Pass_Store &p, unsigned char *password, size_t ma
         size_t pass_length = strlen(pass1);
 
         if (pass_length < MIN_MASTER_PASSWORD_SIZE || pass_length > max_length) {
-            cout << "Password must be between " << MIN_MASTER_PASSWORD_SIZE  << " and " << (max_length - 1) << " characters long" << endl;
+            cout << "Password must be between " << MIN_MASTER_PASSWORD_SIZE  << " and " << (max_length - 1) << " characters long" <<
+                 endl;
             continue;
         }
 
@@ -316,18 +317,22 @@ static int add(Pass_Store &p)
             cout << "Added key " << key << " with password " << password << endl;
             return 0;
         }
+
         case -1: {
             cerr << "Failed to save password store: Failed to open pass store file" << endl;
             return -1;
         }
+
         case -2: {
             cerr << "Failed to save password store: Encryption error" << endl;
             return -1;
         }
+
         case -3: {
             cerr << "Failed to save password store: File save error" << endl;
             return -1;
         }
+
         default: {
             cerr << "Failed to save password store: Unknown error" << endl;
             return -1;
@@ -417,7 +422,7 @@ static int fetch(Pass_Store &p)
 
     p.s_lock();
 
-    for (const auto &item: result) {
+    for (const auto &item : result) {
         cout << get<0>(item) << ": " << get<1>(item) << endl;
     }
 
@@ -435,7 +440,7 @@ static int list(Pass_Store &p)
         return PASS_STORE_LOCKED;
     }
 
-    for (const auto &item: result) {
+    for (const auto &item : result) {
         cout << get<0>(item) << endl;
     }
 
@@ -466,7 +471,8 @@ static int generate(Pass_Store &p)
             break;
         }
 
-        cout << "Password must be between " << to_string(NUM_RAND_PASS_MIN_CHARS) << " and " << to_string(NUM_RAND_PASS_MAX_CHARS) << " characters in length" << endl;
+        cout << "Password must be between " << to_string(NUM_RAND_PASS_MIN_CHARS) << " and " << to_string(
+                 NUM_RAND_PASS_MAX_CHARS) << " characters in length" << endl;
     }
 
     string pass = random_password(size);
@@ -509,18 +515,22 @@ static bool unlock_prompt(Pass_Store &p)
             cerr << "Pass store file cannot be read" << endl;
             break;
         }
+
         case -2: {
             cout << "Invalid password" << endl;
             break;
         }
+
         case -3: {
             cerr << "Failed to decrypt pass store file" << endl;
             break;
         }
+
         case -4: {
             cerr << "Pass store file has bad format" << endl;
             break;
         }
+
         default: {
             cerr << "load_password_store() returned unknown error: " << to_string(ret) << endl;
             break;
@@ -577,30 +587,37 @@ static int execute(const int option, Pass_Store &p)
             ret = add(p);
             break;
         }
+
         case OPT_REMOVE: {
             ret = remove(p);
             break;
         }
+
         case OPT_FETCH: {
             ret = fetch(p);
             break;
         }
+
         case OPT_LIST: {
             ret = list(p);
             break;
         }
+
         case OPT_GENERATE: {
             ret = generate(p);
             break;
         }
+
         case OPT_PASSWORD: {
             ret = new_password(p);
             break;
         }
+
         case OPT_PRINT: {
             print_menu();
             break;
         }
+
         default: {
             cout << "Invalid command. Enter " << to_string(OPT_PRINT) << " to print menu." << endl;
             break;
@@ -670,15 +687,19 @@ int cli_new_pass_store(Pass_Store &p)
         case -1: {
             return -3;
         }
+
         case -2: {
             return -4;
         }
+
         case -3: {
             return -5;
         }
+
         case -4: {
             return -3;
         }
+
         default: {
             return -3;
         }
@@ -697,11 +718,13 @@ static void menu_loop(Pass_Store &p)
             case 0: {
                 break;
             }
+
             case PASS_STORE_LOCKED: {
                 lock_check(p);
                 print_menu();
                 break;
             }
+
             default: {
                 return;
             }

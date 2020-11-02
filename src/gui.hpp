@@ -48,7 +48,8 @@ struct List_Store {
     GtkCellRenderer     *cr1;
 };
 
-class GUI {
+class GUI
+{
 private:
     struct List_Store     ls;
     struct Callback_Data  cb_data;

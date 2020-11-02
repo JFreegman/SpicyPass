@@ -82,29 +82,37 @@ static bool good_char(const char c, bool *have_lower, bool *have_upper,
                 *have_upper = true;
                 return true;
             }
+
             break;
         }
+
         case CHAR_LOWERCASE: {
             if (! *have_lower) {
                 *have_lower = true;
                 return true;
             }
+
             break;
         }
+
         case CHAR_DIGIT: {
             if (! *have_digit) {
                 *have_digit = true;
                 return true;
             }
+
             break;
         }
+
         case CHAR_SYMBOL: {
             if (! *have_symbol) {
                 *have_symbol = true;
                 return true;
             }
+
             break;
         }
+
         default: {
             break;
         }

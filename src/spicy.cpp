@@ -51,7 +51,7 @@ static void print_version(const char *binary_name)
 
 void store_lock_loop(Pass_Store &p)
 {
-    while(p.running()) {
+    while (p.running()) {
         p.poll_idle();
         this_thread::sleep_for(std::chrono::milliseconds(200));
     }
@@ -92,6 +92,7 @@ int main(int argc, char **argv)
     bool have_gui = gui_enabled(argc, argv);
     GUI ui;
 #else
+
     if (argc > 1) {
         cerr << "Warning: Unrecognized options" << endl;
     }
@@ -121,26 +122,32 @@ int main(int argc, char **argv)
         case 0: {
             break;
         }
+
         case -2: {
             cerr << "crypto_memlock() failed in new_pass_store()" << endl;
             return -1;
         }
+
         case -3: {
             cerr << "load_password_store() failed to open pass store file" << endl;
             return -1;
         }
+
         case -4: {
             cout << "Invalid password" << endl;
             return -1;
         }
+
         case -5: {
             cerr << "Failed to decrypt pass store file" << endl;
             return -1;
         }
+
         case -6: {
             cerr << "GUI failed to initialize" << endl;
             return -1;
         }
+
         default: {
             cerr << "Unknown error" << endl;
             return -1;
