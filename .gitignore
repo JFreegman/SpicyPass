@@ -8,3 +8,4 @@ x32/*
 *~
 _build/*
 .gitattributes
+.nvimlog

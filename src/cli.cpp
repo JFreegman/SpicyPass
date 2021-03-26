@@ -314,7 +314,7 @@ static int add(Pass_Store &p)
 
     switch (ret) {
         case 0: {
-            cout << "Added key " << key << " with password " << password << endl;
+            cout << "Added new entry with key \"" << key << "\"" << endl;
             return 0;
         }
 
