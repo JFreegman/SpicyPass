@@ -1430,6 +1430,8 @@ int GUI::load_new(Pass_Store &p, GtkBuilder *builder)
         return -1;
     }
 
+    cb_data->app = app;
+    cb_data->window = newPwWindow;
     cb_data->widget1 = GTK_WIDGET(newPwEntry1);
     cb_data->widget2 = GTK_WIDGET(newPwEntry2);
     cb_data->ls = &ls;
