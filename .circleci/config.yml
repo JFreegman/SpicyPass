@@ -1,0 +1,33 @@
+version: 2.1
+
+jobs:
+  build:
+    working_directory: ~/work
+    docker:
+      - image: ubuntu
+
+    steps:
+      - checkout
+      - run: &apt_install
+          apt-get update &&
+          DEBIAN_FRONTEND=noninteractive
+          apt-get install -y --no-install-recommends
+            cmake
+            make
+            clang
+            libgtk-3-dev
+            libgtest-dev
+            libsodium-dev
+            pkg-config
+
+      - run: |
+            CC=clang
+            mkdir _build
+            cd _build
+            cmake ..
+            cmake --build .
+
+workflows:
+  builds:
+    jobs:
+      - build
