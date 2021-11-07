@@ -8,7 +8,7 @@ set(SpicyPass_LOGO_FILE_PATH ${SPICYPASS_INSTALL_DIRECTORY}/spicypass.svg)
 
 set(SpicyPass_VERSION_MAJOR "0")
 set(SpicyPass_VERSION_MINOR "6")
-set(SpicyPass_VERSION_PATCH "0")
+set(SpicyPass_VERSION_PATCH "1")
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
@@ -68,19 +68,19 @@ target_compile_options(spicypass PUBLIC ${LIBSODIUM_CFLAGS_OTHER}
                                         ${GTK_CFLAGS_OTHER}
                                         )
 
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Debug)
+if(NOT BUILD_TYPE)
+    set(BUILD_TYPE RELEASE)
 endif()
 
-if(CMAKE_BUILD_TYPE MATCHES Release)
+if(BUILD_TYPE MATCHES RELEASE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Wno-deprecated -O2 -fstack-protector-all")
-elseif(CMAKE_BUILD_TYPE MATCHES Debug)
+elseif(BUILD_TYPE MATCHES DEBUG)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Wno-deprecated -O0 -g -fstack-protector-all -DDEBUG")
 else()
-    message(FATAL_ERROR "Unsupported build type: ${CMAKE_BUILD_TYPE}")
+    message(FATAL_ERROR "Unsupported build type: ${BUILD_TYPE}")
 endif()
 
-message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+message(STATUS "Build type: ${BUILD_TYPE}")
 
 target_include_directories(spicypass PUBLIC "${SpicyPass_BINARY_DIR}")
 

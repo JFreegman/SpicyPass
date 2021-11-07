@@ -1,6 +1,5 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/a82931607165486a96dfe18554e3a5d7)](https://app.codacy.com/gh/JFreegman/SpicyPass?utm_source=github.com&utm_medium=referral&utm_content=JFreegman/SpicyPass&utm_campaign=Badge_Grade)
 [![CodeFactor](https://www.codefactor.io/repository/github/jfreegman/spicypass/badge)](https://www.codefactor.io/repository/github/jfreegman/spicypass)
-[![deepcode](https://www.deepcode.ai/api/gh/badge?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwbGF0Zm9ybTEiOiJnaCIsIm93bmVyMSI6IkpGcmVlZ21hbiIsInJlcG8xIjoiU3BpY3lQYXNzIiwiaW5jbHVkZUxpbnQiOmZhbHNlLCJhdXRob3JJZCI6MTc3NjIsImlhdCI6MTYwNDI5ODY5M30.P4Kx-Q2Qbe_Egy8wwXlhbQqP-RGo6D8bEj7pxNdCdAY)](https://www.deepcode.ai/app/gh/JFreegman/SpicyPass/_/dashboard?utm_content=gh%2FJFreegman%2FSpicyPass)
 <a href="https://scan.coverity.com/projects/jfreegman-spicypass">
   <img alt="Coverity Scan Build Status"
        src="https://scan.coverity.com/projects/20491/badge.svg"/>
@@ -33,6 +32,10 @@ Once you have all the dependencies installed on your system, clone this reposito
 2. `cmake ..`
 3. `cmake --build .`
 4. `sudo make install`
+
+SpicyPass defaults to the release build. To build with debug symbols endabled and compiler optimizations disabled, run:
+
+`cmake -D BUILD_TYPE=DEBUG ..`
 
 #### Windows
 Windows is presently in an experimental stage and only has support for the command line interface. The CMake configuration does not currently support Windows, and only static builds of libsodium work. Building natively with Microsoft© Visual Studio™ is straight-forward. Just be sure to set the appropriate libsodium headers and static libraries, and set the language standard to C++17.
