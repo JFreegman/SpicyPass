@@ -52,10 +52,9 @@ class GUI
 {
 private:
     struct List_Store     ls;
-    struct Callback_Data  cb_data;
     GtkApplication        *app;
 
-    void init_window(GtkBuilder *builder);
+    void init_window(GtkBuilder *builder, struct Callback_Data *cb_data);
     int load_new(Pass_Store &p, GtkBuilder *builder);
     int load(struct Callback_Data *cb_data);
 public:

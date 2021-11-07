@@ -1324,8 +1324,8 @@ static void on_tray_icon_left_click(GtkStatusIcon *status_icon, gpointer data)
         windows = g_list_last(windows);
 
         for (GList *list = windows; list; list = g_list_previous(list)) {
-            GtkWidget *win = GTK_WIDGET(list->data);
-            gtk_widget_set_visible(win, true);
+            gtk_widget_set_visible(GTK_WIDGET(list->data), true);
+            gtk_window_present(GTK_WINDOW(list->data));
         }
     }
 
@@ -1351,15 +1351,35 @@ static gboolean on_tray_icon_right_click(GtkStatusIcon *status_icon, GdkEventBut
     return TRUE;
 }
 
+static gboolean on_delete_event(GtkWidget *widget, GdkEventKey *event, gpointer data)
+{
+    UNUSED_VAR(event);
+
+    if (!data) {
+        return TRUE; // button press will have no effect
+    }
+
+    struct Callback_Data *cb_data = (struct Callback_Data *) data;
+
+    cb_data->app_hidden = !cb_data->app_hidden;
+
+    gtk_widget_hide_on_delete(widget);
+
+    return TRUE;
+}
+
 /***
  *** GUI class methods
  ***/
-void GUI::init_window(GtkBuilder *builder)
+void GUI::init_window(GtkBuilder *builder, struct Callback_Data *cb_data)
 {
     GtkWidget *main_window = GTK_WIDGET(gtk_builder_get_object(builder, "window"));
+
     gtk_builder_connect_signals(builder, NULL);
+
     g_signal_connect(main_window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
-    g_signal_connect(main_window, "key-press-event", G_CALLBACK(on_special_key_press), &cb_data);
+    g_signal_connect(main_window, "key-press-event", G_CALLBACK(on_special_key_press), cb_data);
+    g_signal_connect(main_window, "delete-event", G_CALLBACK(on_delete_event), cb_data);
 
     GtkMenuItem *menuExit = GTK_MENU_ITEM(gtk_builder_get_object(builder, "menuExit"));
     g_signal_connect(menuExit, "activate", G_CALLBACK(gtk_main_quit), NULL);
@@ -1434,20 +1454,27 @@ void GUI::run(Pass_Store &p)
         return;
     }
 
-    cb_data.ls = &ls;
-    cb_data.p = &p;
-    cb_data.app = app;
+    struct Callback_Data *cb_data = (struct Callback_Data *) calloc(1, sizeof(struct Callback_Data));
+
+    if (cb_data == NULL) {
+        cerr << "calloc() failed in GUI::run()" << endl;
+        return;
+    }
+
+    cb_data->ls = &ls;
+    cb_data->p = &p;
+    cb_data->app = app;
 
     GtkBuilder *builder = gtk_builder_new_from_file(GLADE_FILE_PATH);
 
-    init_window(builder);
+    init_window(builder, cb_data);
 
     if (first_time_run()) {
         if (load_new(p, builder) != 0) {
             cerr << "load_new() failed in GUI::run()" << endl;
             return;
         }
-    } else if (load(&cb_data) != 0) {
+    } else if (load(cb_data) != 0) {
         cerr << "load failed in GUI::run()" << endl;
         return;
     }
@@ -1465,23 +1492,22 @@ void GUI::run(Pass_Store &p)
 
     g_object_unref(builder);
 
-    g_signal_connect(ls.view, "button-press-event", G_CALLBACK(on_right_click_view), &cb_data);
-    g_signal_connect(buttonAdd, "clicked", G_CALLBACK(on_buttonAdd_clicked), &cb_data);
-    g_signal_connect(buttonDelete, "clicked", G_CALLBACK(on_buttonDelete_clicked), &cb_data);
-    g_signal_connect(buttonCopy, "clicked", G_CALLBACK(on_buttonCopy_clicked), &cb_data);
-    g_signal_connect(buttonEdit, "clicked", G_CALLBACK(on_buttonEdit_clicked), &cb_data);
-    g_signal_connect(menuChangePass, "activate", G_CALLBACK(on_menuChangePassword_activate), &cb_data);
-    g_signal_connect(menuPassGen, "activate", G_CALLBACK(on_menuPassGen_activate), &cb_data);
-    g_signal_connect(menuAbout, "activate", G_CALLBACK(on_menuAbout_activate), &cb_data);
-    g_signal_connect(tray_icon, "activate", G_CALLBACK(on_tray_icon_left_click), &cb_data);
-    g_signal_connect(tray_icon, "button-press-event", G_CALLBACK(on_tray_icon_right_click), &cb_data);
+    g_signal_connect(ls.view, "button-press-event", G_CALLBACK(on_right_click_view), cb_data);
+    g_signal_connect(buttonAdd, "clicked", G_CALLBACK(on_buttonAdd_clicked), cb_data);
+    g_signal_connect(buttonDelete, "clicked", G_CALLBACK(on_buttonDelete_clicked), cb_data);
+    g_signal_connect(buttonCopy, "clicked", G_CALLBACK(on_buttonCopy_clicked), cb_data);
+    g_signal_connect(buttonEdit, "clicked", G_CALLBACK(on_buttonEdit_clicked), cb_data);
+    g_signal_connect(menuChangePass, "activate", G_CALLBACK(on_menuChangePassword_activate), cb_data);
+    g_signal_connect(menuPassGen, "activate", G_CALLBACK(on_menuPassGen_activate), cb_data);
+    g_signal_connect(menuAbout, "activate", G_CALLBACK(on_menuAbout_activate), cb_data);
+    g_signal_connect(tray_icon, "activate", G_CALLBACK(on_tray_icon_left_click), cb_data);
+    g_signal_connect(tray_icon, "button-press-event", G_CALLBACK(on_tray_icon_right_click), cb_data);
 
     gtk_main();
 }
 
 GUI::GUI(void)
 {
-    memset(&cb_data, 0, sizeof(cb_data));
     memset(&ls, 0, sizeof(ls));
     app = NULL;
 }

@@ -207,7 +207,8 @@ private:
     }
 
 public:
-    Pass_Store(void) {
+    Pass_Store(void)
+    {
         memset(encryption_key, 0, sizeof(encryption_key));
         memset(key_salt, 0, sizeof(key_salt));
         memset(password_hash, 0, sizeof(password_hash));
