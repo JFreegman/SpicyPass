@@ -86,3 +86,21 @@ target_include_directories(spicypass PUBLIC "${SpicyPass_BINARY_DIR}")
 
 install(TARGETS spicypass DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 install(FILES ${GUI_INSTALL_FILES} DESTINATION ${SPICYPASS_INSTALL_DIRECTORY})
+
+# Packaging
+
+SET(CPACK_PACKAGE_VERSION ${SpicyPass_VERSION_MAJOR}.${SpicyPass_VERSION_MINOR}.${SpicyPass_VERSION_PATCH})
+
+if("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Darwin")
+    SET(CPACK_GENERATOR "DragNDrop")
+elseif("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux")
+    SET(CPACK_GENERATOR "DEB")
+else()
+    message(FATAL_ERROR "Packaging does not support system: ${CMAKE_HOST_SYSTEM_NAME}")
+endif()
+
+SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "jfreegman@gmail.com")
+SET(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://github.com/JFreegman/SpicyPass")
+SET(CPACK_DEBIAN_PACKAGE_DESCRIPTION "SpicyPass is a light-weight password manager that utilizes state of the art cryptography and minimalist design principles for secure and simple password storage.")
+
+INCLUDE(CPack)
