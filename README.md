@@ -33,7 +33,7 @@ Once you have all the dependencies installed on your system, clone this reposito
 3. `cmake --build .`
 4. `sudo make install`
 
-SpicyPass defaults to the release build. To build with debug symbols endabled and compiler optimizations disabled, run:
+SpicyPass defaults to the release build. To build with debug symbols enabled and compiler optimizations disabled, run:
 
 `cmake -D BUILD_TYPE=DEBUG ..`
 
