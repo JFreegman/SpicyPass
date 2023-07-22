@@ -26,8 +26,6 @@
 #include "crypto.hpp"
 #include "cli.hpp"
 
-#define EXPORT_PATH "spicypass_export"
-
 typedef enum {
     OPT_EXIT = 0,
     OPT_ADD,
@@ -568,10 +566,7 @@ static void print_menu(void)
 static int export_entries(Pass_Store &p)
 
 {
-    vector<tuple<string, const char *>> result;
-    int matches = p.get_matches("", result, false);
-
-    if (matches == PASS_STORE_LOCKED) {
+    if (p.check_lock()) {
         return PASS_STORE_LOCKED;
     }
 
