@@ -96,4 +96,17 @@ int init_pass_hash(const unsigned char *password, size_t length);
  */
 int update_crypto(Pass_Store &p, const unsigned char *password, size_t length);
 
+/*
+ * Writes contents of pass store to a plaintext file.
+ *
+ * Return 0 on success.
+ * Return -1 on failure.
+ */
+int export_pass_store_to_plaintext(Pass_Store &p);
+
+/*
+ * Returns a string containing export file path.
+ */
+string get_export_path(void);
+
 #endif // LOAD_H

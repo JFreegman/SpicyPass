@@ -26,6 +26,8 @@
 #include "crypto.hpp"
 #include "cli.hpp"
 
+#define EXPORT_PATH "spicypass_export"
+
 typedef enum {
     OPT_EXIT = 0,
     OPT_ADD,
@@ -34,6 +36,7 @@ typedef enum {
     OPT_LIST,
     OPT_GENERATE,
     OPT_PASSWORD,
+    OPT_EXPORT,
     OPT_PRINT,
 } Options;
 
@@ -557,8 +560,36 @@ static void print_menu(void)
     cout << "[" << to_string(OPT_LIST)       << "] List all entries" << endl;
     cout << "[" << to_string(OPT_GENERATE)   << "] Generate password" << endl;
     cout << "[" << to_string(OPT_PASSWORD)   << "] Change master password" << endl;
+    cout << "[" << to_string(OPT_EXPORT)     << "] Export entries to plaintext file" << endl;
     cout << "[" << to_string(OPT_PRINT)      << "] Print menu" << endl;
     cout << "[" << to_string(OPT_EXIT)       << "] Exit" << endl;
+}
+
+static int export_entries(Pass_Store &p)
+
+{
+    vector<tuple<string, const char *>> result;
+    int matches = p.get_matches("", result, false);
+
+    if (matches == PASS_STORE_LOCKED) {
+        return PASS_STORE_LOCKED;
+    }
+
+    string export_path = get_export_path();
+
+    if (export_path.size() == 0) {
+        cerr << "Failed to export pass store." << endl;
+        return -1;
+    }
+
+    cout << "Exported pass store entries to plaintext file: " << export_path << endl;
+
+    if (export_pass_store_to_plaintext(p) != 0) {
+        cerr << "Failed to export pass store." << endl;
+        return -1;
+    }
+
+    return 0;
 }
 
 /*
@@ -608,6 +639,11 @@ static int execute(const int option, Pass_Store &p)
 
         case OPT_PASSWORD: {
             ret = new_password(p);
+            break;
+        }
+
+        case OPT_EXPORT: {
+            export_entries(p);
             break;
         }
 

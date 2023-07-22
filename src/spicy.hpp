@@ -665,6 +665,26 @@ public:
     }
 
     /*
+     * Writes pass store contents to a plaintext file.
+     *
+     * Return 0 on success.
+     * Return PASS_STORE_LOCKED if pass store is locked.
+     */
+    int _export(ofstream &fp)
+    {
+        if (check_lock()) {
+            return PASS_STORE_LOCKED;
+        }
+
+        for (const auto &[key, value] : store) {
+            string entry = format_entry(key, value->password);
+            fp << entry << DELIMITER << endl;
+        }
+
+        return 0;
+    }
+
+    /*
      * Securely wipes all sensitive pass store data from memory.
      */
     void clear(void)

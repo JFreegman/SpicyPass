@@ -28,6 +28,7 @@
 using namespace std;
 
 #define DEFAULT_FILENAME ".spicypass"
+#define EXPORT_FILENAME  ".spicypass_export_plaintext"
 
 /*
  * Return true if `format_version` matches a known file format version.
@@ -498,6 +499,83 @@ int update_crypto(Pass_Store &p, const unsigned char *password, size_t length)
     if (save_password_store(p) != 0) {
         return -3;
     }
+
+    return 0;
+}
+
+/*
+ * Returns a string containing export file path.
+ */
+string get_export_path(void)
+{
+#if defined(_WIN32)
+    string homedir = getenv("HOMEPATH");
+    string path = homedir + "\\" + EXPORT_FILENAME;
+#else
+    char buf[1024];
+    struct passwd pwd;
+    struct passwd *result;
+
+    int ret = getpwuid_r(getuid(), &pwd, buf, sizeof(buf), &result);
+
+    if (ret != 0) {
+        cerr << "getpwuid_r() failed with error code: " << to_string(ret) << endl;
+        return "";
+    };
+
+    string homedir = string(pwd.pw_dir);
+
+    string path = homedir + "/" + EXPORT_FILENAME;
+
+#endif // _WIN_32
+
+    return path;
+}
+
+/*
+ * Opens output stream for the export file.
+ *
+ * Return 0 on success.
+ * Return -1 if invalid path.
+ * Return -2 if file cannot be opened.
+ */
+static int get_export_of(ofstream &fp)
+{
+    const string path = get_export_path();
+
+    if (path.empty()) {
+        cerr << "Error: Failed to find export path." << endl;
+        return -1;
+    }
+
+    try {
+        fp.open(path);
+        return 0;
+    } catch (const exception &e) {
+        cerr << "Caught exception in get_export_of(): " << e.what() << endl;
+        return -2;
+    }
+}
+
+/*
+ * Writes contents of pass store to a plaintext file.
+ *
+ * Return 0 on success.
+ * Return -1 on failure.
+ */
+int export_pass_store_to_plaintext(Pass_Store &p)
+{
+    ofstream fp;
+
+    if (get_export_of(fp) != 0) {
+        return -1;
+    }
+
+    if (p._export(fp) != 0) {
+        return -1;
+    }
+
+    fp.close();
 
     return 0;
 }

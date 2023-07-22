@@ -19,6 +19,8 @@ jobs:
             libgtest-dev
             libsodium-dev
             pkg-config
+            openssh-client
+            git
 
       - run: |
             CC=clang
