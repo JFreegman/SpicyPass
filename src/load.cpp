@@ -422,7 +422,7 @@ int first_time_run(void)
  */
 int init_pass_hash(const unsigned char *password, size_t length)
 {
-    unsigned char hash[CRYPTO_HASH_SIZE];
+    unsigned char hash[CRYPTO_HASH_SIZE] = {0};
 
     if (crypto_make_pass_hash(hash, password, length) != 0) {
         cerr << "crypto_make_pass_hash() failed." << endl;
@@ -462,7 +462,7 @@ int update_crypto(Pass_Store &p, const unsigned char *password, size_t length)
 {
     unsigned char encryption_key[CRYPTO_KEY_SIZE];
     unsigned char salt[CRYPTO_SALT_SIZE];
-    unsigned char hash[CRYPTO_HASH_SIZE];
+    unsigned char hash[CRYPTO_HASH_SIZE] = {0};
 
     if (crypto_make_pass_hash(hash, password, length) != 0) {
         cerr << "crypto_make_pass_hash() failed." << endl;
