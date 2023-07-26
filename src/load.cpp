@@ -28,7 +28,7 @@
 using namespace std;
 
 #define DEFAULT_FILENAME ".spicypass"
-#define EXPORT_FILENAME  ".spicypass_export_plaintext"
+#define EXPORT_FILENAME  ".export_spicypass_plaintext"
 
 /*
  * Return true if `format_version` matches a known file format version.
@@ -296,6 +296,43 @@ static int get_hash_params(const string &hash, Hash_Parameters *params)
 
     if (params->algorithm == 0 || params->memory_limit == 0 || params->ops_limit == 0) {
         return -1;
+    }
+
+    return 0;
+}
+
+/*
+ * Validates pass store master password.
+ *
+ * Return 0 on success.
+ * Return -1 if the pass store could not be loaded.
+ * Return -2 if password is invalid.
+ * Return -3 if pass store file format is invalid.
+ */
+int validate_password(const unsigned char *password, size_t length)
+{
+    ifstream fp;
+
+    if (get_pass_store_if(fp) != 0) {
+        return -1;
+    }
+
+    unsigned char format_version;
+    unsigned char hash[CRYPTO_HASH_SIZE];
+    unsigned char salt[CRYPTO_SALT_SIZE];
+
+    if (read_header(fp, &format_version, hash, salt) != 0) {
+        return -1;
+    }
+
+    if (!valid_format_version(format_version)) {
+        fp.close();
+        return -3;
+    }
+
+    if (!crypto_verify_pass_hash(hash, password, length)) {
+        fp.close();
+        return -2;
     }
 
     return 0;

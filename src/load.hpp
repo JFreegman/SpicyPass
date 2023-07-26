@@ -44,6 +44,16 @@
 const string get_store_path(bool temp);
 
 /*
+ * Validates pass store master password.
+ *
+ * Return 0 on success.
+ * Return -1 if the pass store could not be loaded.
+ * Return -2 if password is invalid.
+ * Return -3 if pass store file format is invalid.
+ */
+int validate_password(const unsigned char *password, size_t length);
+
+/*
  * Attempts to validate password, decrypt password store, and load it into `p`.
  *
  * Return the number of pass store entries loaded on success.

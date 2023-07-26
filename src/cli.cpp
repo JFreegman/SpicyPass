@@ -577,6 +577,28 @@ static int export_entries(Pass_Store &p)
         return -1;
     }
 
+    cout << "WARNING: You are about to create a file on your disk that contains all "
+            "of your passwords. The file will not be encrypted and can be viewed by "
+            "anyone with access to this device.\n" << endl;
+
+    unsigned char password[MAX_STORE_PASSWORD_SIZE + 2];
+
+    terminal_echo(false);
+    int pw_ret = prompt_password(password, sizeof(password) - 1);
+    terminal_echo(true);
+
+    cout << endl;
+
+    if (pw_ret != 0) {
+        cerr << "Invalid password." << endl;
+        return -1;
+    }
+
+    if (validate_password(password, strlen((char *) password)) != 0) {
+        cout << "Invalid password." << endl;
+        return -1;
+    }
+
     cout << "Exported pass store entries to plaintext file: " << export_path << endl;
 
     if (export_pass_store_to_plaintext(p) != 0) {
