@@ -678,7 +678,7 @@ public:
 
         for (const auto &[key, value] : store) {
             string entry = format_entry(key, value->password);
-            fp << entry << DELIMITER << endl;
+            fp << key << endl << value->password << endl << endl;
         }
 
         return 0;
