@@ -302,43 +302,6 @@ static int get_hash_params(const string &hash, Hash_Parameters *params)
 }
 
 /*
- * Validates pass store master password.
- *
- * Return 0 on success.
- * Return -1 if the pass store could not be loaded.
- * Return -2 if password is invalid.
- * Return -3 if pass store file format is invalid.
- */
-int validate_password(const unsigned char *password, size_t length)
-{
-    ifstream fp;
-
-    if (get_pass_store_if(fp) != 0) {
-        return -1;
-    }
-
-    unsigned char format_version;
-    unsigned char hash[CRYPTO_HASH_SIZE];
-    unsigned char salt[CRYPTO_SALT_SIZE];
-
-    if (read_header(fp, &format_version, hash, salt) != 0) {
-        return -1;
-    }
-
-    if (!valid_format_version(format_version)) {
-        fp.close();
-        return -3;
-    }
-
-    if (!crypto_verify_pass_hash(hash, password, length)) {
-        fp.close();
-        return -2;
-    }
-
-    return 0;
-}
-
-/*
  * Attempts to validate password, decrypt password store, and load it into `p`.
  *
  * Return the number of pass store entries loaded on success.

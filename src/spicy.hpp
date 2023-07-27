@@ -529,6 +529,23 @@ public:
     }
 
     /*
+     * Validates pass store master password.
+     *
+     * Return true if password is correct.
+     */
+    bool validate_password(const unsigned char *password, size_t length)
+    {
+        if (length > MAX_STORE_PASSWORD_SIZE) {
+            return false;
+        }
+
+        unsigned char hash[CRYPTO_HASH_SIZE];
+        get_password_hash(hash);
+
+        return crypto_verify_pass_hash(hash, password, length);
+    }
+
+    /*
      * Initializes pass store crypto-related data structures.
      *
      * Return 0 on success.

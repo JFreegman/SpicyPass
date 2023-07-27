@@ -166,8 +166,6 @@ static int init_new_password(Pass_Store &p, unsigned char *password, size_t max_
 static int change_password_prompt(Pass_Store &p)
 {
     unsigned char new_password[MAX_STORE_PASSWORD_SIZE + 2];
-    unsigned char hash[CRYPTO_HASH_SIZE];
-    p.get_password_hash(hash);
 
     cout << "Changing master password. Enter q to go back." << endl;
 
@@ -195,7 +193,7 @@ static int change_password_prompt(Pass_Store &p)
 
         size_t pass_length = strlen(old_pass);
 
-        if (!crypto_verify_pass_hash(hash, (unsigned char *) old_pass, pass_length)) {
+        if (!p.validate_password((unsigned char *) old_pass, pass_length)) {
             cout << "Invalid password" << endl;
             continue;
         }
@@ -594,7 +592,7 @@ static int export_entries(Pass_Store &p)
         return -1;
     }
 
-    if (validate_password(password, strlen((char *) password)) != 0) {
+    if (!p.validate_password(password, strlen((char *) password))) {
         cout << "Invalid password." << endl;
         return -1;
     }

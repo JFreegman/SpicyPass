@@ -804,10 +804,7 @@ static void on_changePassButtonOk_clicked(GtkButton *button, gpointer data)
     old_pass_buf[old_pass_len++] = '\n';
     old_pass_buf[old_pass_len] = 0;
 
-    unsigned char hash[CRYPTO_HASH_SIZE];
-    p->get_password_hash(hash);
-
-    if (!crypto_verify_pass_hash(hash, old_pass_buf, old_pass_len)) {
+    if (!p->validate_password(old_pass_buf, old_pass_len)) {
         snprintf(msg, sizeof(msg), "Invalid password");
         goto on_exit;
     }
