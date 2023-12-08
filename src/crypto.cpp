@@ -30,11 +30,6 @@
 #define CRYPTO_MAX_PLAINTEXT_SIZE   (crypto_secretstream_xchacha20poly1305_MESSAGEBYTES_MAX +\
                                      crypto_secretstream_xchacha20poly1305_ABYTES)
 
-/*
- * Inits libsodium. Must be called before any other crypto operation.
- *
- * Returns 0 on success.
- */
 int crypto_init(void)
 {
     if (sodium_init() < 0) {
@@ -44,14 +39,6 @@ int crypto_init(void)
     return 0;
 }
 
-/*
- * Creates a hash of `password` and puts it in `hash`.
- *
- * `hash` must have room for at least CRYPTO_HASH_SIZE bytes.
- *
- * Return 0 on success.
- * Return -1 on failure.
- */
 int crypto_make_pass_hash(const unsigned char *hash, const unsigned char *password, size_t length)
 {
     assert(length <= crypto_pwhash_PASSWD_MAX);
@@ -64,20 +51,11 @@ int crypto_make_pass_hash(const unsigned char *hash, const unsigned char *passwo
     return 0;
 }
 
-/*
- * Securely zeros `length` bytes from memory pointed to by `buf`.
- */
 void crypto_memwipe(const unsigned char *buf, size_t length)
 {
     sodium_memzero((void *) buf, length);
 }
 
-/*
- * Locks `length` bytes in memory pointed to by `buf`.
- *
- * Return 0 on success.
- * Return -1 on failure.
- */
 int crypto_memlock(const unsigned char *buf, size_t length)
 {
     if (sodium_mlock((void *) buf, length) != 0) {
@@ -87,14 +65,6 @@ int crypto_memlock(const unsigned char *buf, size_t length)
     return 0;
 }
 
-/*
- * Unlocks `length` bytes in memory pointed to by `buf`.
- *
- * This function also securely wipes the memory block.
- *
- * Return 0 on success.
- * Return -1 on failure.
- */
 int crypto_memunlock(const unsigned char *buf, size_t length)
 {
     if (sodium_munlock((void *) buf, length) != 0) {  // this will wipe the memory even if it fails
@@ -104,9 +74,6 @@ int crypto_memunlock(const unsigned char *buf, size_t length)
     return 0;
 }
 
-/*
- * Returns true if `password` matches `hash`.
- */
 bool crypto_verify_pass_hash(const unsigned char *hash, const unsigned char *password, size_t length)
 {
     return crypto_pwhash_str_verify((const char *) hash, (const char *) password, length) == 0;
@@ -117,27 +84,11 @@ void crypto_gen_salt(unsigned char *salt)
     randombytes_buf(salt, CRYPTO_SALT_SIZE);
 }
 
-/*
- * Returns a random number between 0 and `upper_limit` (excluded).
- */
 uint32_t crypto_random_number(const uint32_t upper_limit)
 {
     return randombytes_uniform(upper_limit);
 }
 
-/*
- * Derives an encryption key from `password` and `salt` combo, and puts it in `key`.
- *
- * `salt` must be a random number and should be at least CRYPTO_SALT_SIZE bytes. See: crypto_gen_salt().
- * `keylen` must be at least 32 bytes.
- * `params` must contain the same parameters that the key was originally derived with.
- *
- * This key is responsible for all encryption and decryption operations, and therefore must be
- * kept secret.
- *
- * Return 0 on success.
- * Return -1 on failure.
- */
 int crypto_derive_key_from_pass(const unsigned char *key, size_t keylen, const unsigned char *password,
                                 size_t pwlen, const unsigned char *salt, Hash_Parameters *params)
 {
@@ -154,15 +105,6 @@ int crypto_derive_key_from_pass(const unsigned char *key, size_t keylen, const u
     return 0;
 }
 
-/*
- * Decrypts file pointed to by `fp` using `key`. Puts result in `plaintext` and the
- * size of the plaintext in `plain_len`.
- *
- * Return 0 on success.
- * Return -1 on memory related error.
- * Return -2 on decryption error.
- * Return -3 on file corruption related error.
- */
 int crypto_decrypt_file(std::ifstream &fp, size_t file_size, unsigned char *plaintext,
                         unsigned long long *plain_len, const unsigned char *key)
 {
@@ -224,15 +166,6 @@ int crypto_decrypt_file(std::ifstream &fp, size_t file_size, unsigned char *plai
     return 0;
 }
 
-/*
- * Encrypts contents of `plaintext` using `key` and saves it to file pointed to by `fp`.
- * Puts length of ciphertext in `cipher_len`.
- *
- * Return 0 on success.
- * Return -1 on memory related error.
- * Return -2 on encryption error.
- * Return -3 on write error.
- */
 int crypto_encrypt_file(std::ofstream &fp, const unsigned char *plaintext, size_t plain_len,
                         unsigned long long *cipher_len, const unsigned char *key)
 {

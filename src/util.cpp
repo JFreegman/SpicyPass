@@ -38,23 +38,16 @@
 
 #include "util.hpp"
 
-/*
- * Returns true if `s` contains `c`.
- */
 bool string_contains(const std::string &s, const std::string &c)
 {
     return s.find(c) != std::string::npos;
 }
 
-/*
- * Returns true if file pointed to by `fp` is empty.
- */
 bool file_is_empty(std::ifstream &fp)
 {
     return fp.peek() == std::ifstream::traits_type::eof();
 }
 
-/* Returns the size of the file pointed to by `path`. */
 off_t file_size(const char *path)
 {
     struct stat st;
@@ -66,10 +59,6 @@ off_t file_size(const char *path)
     return st.st_size;
 }
 
-/*
- * Attempts to remove file located at `path`. This is just a wrapper for the stdio.h remove()
- * function. We use this for when we only want a stderr warning on failure.
- */
 void remove_file(const std::string &path)
 {
     if (remove(path.c_str()) != 0) {
@@ -77,9 +66,6 @@ void remove_file(const std::string &path)
     }
 }
 
-/*
- * Disables or enables terminal echo depending on `enable` boolean.
- */
 void terminal_echo(bool enable)
 {
 #if defined(_WIN32)
@@ -133,26 +119,16 @@ void clear_console(void)
     printf("\033[2J\033[1;1H");
 }
 
-/*
- * Returns the local time.
- */
 time_t get_time(void)
 {
     return time(NULL);
 }
 
-/*
- * Returns true if `t` has timed out relative to `timeout`.
- */
 bool timed_out(time_t t, time_t timeout)
 {
     return t + timeout <= get_time();
 }
 
-/*
- * Returns a vector containing the tokenized results of `s` split at
- * each instace of `token`.
- */
 std::vector<std::string> string_split(const std::string &s, const std::string &token)
 {
     std::vector<std::string> result;
@@ -168,9 +144,6 @@ std::vector<std::string> string_split(const std::string &s, const std::string &t
     return result;
 }
 
-/*
- * Returns a string containing the charaters in `vec`.
- */
 std::string vec_to_string(const std::vector<char> &vec)
 {
     std::string s;
@@ -182,9 +155,6 @@ std::string vec_to_string(const std::vector<char> &vec)
     return s;
 }
 
-/*
- * Returns a vector containing the characters in `s`.
- */
 std::vector<char> string_to_vec(const std::string &s)
 {
     std::vector<char> result;
@@ -196,9 +166,6 @@ std::vector<char> string_to_vec(const std::string &s)
     return result;
 }
 
-/*
- * Return true if all characters in `s` are printable (ASCII).
- */
 bool string_printable(const std::string &s)
 {
     for (const char c : s) {

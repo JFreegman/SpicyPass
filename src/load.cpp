@@ -38,11 +38,6 @@ static bool valid_format_version(unsigned char format_version)
     return format_version >= FILE_FORMAT_VERSION_1 && format_version <= FILE_FORMAT_VERSION_CURRENT;
 }
 
-/*
- * Returns a string containing pass store file path.
- *
- * Set `temp` to true for temp file path instead.
- */
 const string get_store_path(bool temp)
 {
 #if defined(_WIN32)
@@ -185,16 +180,6 @@ static int read_header(ifstream &fp, unsigned char *format_version, unsigned cha
     return 0;
 }
 
-/*
- * Saves encrypted contents of pass store to disk.
- *
- * This function is atomic: changes will only be made to the pass store file upon success.
- *
- * Return 0 on success.
- * Return -1 if path is invalid.
- * Return -2 if file encryption fails.
- * Return -3 if file save operation fails.
- */
 int save_password_store(Pass_Store &p)
 {
     ofstream fp;
@@ -301,15 +286,6 @@ static int get_hash_params(const string &hash, Hash_Parameters *params)
     return 0;
 }
 
-/*
- * Attempts to validate password, decrypt password store, and load it into `p`.
- *
- * Return the number of pass store entries loaded on success.
- * Return -1 on file related error.
- * Return -2 if password is invalid.
- * Return -3 on crypto related error.
- * Return -4 on bad file format.
- */
 int load_password_store(Pass_Store &p, const unsigned char *password, size_t length)
 {
     ifstream fp;
@@ -389,12 +365,6 @@ int load_password_store(Pass_Store &p, const unsigned char *password, size_t len
     return num_entries;
 }
 
-/*
- * Return 1 if pass store file does not exist or is empty.
- * Return 0 if pass store file exists.
- * Return -1 if invalid path.
- * Return -2 if file cannot be opened.
- */
 int first_time_run(void)
 {
     ifstream fp;
@@ -410,14 +380,6 @@ int first_time_run(void)
     return empty;
 }
 
-/*
- * Adds a header to the beginning of pass store file.
- *
- * This funciton should only be called when the pass store file is empty.
- *
- * Return 0 on success.
- * Return -1 on failure.
- */
 int init_pass_hash(const unsigned char *password, size_t length)
 {
     unsigned char hash[CRYPTO_HASH_SIZE] = {0};
@@ -446,16 +408,6 @@ int init_pass_hash(const unsigned char *password, size_t length)
     return 0;
 }
 
-/*
- * Initializes `p` with a new encryption key derived from `password`, as well as a
- * new key salt and password hash. Changes are written to file.
- *
- * Return 0 on sucess.
- * Return -1 on crypto related error.
- * Return -2 if `p` fails to update.
- * Return -3 on save failure.
- * Return PASS_STORE_LOCKED if pass store is locked.
- */
 int update_crypto(Pass_Store &p, const unsigned char *password, size_t length)
 {
     unsigned char encryption_key[CRYPTO_KEY_SIZE];
@@ -555,12 +507,6 @@ static int get_export_of(ofstream &fp)
     }
 }
 
-/*
- * Writes contents of pass store to a plaintext file.
- *
- * Return 0 on success.
- * Return -1 on failure.
- */
 int export_pass_store_to_plaintext(Pass_Store &p)
 {
     ofstream fp;

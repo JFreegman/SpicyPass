@@ -25,10 +25,8 @@
 
 #include <string>
 
-/* The maximum number of characters a randomly generated password can have. */
+/* The min/max number of characters a randomly generated password can have respectively. */
 #define NUM_RAND_PASS_MAX_CHARS (256)
-
-/* The minimum number of characters a randomly generated password can have. */
 #define NUM_RAND_PASS_MIN_CHARS (10)
 
 /*

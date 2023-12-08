@@ -689,16 +689,6 @@ static int command_prompt(void)
     }
 }
 
-/*
- * Initializes a new `Pass_Store` object and prompts user for password.
- *
- * Return 0 on success.
- * Return -1 if password prompt fails.
- * Return -2 if memory lock fails.
- * Return -3 if pass store file could not be opened.
- * Return -4 on invalid password.
- * Return -5 on decryption error.
- */
 int cli_new_pass_store(Pass_Store &p)
 {
     unsigned char password[MAX_STORE_PASSWORD_SIZE + 2];
