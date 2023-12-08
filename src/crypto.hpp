@@ -116,11 +116,10 @@ int crypto_derive_key_from_pass(const unsigned char *key, size_t keylen, const u
                                 size_t pwlen, const unsigned char *salt, Hash_Parameters *params);
 
 /*
- * Generates a random salt of `length` bytes and puts it in `salt`.
- *
- * `length` must be at least 16 bytes.
+ * Generates a random salt of CRYPTO_SALT_SIZE bytes in length. `salt` must have room
+ * for at least that many bytes.
  */
-void crypto_gen_salt(unsigned char *salt, size_t length);
+void crypto_gen_salt(unsigned char *salt);
 
 /*
  * Decrypts file pointed to by `fp` using `key`. Puts result in `plaintext` and the

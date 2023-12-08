@@ -428,7 +428,7 @@ int init_pass_hash(const unsigned char *password, size_t length)
     }
 
     unsigned char salt[CRYPTO_SALT_SIZE];
-    crypto_gen_salt(salt, CRYPTO_SALT_SIZE);
+    crypto_gen_salt(salt);
 
     ofstream fp;
     int ret = get_pass_store_of(fp, false);
@@ -475,7 +475,7 @@ int update_crypto(Pass_Store &p, const unsigned char *password, size_t length)
         return -1;
     }
 
-    crypto_gen_salt(salt, CRYPTO_SALT_SIZE);
+    crypto_gen_salt(salt);
 
     if (crypto_derive_key_from_pass(encryption_key, CRYPTO_KEY_SIZE, password, length, salt, &params) != 0) {
         cerr << "crypto_derive_key_from_pass() failed" << endl;

@@ -112,16 +112,9 @@ bool crypto_verify_pass_hash(const unsigned char *hash, const unsigned char *pas
     return crypto_pwhash_str_verify((const char *) hash, (const char *) password, length) == 0;
 }
 
-/*
- * Generates a random salt of `length` bytes and puts it in `salt`.
- *
- * `length` must be at least 16 bytes.
- */
-void crypto_gen_salt(unsigned char *salt, size_t length)
+void crypto_gen_salt(unsigned char *salt)
 {
-    assert(length >= 16);
-
-    randombytes_buf(salt, length);
+    randombytes_buf(salt, CRYPTO_SALT_SIZE);
 }
 
 /*
