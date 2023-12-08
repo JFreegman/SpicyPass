@@ -22,6 +22,8 @@
 
 #ifdef GUI_SUPPORT
 
+#include <cassert>
+
 #include "spicy.hpp"
 #include "gui.hpp"
 #include "load.hpp"
