@@ -54,9 +54,7 @@ int crypto_init(void)
  */
 int crypto_make_pass_hash(const unsigned char *hash, const unsigned char *password, size_t length)
 {
-#ifdef DEBUG
     assert(length <= crypto_pwhash_PASSWD_MAX);
-#endif
 
     if (crypto_pwhash_str((char *) hash, (const char *) password, length,
                           CRYPTO_DEFAULT_OPSLIMIT, CRYPTO_DEFAULT_MEMLIMIT) != 0) {
@@ -121,9 +119,7 @@ bool crypto_verify_pass_hash(const unsigned char *hash, const unsigned char *pas
  */
 void crypto_gen_salt(unsigned char *salt, size_t length)
 {
-#ifdef DEBUG
     assert(length >= 16);
-#endif
 
     randombytes_buf(salt, length);
 }
@@ -152,12 +148,10 @@ uint32_t crypto_random_number(const uint32_t upper_limit)
 int crypto_derive_key_from_pass(const unsigned char *key, size_t keylen, const unsigned char *password,
                                 size_t pwlen, const unsigned char *salt, Hash_Parameters *params)
 {
-#ifdef DEBUG
     assert(pwlen <= crypto_pwhash_PASSWD_MAX);
     assert(keylen >= 32);
     assert(params->ops_limit >= crypto_pwhash_OPSLIMIT_MIN && params->ops_limit <= crypto_pwhash_OPSLIMIT_MAX);
     assert(params->memory_limit >= crypto_pwhash_MEMLIMIT_MIN && params->memory_limit <= crypto_pwhash_MEMLIMIT_MAX);
-#endif
 
     if (crypto_pwhash((unsigned char *) key, keylen, (const char *) password, pwlen, salt,
                       params->ops_limit, params->memory_limit, params->algorithm) != 0) {

@@ -376,9 +376,7 @@ int load_password_store(Pass_Store &p, const unsigned char *password, size_t len
     if (file_length > PASS_STORE_HEADER_SIZE) {
         num_entries = p.load(fp, file_length - PASS_STORE_HEADER_SIZE, format_version);
 
-#ifdef DEBUG
         assert(num_entries != PASS_STORE_LOCKED);
-#endif
 
         if (num_entries < 0) {
             fp.close();

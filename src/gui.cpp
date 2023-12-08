@@ -1063,10 +1063,7 @@ static void on_pwButtonEnter_clicked(GtkButton *button, gpointer data)
 
     gint length = gtk_entry_get_text_length(entry);
 
-#ifdef DEBUG
     assert(length <= MAX_STORE_PASSWORD_SIZE);
-
-#endif
 
     char msg[128];
 
