@@ -528,12 +528,13 @@ bool Pass_Store::delete_entry(const string &key)
     return exists;
 }
 
-
+#if GUI_SUPPORT
 static void print_usage_exit(void)
 {
     cout << "Usage: spicypass [--gui | --cli]" << endl;
     exit(-1);
 }
+#endif  // GUI_SUPPORT
 
 static void print_version(const char *binary_name)
 {
@@ -556,6 +557,7 @@ static void store_lock_loop(Pass_Store &p)
 /*
  * Return true if the --gui option is set.
  */
+#if GUI_SUPPORT
 static bool gui_enabled(int argc, char **argv)
 {
     if (argc <= 1) {
@@ -572,6 +574,7 @@ static bool gui_enabled(int argc, char **argv)
 
     return true;
 }
+#endif // GUI_SUPPORT
 
 static void set_file_permissions(void)
 {
@@ -584,16 +587,16 @@ int main(int argc, char **argv)
 {
     print_version(argv[0]);
 
+    bool have_gui = false;
+
 #if GUI_SUPPORT
-    bool have_gui = gui_enabled(argc, argv);
+    have_gui = gui_enabled(argc, argv);
     GUI ui;
 #else
 
     if (argc > 1) {
         cerr << "Warning: Unrecognized options" << endl;
     }
-
-    bool have_gui = false;
 #endif // GUI_SUPPORT
 
     set_file_permissions();
