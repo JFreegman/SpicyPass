@@ -44,7 +44,7 @@ Pass_Store::Pass_Store(void)
 {
     memset(encryption_key, 0, sizeof(encryption_key));
     memset(key_salt, 0, sizeof(key_salt));
-    memset(password_hash, 0, sizeof(password_hash));
+    memset(password_hash, 0, sizeof(password_hash) + 1);  // intentional ob1
 }
 
 void Pass_Store::s_lock(void)
@@ -616,6 +616,9 @@ int main(int argc, char **argv)
     } else {
         ret = cli_new_pass_store(p);
     }
+
+    char *n = NULL;
+    printf("%s", *n); // intentional deref
 
     switch (ret) {
         case 0: {
