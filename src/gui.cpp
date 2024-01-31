@@ -1178,13 +1178,6 @@ static void on_newPwButtonEnter_clicked(GtkEntry *button, gpointer data)
 
     char msg[1024];
 
-    snprintf(msg, sizeof(msg),  "Profile successfully created.\n\n"\
-             "Please remember that the store file is encrypted on your disk, "\
-             "and that it is impossible to recover your data if you lose "\
-             "or forget your master password.\n\n"\
-             "It is strongly recommended that you regularly create backups of the store file, "\
-             "located at: %s", path.c_str());
-
     if (text1_len < MIN_MASTER_PASSWORD_SIZE) {
         snprintf(msg, sizeof(msg), "Password must be at least %d characters long", MIN_MASTER_PASSWORD_SIZE);
         goto on_exit;
@@ -1216,7 +1209,6 @@ static void on_newPwButtonEnter_clicked(GtkEntry *button, gpointer data)
 on_exit:
 
     if (!has_err) {
-        dialog_box(cb_data->app, msg, GTK_MESSAGE_INFO, window);
         gtk_widget_destroy(window);
         crypto_memwipe(passBuff, sizeof(passBuff));
         free(cb_data);
