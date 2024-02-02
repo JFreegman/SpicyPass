@@ -3,7 +3,10 @@ cmake_minimum_required(VERSION 3.10)
 project(SpicyPass)
 
 set(SPICYPASS_INSTALL_DIRECTORY ${CMAKE_INSTALL_PREFIX}/share/spicypass)
+set(APPLICATIONS_DIRECTORY ${CMAKE_INSTALL_PREFIX}/share/applications)
+
 set(GLADE_FILE_PATH ${SPICYPASS_INSTALL_DIRECTORY}/gui.glade)
+set(DESKTOP_FILE_PATH ${APPLICATIONS_DIRECTORY}/spicypass.desktop)
 set(SpicyPass_LOGO_FILE_PATH ${SPICYPASS_INSTALL_DIRECTORY}/spicypass.svg)
 
 set(SpicyPass_VERSION_MAJOR "0")
@@ -37,6 +40,7 @@ if(NOT GTK_FOUND)
 else()
     add_definitions(-DGUI_SUPPORT ${GTK_DEFINITIONS})
     set(GUI_INSTALL_FILES gui/gui.glade icon/spicypass.svg)
+    set(DESKTOP_FILE_PATH desktop/spicypass.desktop)
 endif(NOT GTK_FOUND)
 
 add_executable(spicypass src/cli.cpp
@@ -86,6 +90,7 @@ target_include_directories(spicypass PUBLIC "${SpicyPass_BINARY_DIR}")
 
 install(TARGETS spicypass DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 install(FILES ${GUI_INSTALL_FILES} DESTINATION ${SPICYPASS_INSTALL_DIRECTORY})
+install(FILES ${DESKTOP_FILE_PATH} DESTINATION ${APPLICATIONS_DIRECTORY})
 
 # Packaging
 

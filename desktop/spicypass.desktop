@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=SpicyPass
+Terminal=false
+GenericName=Password Manager
+Comment=A minimalist security focused password manager
+Exec=/usr/local/bin/spicypass
+Icon=spicypass
+Categories=Utility;
