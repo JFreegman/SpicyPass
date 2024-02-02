@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.22.1 -->
+<!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.10"/>
   <object class="GtkListStore" id="liststore1">
@@ -11,66 +11,62 @@
     </columns>
   </object>
   <object class="GtkWindow" id="window">
-    <property name="can_focus">False</property>
-    <property name="modal">True</property>
-    <property name="window_position">center</property>
-    <property name="default_width">500</property>
-    <property name="default_height">500</property>
-    <property name="destroy_with_parent">True</property>
-    <property name="has_resize_grip">True</property>
-    <child>
-      <placeholder/>
-    </child>
+    <property name="can-focus">False</property>
+    <property name="window-position">center</property>
+    <property name="default-width">500</property>
+    <property name="default-height">500</property>
+    <property name="destroy-with-parent">True</property>
+    <property name="has-resize-grip">True</property>
     <child>
       <object class="GtkBox" id="box1">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="margin_bottom">10</property>
+        <property name="can-focus">False</property>
+        <property name="margin-bottom">10</property>
         <property name="orientation">vertical</property>
         <property name="spacing">2</property>
         <child>
           <object class="GtkMenuBar" id="menuBar">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <child>
               <object class="GtkMenuItem" id="menuOptions">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="label" translatable="yes">_Menu</property>
-                <property name="use_underline">True</property>
+                <property name="use-underline">True</property>
                 <child type="submenu">
                   <object class="GtkMenu" id="menuOptionsSub">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                     <child>
                       <object class="GtkImageMenuItem" id="menuPassGen">
                         <property name="label" translatable="yes">Password Generator</property>
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="use_stock">False</property>
+                        <property name="can-focus">False</property>
+                        <property name="use-stock">False</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menuChangePass">
                         <property name="label" translatable="yes">Change Master Password</property>
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="use_stock">False</property>
+                        <property name="can-focus">False</property>
+                        <property name="use-stock">False</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkSeparatorMenuItem" id="menuSeparator">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menuExit">
                         <property name="label">gtk-quit</property>
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="use-underline">True</property>
+                        <property name="use-stock">True</property>
                       </object>
                     </child>
                   </object>
@@ -80,20 +76,20 @@
             <child>
               <object class="GtkMenuItem" id="menuHelp">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="label" translatable="yes">_Help</property>
-                <property name="use_underline">True</property>
+                <property name="use-underline">True</property>
                 <child type="submenu">
                   <object class="GtkMenu" id="menuHelpSub">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                     <child>
                       <object class="GtkImageMenuItem" id="menuAbout">
                         <property name="label">gtk-about</property>
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="use-underline">True</property>
+                        <property name="use-stock">True</property>
                       </object>
                     </child>
                   </object>
@@ -110,17 +106,17 @@
         <child>
           <object class="GtkScrolledWindow" id="scrollwindow1">
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="vscrollbar_policy">always</property>
-            <property name="shadow_type">in</property>
+            <property name="can-focus">True</property>
+            <property name="vscrollbar-policy">always</property>
+            <property name="shadow-type">in</property>
             <child>
               <object class="GtkTreeView" id="treeview1">
                 <property name="name">treeview1</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
+                <property name="can-focus">True</property>
                 <property name="model">liststore1</property>
-                <property name="search_column">0</property>
-                <property name="enable_grid_lines">both</property>
+                <property name="search-column">0</property>
+                <property name="enable-grid-lines">both</property>
                 <child internal-child="selection">
                   <object class="GtkTreeSelection"/>
                 </child>
@@ -132,8 +128,8 @@
                     <property name="title" translatable="yes">Login</property>
                     <property name="expand">True</property>
                     <property name="clickable">True</property>
-                    <property name="sort_indicator">True</property>
-                    <property name="sort_column_id">0</property>
+                    <property name="sort-indicator">True</property>
+                    <property name="sort-column-id">0</property>
                     <child>
                       <object class="GtkCellRendererText" id="cr1"/>
                     </child>
@@ -151,21 +147,21 @@
         <child>
           <object class="GtkBox" id="box2">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="margin_top">10</property>
+            <property name="can-focus">False</property>
+            <property name="margin-top">10</property>
             <property name="spacing">6</property>
             <property name="homogeneous">True</property>
             <child>
               <object class="GtkButton" id="buttonAdd">
                 <property name="label">gtk-add</property>
-                <property name="width_request">100</property>
+                <property name="width-request">100</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="tooltip_text" translatable="yes">Add a new entry</property>
-                <property name="margin_left">10</property>
-                <property name="use_stock">True</property>
-                <property name="always_show_image">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="tooltip-text" translatable="yes">Add a new entry</property>
+                <property name="margin-left">10</property>
+                <property name="use-stock">True</property>
+                <property name="always-show-image">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -176,13 +172,13 @@
             <child>
               <object class="GtkButton" id="buttonEdit">
                 <property name="label">gtk-edit</property>
-                <property name="width_request">100</property>
+                <property name="width-request">100</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="tooltip_text" translatable="yes">Edit selected entry</property>
-                <property name="use_stock">True</property>
-                <property name="always_show_image">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="tooltip-text" translatable="yes">Edit selected entry</property>
+                <property name="use-stock">True</property>
+                <property name="always-show-image">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -193,13 +189,13 @@
             <child>
               <object class="GtkButton" id="buttonCopy">
                 <property name="label">gtk-copy</property>
-                <property name="width_request">100</property>
+                <property name="width-request">100</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="tooltip_text" translatable="yes">Copy the password for selected entry</property>
-                <property name="use_stock">True</property>
-                <property name="always_show_image">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="tooltip-text" translatable="yes">Copy the password for selected entry</property>
+                <property name="use-stock">True</property>
+                <property name="always-show-image">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -210,14 +206,14 @@
             <child>
               <object class="GtkButton" id="buttonDelete">
                 <property name="label">gtk-delete</property>
-                <property name="width_request">100</property>
+                <property name="width-request">100</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="tooltip_text" translatable="yes">Delete selected entry</property>
-                <property name="margin_right">10</property>
-                <property name="use_stock">True</property>
-                <property name="always_show_image">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="tooltip-text" translatable="yes">Delete selected entry</property>
+                <property name="margin-right">10</property>
+                <property name="use-stock">True</property>
+                <property name="always-show-image">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -236,37 +232,33 @@
     </child>
   </object>
   <object class="GtkAboutDialog" id="aboutDialog">
-    <property name="can_focus">True</property>
-    <property name="modal">True</property>
-    <property name="destroy_with_parent">True</property>
-    <property name="type_hint">dialog</property>
-    <property name="skip_taskbar_hint">True</property>
-    <property name="transient_for">window</property>
-    <property name="program_name">SpicyPass</property>
-    <property name="copyright" translatable="yes">Copyright © 2020 Jfreegman</property>
+    <property name="can-focus">True</property>
+    <property name="destroy-with-parent">True</property>
+    <property name="type-hint">dialog</property>
+    <property name="skip-taskbar-hint">True</property>
+    <property name="transient-for">window</property>
+    <property name="program-name">SpicyPass</property>
+    <property name="copyright" translatable="yes">Copyright © 2020-2024 Jfreegman</property>
     <property name="comments" translatable="yes">SpicyPass is a light-weight password manager that utilizes state of the art cryptography and minimalist design principles for secure and simple password storage. </property>
     <property name="website">https://github.com/Jfreegman/SpicyPass</property>
-    <property name="website_label" translatable="yes">Source Code</property>
+    <property name="website-label" translatable="yes">Source Code</property>
     <property name="authors">Jfreegman &lt;Jfreegman@gmail.com&gt;</property>
     <property name="artists">smashicons at flaticon.com</property>
-    <property name="logo_icon_name">help-about</property>
-    <property name="license_type">gpl-3-0</property>
-    <child>
-      <placeholder/>
-    </child>
+    <property name="logo-icon-name">help-about</property>
+    <property name="license-type">gpl-3-0</property>
     <child internal-child="vbox">
       <object class="GtkBox">
-        <property name="can_focus">False</property>
-        <property name="margin_left">20</property>
-        <property name="margin_right">20</property>
-        <property name="margin_top">20</property>
-        <property name="margin_bottom">20</property>
+        <property name="can-focus">False</property>
+        <property name="margin-left">20</property>
+        <property name="margin-right">20</property>
+        <property name="margin-top">20</property>
+        <property name="margin-bottom">20</property>
         <property name="orientation">vertical</property>
         <property name="spacing">2</property>
         <child internal-child="action_area">
           <object class="GtkButtonBox">
-            <property name="can_focus">False</property>
-            <property name="layout_style">end</property>
+            <property name="can-focus">False</property>
+            <property name="layout-style">end</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -281,38 +273,35 @@
     </child>
   </object>
   <object class="GtkDialog" id="addEntryWindow">
-    <property name="can_focus">False</property>
+    <property name="can-focus">False</property>
     <property name="resizable">False</property>
     <property name="modal">True</property>
-    <property name="window_position">center</property>
-    <property name="destroy_with_parent">True</property>
-    <property name="type_hint">utility</property>
-    <property name="skip_taskbar_hint">True</property>
+    <property name="window-position">center</property>
+    <property name="destroy-with-parent">True</property>
+    <property name="type-hint">utility</property>
+    <property name="skip-taskbar-hint">True</property>
     <property name="gravity">center</property>
-    <property name="transient_for">window</property>
-    <child>
-      <placeholder/>
-    </child>
+    <property name="transient-for">window</property>
     <child internal-child="vbox">
       <object class="GtkBox">
-        <property name="can_focus">False</property>
-        <property name="margin_left">20</property>
-        <property name="margin_right">20</property>
-        <property name="margin_top">20</property>
-        <property name="margin_bottom">20</property>
+        <property name="can-focus">False</property>
+        <property name="margin-left">20</property>
+        <property name="margin-right">20</property>
+        <property name="margin-top">20</property>
+        <property name="margin-bottom">20</property>
         <property name="orientation">vertical</property>
         <property name="spacing">6</property>
         <child internal-child="action_area">
           <object class="GtkButtonBox">
-            <property name="can_focus">False</property>
-            <property name="margin_top">10</property>
-            <property name="layout_style">end</property>
+            <property name="can-focus">False</property>
+            <property name="margin-top">10</property>
+            <property name="layout-style">end</property>
             <child>
               <object class="GtkButton" id="addEntryButtonCancel">
                 <property name="label" translatable="yes">Cancel</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -324,8 +313,8 @@
               <object class="GtkButton" id="addEntryButtonOk">
                 <property name="label" translatable="yes">Ok</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -343,14 +332,14 @@
         <child>
           <object class="GtkBox">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="orientation">vertical</property>
             <property name="spacing">6</property>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="margin_bottom">10</property>
+                <property name="can-focus">False</property>
+                <property name="margin-bottom">10</property>
                 <property name="label" translatable="yes">Add New Entry</property>
                 <attributes>
                   <attribute name="weight" value="bold"/>
@@ -365,11 +354,11 @@
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkLabel">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                     <property name="halign">end</property>
                     <property name="label" translatable="yes">Login</property>
                   </object>
@@ -381,12 +370,12 @@
                 </child>
                 <child>
                   <object class="GtkEntry" id="loginEntry">
-                    <property name="width_request">250</property>
+                    <property name="width-request">250</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="tooltip_text" translatable="yes">Input your login name</property>
+                    <property name="can-focus">True</property>
+                    <property name="tooltip-text" translatable="yes">Input your login name</property>
                     <property name="halign">end</property>
-                    <property name="margin_left">10</property>
+                    <property name="margin-left">10</property>
                     <property name="hexpand">True</property>
                   </object>
                   <packing>
@@ -405,11 +394,11 @@
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkLabel">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                     <property name="halign">end</property>
                     <property name="label" translatable="yes">Password</property>
                   </object>
@@ -421,12 +410,12 @@
                 </child>
                 <child>
                   <object class="GtkEntry" id="passEntry">
-                    <property name="width_request">250</property>
+                    <property name="width-request">250</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="tooltip_text" translatable="yes">Input your password</property>
+                    <property name="can-focus">True</property>
+                    <property name="tooltip-text" translatable="yes">Input your password</property>
                     <property name="halign">end</property>
-                    <property name="margin_left">10</property>
+                    <property name="margin-left">10</property>
                     <property name="hexpand">True</property>
                   </object>
                   <packing>
@@ -453,38 +442,35 @@
     </child>
   </object>
   <object class="GtkDialog" id="changePwWindow">
-    <property name="can_focus">False</property>
+    <property name="can-focus">False</property>
     <property name="resizable">False</property>
     <property name="modal">True</property>
-    <property name="window_position">center</property>
-    <property name="destroy_with_parent">True</property>
-    <property name="type_hint">utility</property>
-    <property name="skip_taskbar_hint">True</property>
+    <property name="window-position">center</property>
+    <property name="destroy-with-parent">True</property>
+    <property name="type-hint">utility</property>
+    <property name="skip-taskbar-hint">True</property>
     <property name="gravity">center</property>
-    <property name="transient_for">window</property>
-    <child>
-      <placeholder/>
-    </child>
+    <property name="transient-for">window</property>
     <child internal-child="vbox">
       <object class="GtkBox">
-        <property name="can_focus">False</property>
-        <property name="margin_left">20</property>
-        <property name="margin_right">20</property>
-        <property name="margin_top">20</property>
-        <property name="margin_bottom">20</property>
+        <property name="can-focus">False</property>
+        <property name="margin-left">20</property>
+        <property name="margin-right">20</property>
+        <property name="margin-top">20</property>
+        <property name="margin-bottom">20</property>
         <property name="orientation">vertical</property>
         <property name="spacing">6</property>
         <child internal-child="action_area">
           <object class="GtkButtonBox">
-            <property name="can_focus">False</property>
-            <property name="margin_top">10</property>
-            <property name="layout_style">end</property>
+            <property name="can-focus">False</property>
+            <property name="margin-top">10</property>
+            <property name="layout-style">end</property>
             <child>
               <object class="GtkButton" id="changePwButtonCancel">
                 <property name="label" translatable="yes">Cancel</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -496,8 +482,8 @@
               <object class="GtkButton" id="changePwButtonOk">
                 <property name="label" translatable="yes">Ok</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -515,14 +501,14 @@
         <child>
           <object class="GtkBox">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="orientation">vertical</property>
             <property name="spacing">6</property>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="margin_bottom">10</property>
+                <property name="can-focus">False</property>
+                <property name="margin-bottom">10</property>
                 <property name="label" translatable="yes">Change Master Password</property>
                 <attributes>
                   <attribute name="weight" value="bold"/>
@@ -537,11 +523,11 @@
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkLabel">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                     <property name="halign">end</property>
                     <property name="label" translatable="yes">Current Password</property>
                   </object>
@@ -553,16 +539,16 @@
                 </child>
                 <child>
                   <object class="GtkEntry" id="changePwEntry1">
-                    <property name="width_request">250</property>
+                    <property name="width-request">250</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="tooltip_text" translatable="yes">Enter your current master password here</property>
+                    <property name="can-focus">True</property>
+                    <property name="tooltip-text" translatable="yes">Enter your current master password here</property>
                     <property name="halign">end</property>
-                    <property name="margin_left">10</property>
+                    <property name="margin-left">10</property>
                     <property name="hexpand">True</property>
                     <property name="visibility">False</property>
-                    <property name="invisible_char">•</property>
-                    <property name="input_purpose">password</property>
+                    <property name="invisible-char">•</property>
+                    <property name="input-purpose">password</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -580,11 +566,11 @@
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkLabel">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                     <property name="halign">end</property>
                     <property name="label" translatable="yes">New Password</property>
                   </object>
@@ -596,16 +582,16 @@
                 </child>
                 <child>
                   <object class="GtkEntry" id="changePwEntry2">
-                    <property name="width_request">250</property>
+                    <property name="width-request">250</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="tooltip_text" translatable="yes">Enter your new master password here</property>
+                    <property name="can-focus">True</property>
+                    <property name="tooltip-text" translatable="yes">Enter your new master password here</property>
                     <property name="halign">end</property>
-                    <property name="margin_left">10</property>
+                    <property name="margin-left">10</property>
                     <property name="hexpand">True</property>
                     <property name="visibility">False</property>
-                    <property name="invisible_char">•</property>
-                    <property name="input_purpose">password</property>
+                    <property name="invisible-char">•</property>
+                    <property name="input-purpose">password</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -623,11 +609,11 @@
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkLabel">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                     <property name="halign">end</property>
                     <property name="label" translatable="yes">Repeat Password</property>
                   </object>
@@ -639,16 +625,16 @@
                 </child>
                 <child>
                   <object class="GtkEntry" id="changePwEntry3">
-                    <property name="width_request">250</property>
+                    <property name="width-request">250</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="tooltip_text" translatable="yes">Enter your new master password here again</property>
+                    <property name="can-focus">True</property>
+                    <property name="tooltip-text" translatable="yes">Enter your new master password here again</property>
                     <property name="halign">end</property>
-                    <property name="margin_left">10</property>
+                    <property name="margin-left">10</property>
                     <property name="hexpand">True</property>
                     <property name="visibility">False</property>
-                    <property name="invisible_char">•</property>
-                    <property name="input_purpose">password</property>
+                    <property name="invisible-char">•</property>
+                    <property name="input-purpose">password</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -675,32 +661,29 @@
   </object>
   <object class="GtkMessageDialog" id="dialogError">
     <property name="name">dialog1</property>
-    <property name="can_focus">False</property>
+    <property name="can-focus">False</property>
     <property name="resizable">False</property>
     <property name="modal">True</property>
-    <property name="type_hint">dialog</property>
-    <property name="skip_taskbar_hint">True</property>
-    <property name="transient_for">window</property>
-    <property name="message_type">error</property>
+    <property name="type-hint">dialog</property>
+    <property name="skip-taskbar-hint">True</property>
+    <property name="transient-for">window</property>
+    <property name="message-type">error</property>
     <property name="buttons">close</property>
     <property name="text" translatable="yes">This is just a test you shouldn't see this</property>
-    <child>
-      <placeholder/>
-    </child>
     <child internal-child="vbox">
       <object class="GtkBox">
-        <property name="can_focus">False</property>
-        <property name="margin_left">20</property>
-        <property name="margin_right">20</property>
-        <property name="margin_top">20</property>
-        <property name="margin_bottom">20</property>
+        <property name="can-focus">False</property>
+        <property name="margin-left">20</property>
+        <property name="margin-right">20</property>
+        <property name="margin-top">20</property>
+        <property name="margin-bottom">20</property>
         <property name="orientation">vertical</property>
         <property name="spacing">2</property>
         <child internal-child="action_area">
           <object class="GtkButtonBox">
             <property name="name">di</property>
-            <property name="can_focus">False</property>
-            <property name="layout_style">end</property>
+            <property name="can-focus">False</property>
+            <property name="layout-style">end</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -716,31 +699,28 @@
   </object>
   <object class="GtkMessageDialog" id="dialogInfo">
     <property name="name">dialog1</property>
-    <property name="can_focus">False</property>
+    <property name="can-focus">False</property>
     <property name="resizable">False</property>
     <property name="modal">True</property>
-    <property name="type_hint">dialog</property>
-    <property name="skip_taskbar_hint">True</property>
-    <property name="transient_for">window</property>
+    <property name="type-hint">dialog</property>
+    <property name="skip-taskbar-hint">True</property>
+    <property name="transient-for">window</property>
     <property name="buttons">close</property>
     <property name="text" translatable="yes">This is just a test you shouldn't see this</property>
-    <child>
-      <placeholder/>
-    </child>
     <child internal-child="vbox">
       <object class="GtkBox">
-        <property name="can_focus">False</property>
-        <property name="margin_left">20</property>
-        <property name="margin_right">20</property>
-        <property name="margin_top">20</property>
-        <property name="margin_bottom">20</property>
+        <property name="can-focus">False</property>
+        <property name="margin-left">20</property>
+        <property name="margin-right">20</property>
+        <property name="margin-top">20</property>
+        <property name="margin-bottom">20</property>
         <property name="orientation">vertical</property>
         <property name="spacing">2</property>
         <child internal-child="action_area">
           <object class="GtkButtonBox">
             <property name="name">di</property>
-            <property name="can_focus">False</property>
-            <property name="layout_style">end</property>
+            <property name="can-focus">False</property>
+            <property name="layout-style">end</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -756,33 +736,30 @@
   </object>
   <object class="GtkMessageDialog" id="dialogWarning">
     <property name="name">dialog1</property>
-    <property name="can_focus">False</property>
+    <property name="can-focus">False</property>
     <property name="resizable">False</property>
     <property name="modal">True</property>
-    <property name="type_hint">dialog</property>
-    <property name="skip_taskbar_hint">True</property>
-    <property name="transient_for">window</property>
-    <property name="message_type">warning</property>
+    <property name="type-hint">dialog</property>
+    <property name="skip-taskbar-hint">True</property>
+    <property name="transient-for">window</property>
+    <property name="message-type">warning</property>
     <property name="buttons">close</property>
     <property name="text" translatable="yes">This is just a test you shouldn't see this</property>
-    <child>
-      <placeholder/>
-    </child>
     <child internal-child="vbox">
       <object class="GtkBox">
-        <property name="can_focus">False</property>
-        <property name="margin_left">20</property>
-        <property name="margin_right">20</property>
-        <property name="margin_top">20</property>
-        <property name="margin_bottom">20</property>
+        <property name="can-focus">False</property>
+        <property name="margin-left">20</property>
+        <property name="margin-right">20</property>
+        <property name="margin-top">20</property>
+        <property name="margin-bottom">20</property>
         <property name="orientation">vertical</property>
         <property name="spacing">2</property>
         <child internal-child="action_area">
           <object class="GtkButtonBox">
             <property name="name">di</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="homogeneous">True</property>
-            <property name="layout_style">end</property>
+            <property name="layout-style">end</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -794,36 +771,33 @@
     </child>
   </object>
   <object class="GtkDialog" id="dialogWindow">
-    <property name="can_focus">False</property>
+    <property name="can-focus">False</property>
     <property name="resizable">False</property>
     <property name="modal">True</property>
-    <property name="icon_name">dialog-error</property>
-    <property name="type_hint">dialog</property>
-    <property name="skip_taskbar_hint">True</property>
-    <property name="transient_for">window</property>
-    <child>
-      <placeholder/>
-    </child>
+    <property name="icon-name">dialog-error</property>
+    <property name="type-hint">dialog</property>
+    <property name="skip-taskbar-hint">True</property>
+    <property name="transient-for">window</property>
     <child internal-child="vbox">
       <object class="GtkBox">
-        <property name="can_focus">False</property>
-        <property name="margin_left">20</property>
-        <property name="margin_right">20</property>
-        <property name="margin_top">20</property>
-        <property name="margin_bottom">20</property>
+        <property name="can-focus">False</property>
+        <property name="margin-left">20</property>
+        <property name="margin-right">20</property>
+        <property name="margin-top">20</property>
+        <property name="margin-bottom">20</property>
         <property name="orientation">vertical</property>
         <property name="spacing">6</property>
         <child internal-child="action_area">
           <object class="GtkButtonBox">
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="homogeneous">True</property>
-            <property name="layout_style">center</property>
+            <property name="layout-style">center</property>
             <child>
               <object class="GtkButton" id="confirmButtonNo">
                 <property name="label" translatable="yes">No</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -835,13 +809,13 @@
               <object class="GtkButton" id="confirmButtonYes">
                 <property name="label" translatable="yes">Yes</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="pack_type">end</property>
+                <property name="pack-type">end</property>
                 <property name="position">1</property>
               </packing>
             </child>
@@ -855,8 +829,8 @@
         <child>
           <object class="GtkLabel" id="confirmLabel">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="margin_bottom">10</property>
+            <property name="can-focus">False</property>
+            <property name="margin-bottom">10</property>
             <property name="label" translatable="yes">This is a test message you shouldn't see this</property>
           </object>
           <packing>
@@ -869,38 +843,35 @@
     </child>
   </object>
   <object class="GtkDialog" id="editEntryWindow">
-    <property name="can_focus">False</property>
+    <property name="can-focus">False</property>
     <property name="resizable">False</property>
     <property name="modal">True</property>
-    <property name="window_position">center</property>
-    <property name="destroy_with_parent">True</property>
-    <property name="type_hint">utility</property>
-    <property name="skip_taskbar_hint">True</property>
+    <property name="window-position">center</property>
+    <property name="destroy-with-parent">True</property>
+    <property name="type-hint">utility</property>
+    <property name="skip-taskbar-hint">True</property>
     <property name="gravity">center</property>
-    <property name="transient_for">window</property>
-    <child>
-      <placeholder/>
-    </child>
+    <property name="transient-for">window</property>
     <child internal-child="vbox">
       <object class="GtkBox">
-        <property name="can_focus">False</property>
-        <property name="margin_left">20</property>
-        <property name="margin_right">20</property>
-        <property name="margin_top">20</property>
-        <property name="margin_bottom">20</property>
+        <property name="can-focus">False</property>
+        <property name="margin-left">20</property>
+        <property name="margin-right">20</property>
+        <property name="margin-top">20</property>
+        <property name="margin-bottom">20</property>
         <property name="orientation">vertical</property>
         <property name="spacing">6</property>
         <child internal-child="action_area">
           <object class="GtkButtonBox">
-            <property name="can_focus">False</property>
-            <property name="margin_top">10</property>
-            <property name="layout_style">end</property>
+            <property name="can-focus">False</property>
+            <property name="margin-top">10</property>
+            <property name="layout-style">end</property>
             <child>
               <object class="GtkButton" id="editEntryButtonCancel">
                 <property name="label" translatable="yes">Cancel</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -912,8 +883,8 @@
               <object class="GtkButton" id="editEntryButtonOk">
                 <property name="label" translatable="yes">Ok</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -931,14 +902,14 @@
         <child>
           <object class="GtkBox">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="orientation">vertical</property>
             <property name="spacing">6</property>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="margin_bottom">10</property>
+                <property name="can-focus">False</property>
+                <property name="margin-bottom">10</property>
                 <property name="label" translatable="yes">Edit Entry</property>
                 <attributes>
                   <attribute name="weight" value="bold"/>
@@ -953,11 +924,11 @@
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkLabel">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                     <property name="halign">end</property>
                     <property name="label" translatable="yes">Login</property>
                   </object>
@@ -969,12 +940,12 @@
                 </child>
                 <child>
                   <object class="GtkEntry" id="editEntryLogin">
-                    <property name="width_request">250</property>
+                    <property name="width-request">250</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="tooltip_text" translatable="yes">Edit your login name</property>
+                    <property name="can-focus">True</property>
+                    <property name="tooltip-text" translatable="yes">Edit your login name</property>
                     <property name="halign">end</property>
-                    <property name="margin_left">10</property>
+                    <property name="margin-left">10</property>
                     <property name="hexpand">True</property>
                   </object>
                   <packing>
@@ -993,11 +964,11 @@
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkLabel">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                     <property name="halign">end</property>
                     <property name="label" translatable="yes">Password</property>
                   </object>
@@ -1009,12 +980,12 @@
                 </child>
                 <child>
                   <object class="GtkEntry" id="editEntryPass">
-                    <property name="width_request">250</property>
+                    <property name="width-request">250</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="tooltip_text" translatable="yes">Edit your password. If this is left empty a random password will be generated.</property>
+                    <property name="can-focus">True</property>
+                    <property name="tooltip-text" translatable="yes">Edit your password. If this is left empty a random password will be generated.</property>
                     <property name="halign">end</property>
-                    <property name="margin_left">10</property>
+                    <property name="margin-left">10</property>
                     <property name="hexpand">True</property>
                   </object>
                   <packing>
@@ -1041,39 +1012,36 @@
     </child>
   </object>
   <object class="GtkDialog" id="newPwWindow">
-    <property name="can_focus">False</property>
+    <property name="can-focus">False</property>
     <property name="resizable">False</property>
     <property name="modal">True</property>
-    <property name="window_position">center</property>
-    <property name="destroy_with_parent">True</property>
-    <property name="type_hint">utility</property>
-    <property name="skip_taskbar_hint">True</property>
+    <property name="window-position">center</property>
+    <property name="destroy-with-parent">True</property>
+    <property name="type-hint">utility</property>
+    <property name="skip-taskbar-hint">True</property>
     <property name="deletable">False</property>
     <property name="gravity">center</property>
-    <property name="transient_for">window</property>
-    <child>
-      <placeholder/>
-    </child>
+    <property name="transient-for">window</property>
     <child internal-child="vbox">
       <object class="GtkBox">
-        <property name="can_focus">False</property>
-        <property name="margin_left">20</property>
-        <property name="margin_right">20</property>
-        <property name="margin_top">20</property>
-        <property name="margin_bottom">20</property>
+        <property name="can-focus">False</property>
+        <property name="margin-left">20</property>
+        <property name="margin-right">20</property>
+        <property name="margin-top">20</property>
+        <property name="margin-bottom">20</property>
         <property name="orientation">vertical</property>
         <property name="spacing">6</property>
         <child internal-child="action_area">
           <object class="GtkButtonBox">
-            <property name="can_focus">False</property>
-            <property name="margin_top">10</property>
-            <property name="layout_style">end</property>
+            <property name="can-focus">False</property>
+            <property name="margin-top">10</property>
+            <property name="layout-style">end</property>
             <child>
               <object class="GtkButton" id="newPwButtonQuit">
                 <property name="label" translatable="yes">Quit</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -1085,8 +1053,8 @@
               <object class="GtkButton" id="newPwButtonEnter">
                 <property name="label" translatable="yes">Enter</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -1104,14 +1072,14 @@
         <child>
           <object class="GtkBox">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="orientation">vertical</property>
             <property name="spacing">6</property>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="margin_bottom">10</property>
+                <property name="can-focus">False</property>
+                <property name="margin-bottom">10</property>
                 <property name="label" translatable="yes">Creating new profile. Please enter a master password.</property>
                 <attributes>
                   <attribute name="weight" value="bold"/>
@@ -1126,11 +1094,11 @@
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkLabel">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                     <property name="halign">end</property>
                     <property name="label" translatable="yes">Enter Password</property>
                   </object>
@@ -1143,16 +1111,16 @@
                 <child>
                   <object class="GtkEntry" id="newPwEntry2">
                     <property name="name">pwEntryBuffer</property>
-                    <property name="width_request">250</property>
+                    <property name="width-request">250</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="tooltip_text" translatable="yes">Type your password here</property>
+                    <property name="can-focus">True</property>
+                    <property name="tooltip-text" translatable="yes">Type your password here</property>
                     <property name="halign">end</property>
-                    <property name="margin_left">10</property>
+                    <property name="margin-left">10</property>
                     <property name="hexpand">True</property>
                     <property name="visibility">False</property>
-                    <property name="invisible_char">•</property>
-                    <property name="input_purpose">password</property>
+                    <property name="invisible-char">•</property>
+                    <property name="input-purpose">password</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -1170,11 +1138,11 @@
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkLabel">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                     <property name="halign">end</property>
                     <property name="label" translatable="yes">Repeat Password</property>
                   </object>
@@ -1187,16 +1155,16 @@
                 <child>
                   <object class="GtkEntry" id="newPwEntry1">
                     <property name="name">pwEntryBuffer</property>
-                    <property name="width_request">250</property>
+                    <property name="width-request">250</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="tooltip_text" translatable="yes">Repeat the same password here</property>
+                    <property name="can-focus">True</property>
+                    <property name="tooltip-text" translatable="yes">Repeat the same password here</property>
                     <property name="halign">end</property>
-                    <property name="margin_left">10</property>
+                    <property name="margin-left">10</property>
                     <property name="hexpand">True</property>
                     <property name="visibility">False</property>
-                    <property name="invisible_char">•</property>
-                    <property name="input_purpose">password</property>
+                    <property name="invisible-char">•</property>
+                    <property name="input-purpose">password</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -1222,38 +1190,35 @@
     </child>
   </object>
   <object class="GtkDialog" id="passGenWindow">
-    <property name="can_focus">False</property>
+    <property name="can-focus">False</property>
     <property name="resizable">False</property>
     <property name="modal">True</property>
-    <property name="window_position">center</property>
-    <property name="destroy_with_parent">True</property>
-    <property name="type_hint">utility</property>
-    <property name="skip_taskbar_hint">True</property>
+    <property name="window-position">center</property>
+    <property name="destroy-with-parent">True</property>
+    <property name="type-hint">utility</property>
+    <property name="skip-taskbar-hint">True</property>
     <property name="gravity">center</property>
-    <property name="transient_for">window</property>
-    <child>
-      <placeholder/>
-    </child>
+    <property name="transient-for">window</property>
     <child internal-child="vbox">
       <object class="GtkBox">
-        <property name="can_focus">False</property>
-        <property name="margin_left">20</property>
-        <property name="margin_right">20</property>
-        <property name="margin_top">20</property>
-        <property name="margin_bottom">20</property>
+        <property name="can-focus">False</property>
+        <property name="margin-left">20</property>
+        <property name="margin-right">20</property>
+        <property name="margin-top">20</property>
+        <property name="margin-bottom">20</property>
         <property name="orientation">vertical</property>
         <property name="spacing">6</property>
         <child internal-child="action_area">
           <object class="GtkButtonBox">
-            <property name="can_focus">False</property>
-            <property name="margin_top">10</property>
-            <property name="layout_style">end</property>
+            <property name="can-focus">False</property>
+            <property name="margin-top">10</property>
+            <property name="layout-style">end</property>
             <child>
               <object class="GtkButton" id="passGenButtonExit">
                 <property name="label" translatable="yes">Close</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -1265,8 +1230,8 @@
               <object class="GtkButton" id="passGenButtonGen">
                 <property name="label" translatable="yes">Generate</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -1284,14 +1249,14 @@
         <child>
           <object class="GtkBox">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="orientation">vertical</property>
             <property name="spacing">6</property>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="margin_bottom">10</property>
+                <property name="can-focus">False</property>
+                <property name="margin-bottom">10</property>
                 <property name="label" translatable="yes">Random Password Generator</property>
                 <attributes>
                   <attribute name="weight" value="bold"/>
@@ -1306,11 +1271,11 @@
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkLabel">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                     <property name="halign">end</property>
                     <property name="label" translatable="yes">Length</property>
                   </object>
@@ -1322,15 +1287,15 @@
                 </child>
                 <child>
                   <object class="GtkEntry" id="passGenEntry1">
-                    <property name="width_request">250</property>
+                    <property name="width-request">250</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="tooltip_text" translatable="yes">The length of the randomly generated password. </property>
+                    <property name="can-focus">True</property>
+                    <property name="tooltip-text" translatable="yes">The length of the randomly generated password. </property>
                     <property name="halign">end</property>
-                    <property name="margin_left">10</property>
+                    <property name="margin-left">10</property>
                     <property name="hexpand">True</property>
                     <property name="text" translatable="yes">16</property>
-                    <property name="input_purpose">digits</property>
+                    <property name="input-purpose">digits</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -1348,11 +1313,11 @@
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkLabel">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                     <property name="halign">end</property>
                     <property name="label" translatable="yes">Password</property>
                   </object>
@@ -1364,12 +1329,12 @@
                 </child>
                 <child>
                   <object class="GtkEntry" id="passGenEntry2">
-                    <property name="width_request">250</property>
+                    <property name="width-request">250</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="tooltip_text" translatable="yes">Password is guaranteed to have at least one digit, one symbol, one lower-case and one upper-case character.</property>
+                    <property name="can-focus">True</property>
+                    <property name="tooltip-text" translatable="yes">Password is guaranteed to have at least one digit, one symbol, one lower-case and one upper-case character.</property>
                     <property name="halign">end</property>
-                    <property name="margin_left">10</property>
+                    <property name="margin-left">10</property>
                     <property name="hexpand">True</property>
                     <property name="editable">False</property>
                   </object>
@@ -1397,39 +1362,36 @@
     </child>
   </object>
   <object class="GtkDialog" id="pwWindow">
-    <property name="can_focus">False</property>
+    <property name="can-focus">False</property>
     <property name="resizable">False</property>
     <property name="modal">True</property>
-    <property name="window_position">center</property>
-    <property name="destroy_with_parent">True</property>
-    <property name="type_hint">utility</property>
-    <property name="skip_taskbar_hint">True</property>
+    <property name="window-position">center</property>
+    <property name="destroy-with-parent">True</property>
+    <property name="type-hint">utility</property>
+    <property name="skip-taskbar-hint">True</property>
     <property name="deletable">False</property>
     <property name="gravity">center</property>
-    <property name="transient_for">window</property>
-    <child>
-      <placeholder/>
-    </child>
+    <property name="transient-for">window</property>
     <child internal-child="vbox">
       <object class="GtkBox">
-        <property name="can_focus">False</property>
-        <property name="margin_left">20</property>
-        <property name="margin_right">20</property>
-        <property name="margin_top">20</property>
-        <property name="margin_bottom">20</property>
+        <property name="can-focus">False</property>
+        <property name="margin-left">20</property>
+        <property name="margin-right">20</property>
+        <property name="margin-top">20</property>
+        <property name="margin-bottom">20</property>
         <property name="orientation">vertical</property>
         <property name="spacing">6</property>
         <child internal-child="action_area">
           <object class="GtkButtonBox">
-            <property name="can_focus">False</property>
-            <property name="margin_top">10</property>
-            <property name="layout_style">end</property>
+            <property name="can-focus">False</property>
+            <property name="margin-top">10</property>
+            <property name="layout-style">end</property>
             <child>
               <object class="GtkButton" id="pwButtonQuit">
                 <property name="label" translatable="yes">Quit</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -1441,8 +1403,8 @@
               <object class="GtkButton" id="pwButtonEnter">
                 <property name="label" translatable="yes">Enter</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -1461,14 +1423,14 @@
           <object class="GtkBox" id="pwBox">
             <property name="name">pwBox</property>
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="orientation">vertical</property>
             <property name="spacing">6</property>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="margin_bottom">10</property>
+                <property name="can-focus">False</property>
+                <property name="margin-bottom">10</property>
                 <property name="label" translatable="yes">Enter Master Password</property>
                 <attributes>
                   <attribute name="weight" value="bold"/>
@@ -1483,11 +1445,11 @@
             <child>
               <object class="GtkEntry" id="pwEntry">
                 <property name="name">pwEntryBuffer</property>
-                <property name="width_request">250</property>
+                <property name="width-request">250</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="tooltip_text" translatable="yes">Type your master password here</property>
-                <property name="input_purpose">password</property>
+                <property name="can-focus">True</property>
+                <property name="tooltip-text" translatable="yes">Type your master password here</property>
+                <property name="input-purpose">password</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -1506,7 +1468,7 @@
     </child>
   </object>
   <object class="GtkStatusIcon" id="tray_icon">
-    <property name="has_tooltip">True</property>
+    <property name="has-tooltip">True</property>
     <property name="title" translatable="yes">tray_icon</property>
   </object>
 </interface>
