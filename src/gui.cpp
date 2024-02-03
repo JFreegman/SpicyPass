@@ -51,6 +51,8 @@ static void on_quit(GtkButton *button, gpointer data);
 static void on_pwButtonEnter_clicked(GtkButton *button, gpointer data);
 static void on_buttonCopy_clicked(GtkButton *button, gpointer data);
 static void on_buttonDelete_clicked(GtkButton *button, gpointer data);
+static void on_buttonAdd_clicked(GtkButton *button, gpointer data);
+static void on_buttonEdit_clicked(GtkButton *button, gpointer data);
 static void on_key_enter(GtkEntry *entry, gpointer data);
 static gboolean on_key_escape_ignore(GtkWidget *widget, GdkEventKey *event, gpointer data);
 
@@ -179,17 +181,29 @@ static gboolean on_special_key_press(GtkWidget *widget, GdkEventKey *event, gpoi
         return FALSE;
     }
 
-    if ((event->state & GDK_CONTROL_MASK) && event->keyval == 'c') {
+    const bool ctrl_event = event->state & GDK_CONTROL_MASK;
+
+    if (ctrl_event && event->keyval == 'a') {
+        on_buttonAdd_clicked(NULL, data);
+        return TRUE;
+    }
+
+    if (ctrl_event && event->keyval == 'c') {
         on_buttonCopy_clicked(NULL, data);
         return TRUE;
     }
 
-    if (event->keyval == GDK_KEY_Delete) {
+    if (ctrl_event && event->keyval == 'e') {
+        on_buttonEdit_clicked(NULL, data);
+        return TRUE;
+    }
+
+    if ((event->keyval == GDK_KEY_Delete) || (ctrl_event && event->keyval == 'd')) {
         on_buttonDelete_clicked(NULL, data);
         return TRUE;
     }
 
-    if ((event->state & GDK_CONTROL_MASK) && event->keyval == 'q') {
+    if (ctrl_event && event->keyval == 'q') {
         on_quit(NULL, data);
         return TRUE;
     }
