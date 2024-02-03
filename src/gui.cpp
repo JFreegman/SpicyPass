@@ -189,6 +189,11 @@ static gboolean on_special_key_press(GtkWidget *widget, GdkEventKey *event, gpoi
         return TRUE;
     }
 
+    if ((event->state & GDK_CONTROL_MASK) && event->keyval == 'q') {
+        on_quit(NULL, data);
+        return TRUE;
+    }
+
     return FALSE;
 }
 
@@ -1244,7 +1249,7 @@ static void show_tray_menu(GdkEventButton *event, struct Callback_Data *cb_data)
     GtkWidget *menuQuit = gtk_menu_item_new_with_label("Quit");
 
     g_signal_connect(menuAbout, "activate", G_CALLBACK(on_menuAbout_activate), cb_data);
-    g_signal_connect(menuQuit, "activate", G_CALLBACK(on_quit), NULL);
+    g_signal_connect(menuQuit, "activate", G_CALLBACK(on_quit), cb_data);
 
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuAbout);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuQuit);
