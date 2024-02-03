@@ -757,17 +757,7 @@ static void on_buttonCopy_clicked(GtkButton *button, gpointer data)
 static void on_quit(GtkButton *button, gpointer data)
 {
     UNUSED_VAR(button);
-
-    if (data) {
-        struct Callback_Data *cb_data = (struct Callback_Data *) data;
-
-        if (cb_data->window) {
-            gtk_widget_destroy(cb_data->window);
-        }
-
-        free(cb_data);
-    }
-
+    free(data);
     gtk_main_quit();
 }
 
