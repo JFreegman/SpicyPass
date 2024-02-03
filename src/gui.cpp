@@ -54,6 +54,7 @@ static void on_buttonDelete_clicked(GtkButton *button, gpointer data);
 static void on_buttonAdd_clicked(GtkButton *button, gpointer data);
 static void on_buttonEdit_clicked(GtkButton *button, gpointer data);
 static void on_key_enter(GtkEntry *entry, gpointer data);
+static void on_menuPassGen_activate(GtkMenuItem *menuitem, gpointer data);
 static gboolean on_key_escape_ignore(GtkWidget *widget, GdkEventKey *event, gpointer data);
 
 
@@ -195,6 +196,11 @@ static gboolean on_special_key_press(GtkWidget *widget, GdkEventKey *event, gpoi
 
     if (ctrl_event && event->keyval == 'e') {
         on_buttonEdit_clicked(NULL, data);
+        return TRUE;
+    }
+
+    if (ctrl_event && event->keyval == 'g') {
+        on_menuPassGen_activate(NULL, data);
         return TRUE;
     }
 

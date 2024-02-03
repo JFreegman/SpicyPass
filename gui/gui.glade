@@ -44,6 +44,7 @@
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="use-stock">False</property>
+                        <accelerator key="g" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                       </object>
                     </child>
                     <child>
@@ -67,6 +68,7 @@
                         <property name="can-focus">False</property>
                         <property name="use-underline">True</property>
                         <property name="use-stock">True</property>
+                        <accelerator key="q" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                       </object>
                     </child>
                   </object>
@@ -158,7 +160,7 @@
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
-                <property name="tooltip-text" translatable="yes">Add a new entry</property>
+                <property name="tooltip-text" translatable="yes">Add a new entry (Ctrl-A)</property>
                 <property name="margin-left">10</property>
                 <property name="use-stock">True</property>
                 <property name="always-show-image">True</property>
@@ -176,7 +178,7 @@
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
-                <property name="tooltip-text" translatable="yes">Edit selected entry</property>
+                <property name="tooltip-text" translatable="yes">Edit selected entry (Ctrl-E)</property>
                 <property name="use-stock">True</property>
                 <property name="always-show-image">True</property>
               </object>
@@ -193,7 +195,7 @@
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
-                <property name="tooltip-text" translatable="yes">Copy the password for selected entry</property>
+                <property name="tooltip-text" translatable="yes">Copy the password for selected entry (Ctrl-C)</property>
                 <property name="use-stock">True</property>
                 <property name="always-show-image">True</property>
               </object>
@@ -210,7 +212,7 @@
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
-                <property name="tooltip-text" translatable="yes">Delete selected entry</property>
+                <property name="tooltip-text" translatable="yes">Delete selected entry (Ctrl-D)</property>
                 <property name="margin-right">10</property>
                 <property name="use-stock">True</property>
                 <property name="always-show-image">True</property>
