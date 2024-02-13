@@ -36,12 +36,16 @@
 
 #define PASS_STORE_HEADER_SIZE (CRYPTO_HASH_SIZE + CRYPTO_SALT_SIZE + 1)
 
+#define DEFAULT_FILENAME ".spicypass"
+#define EXPORT_FILENAME  ".export_spicypass_plaintext"
+
 /*
- * Returns a string containing pass store file path.
+ * Returns a string containing the file path for `filename`
+ * in the home directory.
  *
  * Set `temp` to true for temp file path instead.
  */
-const string get_store_path(bool temp);
+const string get_store_path(const string filename, bool temp);
 
 /*
  * Attempts to validate password, decrypt password store, and load it into `p`.

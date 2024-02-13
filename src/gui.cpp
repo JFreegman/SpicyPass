@@ -1189,7 +1189,7 @@ static void on_newPwButtonEnter_clicked(GtkEntry *button, gpointer data)
 
     int ret;
 
-    const string path = get_store_path(false);
+    const string path = get_store_path(DEFAULT_FILENAME, false);
 
     char msg[1024];
 

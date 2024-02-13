@@ -56,7 +56,7 @@ static int prompt_password(unsigned char *password, size_t max_length)
         return -1;
     }
 
-    size_t pass_length = strlen(pass_buf);
+    const size_t pass_length = strlen(pass_buf);
 
     if (pass_length > max_length) {
         return -1;
@@ -91,7 +91,7 @@ static int new_password_prompt(Pass_Store &p, unsigned char *password, size_t ma
             continue;
         }
 
-        size_t pass_length = strlen(pass1);
+        const size_t pass_length = strlen(pass1);
 
         if (pass_length < MIN_MASTER_PASSWORD_SIZE || pass_length > max_length) {
             cout << "Password must be between " << MIN_MASTER_PASSWORD_SIZE  << " and " << (max_length - 1) << " characters long" <<
@@ -139,7 +139,7 @@ static int new_password_prompt(Pass_Store &p, unsigned char *password, size_t ma
 static int init_new_password(Pass_Store &p, unsigned char *password, size_t max_length)
 {
     terminal_echo(false);
-    int ret = new_password_prompt(p, password, max_length);
+    const int ret = new_password_prompt(p, password, max_length);
     terminal_echo(true);
 
     if (ret == PASS_STORE_LOCKED) {
@@ -160,7 +160,7 @@ static int init_new_password(Pass_Store &p, unsigned char *password, size_t max_
  * Prompts user to update password for pass store file.
  *
  * Return 0 on success.
- * Return -1 on failure.
+const string filename,  * Return -1 on failure.
  * Return PASS_STORE_LOCKED if pass store is locked.
  */
 static int change_password_prompt(Pass_Store &p)
@@ -191,7 +191,7 @@ static int change_password_prompt(Pass_Store &p)
 
         cout << "Validating password..." << endl;
 
-        size_t pass_length = strlen(old_pass);
+        const size_t pass_length = strlen(old_pass);
 
         if (!p.validate_password((unsigned char *) old_pass, pass_length)) {
             cout << "Invalid password" << endl;
@@ -207,7 +207,7 @@ static int change_password_prompt(Pass_Store &p)
 
     cout << "Generating new encryption key..." << endl;
 
-    int ret = update_crypto(p, new_password, strlen((char *) new_password));
+    const int ret = update_crypto(p, new_password, strlen((char *) new_password));
 
     crypto_memwipe(new_password, sizeof(new_password));
 
@@ -228,7 +228,7 @@ static int change_password_prompt(Pass_Store &p)
 static int new_password(Pass_Store &p)
 {
     terminal_echo(false);
-    int ret = change_password_prompt(p);
+    const int ret = change_password_prompt(p);
     terminal_echo(true);
 
     return ret;
@@ -284,7 +284,7 @@ static int add(Pass_Store &p)
         return -1;
     }
 
-    int exists = p.key_exists(key);
+    const int exists = p.key_exists(key);
 
     if (exists == PASS_STORE_LOCKED) {
         return PASS_STORE_LOCKED;
@@ -309,7 +309,7 @@ static int add(Pass_Store &p)
         return -1;
     }
 
-    int ret = save_password_store(p);
+    const int ret = save_password_store(p);
 
     switch (ret) {
         case 0: {
@@ -367,7 +367,7 @@ static int remove(Pass_Store &p)
         cout << "Invalid option" << endl;
     }
 
-    int removed = p.remove(key);
+    const int removed = p.remove(key);
 
     if (removed == PASS_STORE_LOCKED) {
         return PASS_STORE_LOCKED;
@@ -380,7 +380,7 @@ static int remove(Pass_Store &p)
 
     cout << "Removed \"" << key << "\" from pass store" << endl;
 
-    int ret = save_password_store(p);
+    const int ret = save_password_store(p);
 
     if (ret != 0) {
         cerr << "Failed to save password store (error code: " << to_string(ret) << ")" << endl;
@@ -406,7 +406,7 @@ static int fetch(Pass_Store &p)
     }
 
     vector<tuple<string, const char *>> result;
-    int matches = p.get_matches(key, result, false);
+    const int matches = p.get_matches(key, result, false);
 
     if (matches == PASS_STORE_LOCKED) {
         return PASS_STORE_LOCKED;
@@ -431,7 +431,7 @@ static int fetch(Pass_Store &p)
 static int list(Pass_Store &p)
 {
     vector<tuple<string, const char *>> result;
-    int matches = p.get_matches("", result, false);
+    const int matches = p.get_matches("", result, false);
 
     if (matches == PASS_STORE_LOCKED) {
         return PASS_STORE_LOCKED;
@@ -499,7 +499,7 @@ static bool unlock_prompt(Pass_Store &p)
 
     cout << "Decrypting pass store file..." << endl;
 
-    int ret = load_password_store(p, pass, strlen((char *) pass));
+    const int ret = load_password_store(p, pass, strlen((char *) pass));
 
     crypto_memwipe(pass, sizeof(pass));
 
@@ -568,7 +568,7 @@ static int export_entries(Pass_Store &p)
         return PASS_STORE_LOCKED;
     }
 
-    string export_path = get_export_path();
+    string export_path = get_store_path(EXPORT_FILENAME, false);
 
     if (export_path.size() == 0) {
         cerr << "Failed to export pass store." << endl;
@@ -582,7 +582,7 @@ static int export_entries(Pass_Store &p)
     unsigned char password[MAX_STORE_PASSWORD_SIZE + 2];
 
     terminal_echo(false);
-    int pw_ret = prompt_password(password, sizeof(password) - 1);
+    const int pw_ret = prompt_password(password, sizeof(password) - 1);
     terminal_echo(true);
 
     cout << endl;
@@ -701,7 +701,7 @@ int cli_new_pass_store(Pass_Store &p)
         }
     } else {
         terminal_echo(false);
-        int pw_ret = prompt_password(password, sizeof(password) - 1);
+        const int pw_ret = prompt_password(password, sizeof(password) - 1);
         terminal_echo(true);
 
         cout << endl;
@@ -713,7 +713,7 @@ int cli_new_pass_store(Pass_Store &p)
 
     cout << "Decrypting pass store file..." << endl;
 
-    int ret = load_password_store(p, password, strlen((char *) password));
+    const int ret = load_password_store(p, password, strlen((char *) password));
 
     crypto_memwipe(password, sizeof(password));
 
@@ -750,8 +750,8 @@ static void menu_loop(Pass_Store &p)
     print_menu();
 
     while (true) {
-        int option = command_prompt();
-        int ret = execute(option, p);
+        const int option = command_prompt();
+        const int ret = execute(option, p);
 
         switch (ret) {
             case 0: {

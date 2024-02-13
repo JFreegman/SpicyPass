@@ -67,7 +67,7 @@ void Pass_Store::signal_shutdown(void)
 bool Pass_Store::running(void)
 {
     s_lock();
-    bool is_running = !shutdown_signal;
+    const bool is_running = !shutdown_signal;
     s_unlock();
 
     return is_running;
@@ -83,7 +83,7 @@ void Pass_Store::set_gui_status(bool have_gui)
 bool Pass_Store::get_gui_status(void)
 {
     s_lock();
-    bool enabled = gui_enabled;
+    const bool enabled = gui_enabled;
     s_unlock();
 
     return enabled;
@@ -152,7 +152,7 @@ int Pass_Store::insert(const string &key, const string &value)
         return -1;
     }
 
-    size_t length = value.size();
+    const size_t length = value.size();
 
     if (length >= sizeof(pass->password)) {
         free(pass);
@@ -205,12 +205,12 @@ int Pass_Store::replace(const string &old_key, const string &new_key, const stri
         return PASS_STORE_LOCKED;
     }
 
-    bool keys_are_same = old_key == new_key;
+    const bool keys_are_same = old_key == new_key;
 
     s_lock();
 
     if (!keys_are_same) {
-        bool new_exists = store.find(new_key) != store.end();
+        const bool new_exists = store.find(new_key) != store.end();
 
         if (new_exists) {
             s_unlock();
@@ -238,7 +238,7 @@ int Pass_Store::key_exists(const string &key)
     }
 
     s_lock();
-    bool exists = store.find(key) != store.end();
+    const bool exists = store.find(key) != store.end();
     s_unlock();
 
     return exists ? 1 : 0;
@@ -334,7 +334,7 @@ int Pass_Store::load(ifstream &fp, size_t length, unsigned char format_version)
     }
 
     s_lock();
-    int ret = crypto_decrypt_file(fp, length, plaintext, &plain_length, encryption_key);
+    const int ret = crypto_decrypt_file(fp, length, plaintext, &plain_length, encryption_key);
     s_unlock();
 
     if (ret != 0) {
@@ -363,7 +363,7 @@ int Pass_Store::load(ifstream &fp, size_t length, unsigned char format_version)
     }
 
     plaintext[plain_length] = 0;
-    size_t num_entries = load_buffer((char *) plaintext, format_version);
+    const size_t num_entries = load_buffer((char *) plaintext, format_version);
 
     crypto_memwipe(plaintext, plain_length);
     free(plaintext);
@@ -377,7 +377,7 @@ int Pass_Store::save(ofstream &fp)
         return PASS_STORE_LOCKED;
     }
 
-    size_t file_size = size();
+    const size_t file_size = size();
 
     if (file_size == 0) {
         return 0;
@@ -397,7 +397,7 @@ int Pass_Store::save(ofstream &fp)
     unsigned long long out_len = 0;
 
     s_lock();
-    int ret = crypto_encrypt_file(fp, buf_in, file_size, &out_len, encryption_key);
+    const int ret = crypto_encrypt_file(fp, buf_in, file_size, &out_len, encryption_key);
     s_unlock();
 
     crypto_memwipe(buf_in, file_size);
@@ -491,7 +491,7 @@ size_t Pass_Store::load_buffer(char *buf, unsigned char format_version)
 
     while (t) {
         string entry = t;
-        auto d = entry.find(delimiter);
+        const auto d = entry.find(delimiter);
 
         if (d != string::npos) {
             string key = entry.substr(0, d);
@@ -515,7 +515,7 @@ bool Pass_Store::delete_entry(const string &key)
 {
     s_lock();
 
-    bool exists = store.find(key) != store.end();
+    const bool exists = store.find(key) != store.end();
 
     if (exists) {
         crypto_memunlock((unsigned char *) store.at(key)->password, sizeof(store.at(key)->password));

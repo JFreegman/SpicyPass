@@ -74,7 +74,7 @@ static bool good_char(const char c, bool *have_lower, bool *have_upper,
         return true;
     }
 
-    Char_Type type = char_type(c);
+    const Char_Type type = char_type(c);
 
     switch (type) {
         case CHAR_UPPERCASE: {
@@ -129,8 +129,8 @@ static void shuffle_vec(vector<char> &vec)
     auto vec_size = vec.size();
 
     for (size_t i = 0; i < vec_size; ++i) {
-        auto index = crypto_random_number(vec_size);
-        auto a = vec.at(i);
+        const auto index = crypto_random_number(vec_size);
+        const auto a = vec.at(i);
         vec.at(i) = vec.at(index);
         vec.at(index) = a;
     }
@@ -140,7 +140,7 @@ string random_password(unsigned int size)
 {
     vector<char> result;
     vector<char> char_vec = string_to_vec(string(PRINTABLE_CHARS));
-    auto char_vec_size = char_vec.size();
+    const auto char_vec_size = char_vec.size();
 
     if (size < NUM_RAND_PASS_MIN_CHARS || size > NUM_RAND_PASS_MAX_CHARS) {
         cerr << "random_password() error: invalid size value" << endl;
@@ -154,8 +154,8 @@ string random_password(unsigned int size)
     char last_char = 0;
 
     do {
-        auto index = crypto_random_number(char_vec_size);
-        auto c = char_vec.at(index);
+        const auto index = crypto_random_number(char_vec_size);
+        const auto c = char_vec.at(index);
 
         if (c == last_char) {
             continue;

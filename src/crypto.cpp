@@ -120,7 +120,7 @@ int crypto_decrypt_file(std::ifstream &fp, size_t file_size, unsigned char *plai
         return -3;
     }
 
-    size_t cipher_len = file_size - sizeof(header);
+    const size_t cipher_len = file_size - sizeof(header);
 
     unsigned char *buf_cipher = (unsigned char *) malloc(cipher_len);
 

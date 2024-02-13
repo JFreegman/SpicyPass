@@ -30,6 +30,7 @@ using namespace std;
 
 #define DEFAULT_FILENAME ".spicypass"
 #define EXPORT_FILENAME  ".export_spicypass_plaintext"
+#define LOCK_FILENAME    ".~spicy_lock"
 
 /*
  * Return true if `format_version` matches a known file format version.
@@ -39,17 +40,17 @@ static bool valid_format_version(unsigned char format_version)
     return format_version >= FILE_FORMAT_VERSION_1 && format_version <= FILE_FORMAT_VERSION_CURRENT;
 }
 
-const string get_store_path(bool temp)
+const string get_store_path(const string filename, bool temp)
 {
 #if defined(_WIN32)
     string homedir = getenv("HOMEPATH");
-    string path = homedir + "\\" + DEFAULT_FILENAME;
+    string path = homedir + "\\" + filename;
 #else
     char buf[1024];
     struct passwd pwd;
     struct passwd *result;
 
-    int ret = getpwuid_r(getuid(), &pwd, buf, sizeof(buf), &result);
+    const int ret = getpwuid_r(getuid(), &pwd, buf, sizeof(buf), &result);
 
     if (ret != 0) {
         cerr << "getpwuid_r() failed with error code: " << to_string(ret) << endl;
@@ -58,7 +59,7 @@ const string get_store_path(bool temp)
 
     string homedir = string(pwd.pw_dir);
 
-    string path = homedir + "/" + DEFAULT_FILENAME;
+    string path = homedir + "/" + filename;
 
 #endif // _WIN_32
     if (temp) {
@@ -77,7 +78,7 @@ const string get_store_path(bool temp)
  */
 static int get_pass_store_if(ifstream &fp)
 {
-    const string path = get_store_path(false);
+    const string path = get_store_path(DEFAULT_FILENAME, false);
 
     if (path.empty()) {
         return -1;
@@ -104,7 +105,7 @@ static int get_pass_store_if(ifstream &fp)
  */
 static int get_pass_store_of(ofstream &fp, bool temp)
 {
-    const string path = get_store_path(temp);
+    const string path = get_store_path(DEFAULT_FILENAME, temp);
 
     if (path.empty()) {
         return -1;
@@ -203,8 +204,8 @@ int save_password_store(Pass_Store &p)
 
     fp.close();
 
-    string temp_path = get_store_path(true);
-    string real_path = get_store_path(false);
+    string temp_path = get_store_path(DEFAULT_FILENAME, true);
+    string real_path = get_store_path(DEFAULT_FILENAME, false);
 
     if (temp_path.empty() || real_path.empty()) {
         return -1;
@@ -339,8 +340,8 @@ int load_password_store(Pass_Store &p, const unsigned char *password, size_t len
 
     crypto_memwipe(encryption_key, sizeof(encryption_key));
 
-    const string path = get_store_path(false);
-    off_t file_length = file_size(path.c_str());
+    const string path = get_store_path(DEFAULT_FILENAME, false);
+    const off_t file_length = file_size(path.c_str());
 
     if (file_length < PASS_STORE_HEADER_SIZE) {
         cerr << "Invalid file format" << endl;
@@ -369,13 +370,13 @@ int load_password_store(Pass_Store &p, const unsigned char *password, size_t len
 int first_time_run(void)
 {
     ifstream fp;
-    int ret = get_pass_store_if(fp);
+    const int ret = get_pass_store_if(fp);
 
     if (ret != 0) {
         return ret;
     }
 
-    int empty = file_is_empty(fp) ? 1 : 0;
+    const int empty = file_is_empty(fp) ? 1 : 0;
     fp.close();
 
     return empty;
@@ -394,7 +395,7 @@ int init_pass_hash(const unsigned char *password, size_t length)
     crypto_gen_salt(salt);
 
     ofstream fp;
-    int ret = get_pass_store_of(fp, false);
+    const int ret = get_pass_store_of(fp, false);
 
     if (ret != 0) {
         return ret;
@@ -435,7 +436,7 @@ int update_crypto(Pass_Store &p, const unsigned char *password, size_t length)
         return -1;
     }
 
-    int ret = p.init_crypto(encryption_key, salt, hash);
+    const int ret = p.init_crypto(encryption_key, salt, hash);
 
     crypto_memwipe(encryption_key, sizeof(encryption_key));
 
@@ -455,35 +456,6 @@ int update_crypto(Pass_Store &p, const unsigned char *password, size_t length)
 }
 
 /*
- * Returns a string containing export file path.
- */
-string get_export_path(void)
-{
-#if defined(_WIN32)
-    string homedir = getenv("HOMEPATH");
-    string path = homedir + "\\" + EXPORT_FILENAME;
-#else
-    char buf[1024];
-    struct passwd pwd;
-    struct passwd *result;
-
-    int ret = getpwuid_r(getuid(), &pwd, buf, sizeof(buf), &result);
-
-    if (ret != 0) {
-        cerr << "getpwuid_r() failed with error code: " << to_string(ret) << endl;
-        return "";
-    };
-
-    string homedir = string(pwd.pw_dir);
-
-    string path = homedir + "/" + EXPORT_FILENAME;
-
-#endif // _WIN_32
-
-    return path;
-}
-
-/*
  * Opens output stream for the export file.
  *
  * Return 0 on success.
@@ -492,7 +464,7 @@ string get_export_path(void)
  */
 static int get_export_of(ofstream &fp)
 {
-    const string path = get_export_path();
+    const string path = get_store_path(EXPORT_FILENAME, false);
 
     if (path.empty()) {
         cerr << "Error: Failed to find export path." << endl;
