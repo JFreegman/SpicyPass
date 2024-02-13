@@ -21,16 +21,14 @@
  */
 
 #include <cassert>
+#include <filesystem>
+
 #include <errno.h>
 #include <sys/types.h>
 
 #include "load.hpp"
 
 using namespace std;
-
-#define DEFAULT_FILENAME ".spicypass"
-#define EXPORT_FILENAME  ".export_spicypass_plaintext"
-#define LOCK_FILENAME    ".~spicy_lock"
 
 /*
  * Return true if `format_version` matches a known file format version.
@@ -40,7 +38,7 @@ static bool valid_format_version(unsigned char format_version)
     return format_version >= FILE_FORMAT_VERSION_1 && format_version <= FILE_FORMAT_VERSION_CURRENT;
 }
 
-const string get_store_path(const string filename, bool temp)
+const string get_store_path(const string &filename, bool temp)
 {
 #if defined(_WIN32)
     string homedir = getenv("HOMEPATH");
@@ -495,4 +493,53 @@ int export_pass_store_to_plaintext(Pass_Store &p)
     fp.close();
 
     return 0;
+}
+
+bool delete_file_lock(void)
+{
+    const string lock_path = get_store_path(LOCK_FILENAME, false);
+
+    if (lock_path.empty()) {
+        return false;
+    }
+
+    try {
+        filesystem::remove(lock_path);
+        return true;
+    } catch (const exception &e) {
+        cerr << "Caught exception in delete_file_lock(): " << e.what() << endl;
+        return false;
+    }
+}
+
+bool create_file_lock(void)
+{
+    const string lock_path = get_store_path(LOCK_FILENAME, false);
+
+    if (lock_path.empty()) {
+        return false;
+    }
+
+    ofstream fp;
+
+    try {
+        fp.open(lock_path);
+        fp.close();
+        return true;
+    } catch (const exception &e) {
+        cerr << "Caught exception in create_file_lock(): " << e.what() << endl;
+        return false;
+    }
+}
+
+bool file_lock_exists(void)
+{
+    const string lock_path = get_store_path(LOCK_FILENAME, false);
+
+    if (lock_path.empty()) {
+        return false;
+    }
+
+    ifstream fp(lock_path);
+    return fp.good();
 }

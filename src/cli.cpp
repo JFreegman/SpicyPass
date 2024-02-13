@@ -160,7 +160,7 @@ static int init_new_password(Pass_Store &p, unsigned char *password, size_t max_
  * Prompts user to update password for pass store file.
  *
  * Return 0 on success.
-const string filename,  * Return -1 on failure.
+ * Return -1 on failure.
  * Return PASS_STORE_LOCKED if pass store is locked.
  */
 static int change_password_prompt(Pass_Store &p)

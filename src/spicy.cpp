@@ -31,6 +31,7 @@
 #include "crypto.hpp"
 #include "cli.hpp"
 #include "gui.hpp"
+#include "load.hpp"
 #include "password.hpp"
 #include "spicy.hpp"
 
@@ -587,6 +588,16 @@ int main(int argc, char **argv)
 {
     print_version(argv[0]);
 
+    if (file_lock_exists()) {
+        const string lock_path = get_store_path(LOCK_FILENAME, false);
+
+        cerr << "The SpicyPass file lock exists at: '" << lock_path << "' If there isn't an instance of \
+SpicyPass already running you will need to delete the file." << endl;
+        return -1;
+    }
+
+    create_file_lock();
+
     bool have_gui = false;
 
 #if GUI_SUPPORT
@@ -603,6 +614,7 @@ int main(int argc, char **argv)
 
     if (crypto_init() != 0) {
         cerr << "crypto_init() failed" << endl;
+        delete_file_lock();
         return -1;
     }
 
@@ -624,31 +636,37 @@ int main(int argc, char **argv)
 
         case -2: {
             cerr << "crypto_memlock() failed in new_pass_store()" << endl;
+            delete_file_lock();
             return -1;
         }
 
         case -3: {
             cerr << "load_password_store() failed to open pass store file" << endl;
+            delete_file_lock();
             return -1;
         }
 
         case -4: {
             cout << "Invalid password" << endl;
+            delete_file_lock();
             return -1;
         }
 
         case -5: {
             cerr << "Failed to decrypt pass store file" << endl;
+            delete_file_lock();
             return -1;
         }
 
         case -6: {
             cerr << "GUI failed to initialize" << endl;
+            delete_file_lock();
             return -1;
         }
 
         default: {
             cerr << "Unknown error" << endl;
+            delete_file_lock();
             return -1;
         }
     }
@@ -667,6 +685,10 @@ int main(int argc, char **argv)
     p.signal_shutdown();
 
     t.join();
+
+    if (!delete_file_lock()) {
+        cerr << "Failed to delete file lock" << endl;
+    }
 
     return 0;
 }

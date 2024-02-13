@@ -38,6 +38,7 @@
 
 #define DEFAULT_FILENAME ".spicypass"
 #define EXPORT_FILENAME  ".export_spicypass_plaintext"
+#define LOCK_FILENAME    ".~spicylock~"
 
 /*
  * Returns a string containing the file path for `filename`
@@ -45,7 +46,7 @@
  *
  * Set `temp` to true for temp file path instead.
  */
-const string get_store_path(const string filename, bool temp);
+const string get_store_path(const string &filename, bool temp);
 
 /*
  * Attempts to validate password, decrypt password store, and load it into `p`.
@@ -112,5 +113,20 @@ int export_pass_store_to_plaintext(Pass_Store &p);
  * Returns a string containing export file path.
  */
 string get_export_path(void);
+
+/*
+ * Deletes the file lock. Called on exit.
+ */
+bool delete_file_lock(void);
+
+/*
+ * Creates file lock. Called before any other file operations.
+ */
+bool create_file_lock(void);
+
+/*
+ * Return true if the spicypass file lock exists.
+ */
+bool file_lock_exists(void);
 
 #endif // LOAD_H
