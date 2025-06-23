@@ -236,7 +236,7 @@ static int new_password(Pass_Store &p)
 
 static int add(Pass_Store &p)
 {
-    string key, password;
+    string key, password, note;
 
     cout << "Enter key to add: ";
     getline(cin, key);
@@ -284,6 +284,14 @@ static int add(Pass_Store &p)
         return -1;
     }
 
+    cout << "Enter note (optional): ";
+    getline(cin, note);
+
+    if (note.length() > MAX_STORE_NOTE_SIZE) {
+        cout << "Note must not exceed " << to_string(MAX_STORE_NOTE_SIZE) << " characters" << endl;
+        return -1;
+    }
+
     const int exists = p.key_exists(key);
 
     if (exists == PASS_STORE_LOCKED) {
@@ -304,7 +312,7 @@ static int add(Pass_Store &p)
         }
     }
 
-    if (p.insert(key, password) != 0) {
+    if (p.insert(key, password, note) != 0) {
         cout << "Failed to add entry" << endl;
         return -1;
     }
@@ -405,7 +413,7 @@ static int fetch(Pass_Store &p)
         return -1;
     }
 
-    vector<tuple<string, const char *>> result;
+    vector<tuple<string, const char *, const char *>> result;
     const int matches = p.get_matches(key, result, false);
 
     if (matches == PASS_STORE_LOCKED) {
@@ -420,7 +428,9 @@ static int fetch(Pass_Store &p)
     p.s_lock();
 
     for (const auto &item : result) {
-        cout << get<0>(item) << ": " << get<1>(item) << endl;
+        cout << "Key: " << get<0>(item) << endl;
+        cout << "Pass: " << get<1>(item) << endl;
+        cout << "Note: " << get<2>(item) << "\n" << endl;
     }
 
     p.s_unlock();
@@ -430,7 +440,7 @@ static int fetch(Pass_Store &p)
 
 static int list(Pass_Store &p)
 {
-    vector<tuple<string, const char *>> result;
+    vector<tuple<string, const char *, const char *>> result;
     const int matches = p.get_matches("", result, false);
 
     if (matches == PASS_STORE_LOCKED) {

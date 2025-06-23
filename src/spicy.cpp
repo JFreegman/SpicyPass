@@ -1,7 +1,7 @@
 /*  spicy.cpp
  *
  *
- *  Copyright (C) 2020-2024 Jfreegman <Jfreegman@gmail.com>
+ *  Copyright (C) 2020-2025 Jfreegman <Jfreegman@gmail.com>
  *
  *  This file is part of SpicyPass.
  *
@@ -25,6 +25,8 @@
 
 #include <fstream>
 #include <iostream>
+#include <algorithm>
+#include <string>
 
 #include <sys/stat.h>
 
@@ -40,6 +42,8 @@ using namespace std;
 /* Seconds to wait since last activity before we prompt the user to enter their password again */
 #define IDLE_LOCK_TIMEOUT (60U * 10U)
 
+/* Newlines in notes are converted to this char for file format */
+#define NOTE_NEWLINE_ESCAPE_CHAR '\v'
 
 Pass_Store::Pass_Store(void)
 {
@@ -141,7 +145,7 @@ void Pass_Store::poll_idle(void)
     clear();
 }
 
-int Pass_Store::insert(const string &key, const string &value)
+int Pass_Store::insert(const string &key, const string &value, const string &note)
 {
     if (check_lock()) {
         return PASS_STORE_LOCKED;
@@ -153,18 +157,36 @@ int Pass_Store::insert(const string &key, const string &value)
         return -1;
     }
 
-    const size_t length = value.size();
+    const size_t pass_length = value.size();
+    const size_t note_length = note.size();
 
-    if (length >= sizeof(pass->password)) {
+    if (pass_length >= sizeof(pass->password)) {
         free(pass);
+        cerr << "Insert failed: Pass length exceeds buffer size" << endl;
         return -1;
     }
 
-    memcpy(pass->password, value.c_str(), length);
-    pass->password[length] = 0;
+    if (note_length >= sizeof(pass->note)) {
+        free(pass);
+        cerr << "Insert failed: note length exceeds buffer size" << endl;
+        return -1;
+    }
+
+    memcpy(pass->password, value.c_str(), pass_length);
+    pass->password[pass_length] = '\0';
+
+    memcpy(pass->note, note.c_str(), note_length);
+    pass->note[note_length] = '\0';
 
     if (crypto_memlock((unsigned char *) pass->password, sizeof(pass->password)) != 0) {
         free(pass);
+        cerr << "Insert failed: cryto_memlock failed." << endl;
+        return -1;
+    }
+
+    if (crypto_memlock((unsigned char *) pass->note, sizeof(pass->note)) != 0) {
+        free(pass);
+        cerr << "Insert failed: cryto_memlock failed." << endl;
         return -1;
     }
 
@@ -200,7 +222,7 @@ int Pass_Store::remove(const string &key)
     return 0;
 }
 
-int Pass_Store::replace(const string &old_key, const string &new_key, const string &value)
+int Pass_Store::replace(const string &old_key, const string &new_key, const string &password, const string &note)
 {
     if (check_lock()) {
         return PASS_STORE_LOCKED;
@@ -221,7 +243,7 @@ int Pass_Store::replace(const string &old_key, const string &new_key, const stri
 
     s_unlock();
 
-    if (insert(new_key, value) != 0) {
+    if (insert(new_key, password, note) != 0) {
         return -2;
     }
 
@@ -245,7 +267,8 @@ int Pass_Store::key_exists(const string &key)
     return exists ? 1 : 0;
 }
 
-int Pass_Store::get_matches(const string &search_key, vector<tuple<string, const char *>> &result, bool exact)
+int Pass_Store::get_matches(const string &search_key, vector<tuple<string, const char *, const char *>> &result,
+        bool exact)
 {
     if (check_lock()) {
         return PASS_STORE_LOCKED;
@@ -256,14 +279,14 @@ int Pass_Store::get_matches(const string &search_key, vector<tuple<string, const
     if (exact) {
         for (const auto &[key, value] : store) {
             if (search_key == key) {
-                result.push_back({key, value->password});
+                result.push_back({key, value->password, value->note});
                 break;
             }
         }
     } else {
         for (const auto &[key, value] : store) {
             if (search_key.compare(0, search_key.length(), key, 0, search_key.length()) == 0) {
-                result.push_back({key, value->password});
+                result.push_back({key, value->password, value->note});
             }
         }
     }
@@ -418,7 +441,7 @@ int Pass_Store::_export(ofstream &fp)
     }
 
     for (const auto &[key, value] : store) {
-        fp << key << endl << value->password << endl << endl;
+        fp << key << endl << value->password << value->note << endl << endl;
     }
 
     return 0;
@@ -445,9 +468,9 @@ Pass_Store::~Pass_Store(void)
     clear();
 }
 
-string Pass_Store::format_entry(const string &key, const char *value)
+string Pass_Store::format_entry(const string &key, const char *value, const char *note)
 {
-    return key + DELIMITER + value + '\n';
+    return key + DELIMITER + value + DELIMITER + note + '\n';
 }
 
 size_t Pass_Store::size(void)
@@ -457,7 +480,7 @@ size_t Pass_Store::size(void)
     s_lock();
 
     for (const auto &[key, value] : store) {
-        string entry = format_entry(key, value->password);
+        string entry = format_entry(key, value->password, value->note);
         size += entry.length();
     }
 
@@ -473,7 +496,11 @@ size_t Pass_Store::copy(char *buf)
     s_lock();
 
     for (const auto &[key, value] : store) {
-        string entry = format_entry(key, value->password);
+        string escaped_note = value->note;
+        std::replace(escaped_note.begin(), escaped_note.end(), '\n', NOTE_NEWLINE_ESCAPE_CHAR);
+        std::replace(escaped_note.begin(), escaped_note.end(), '\r', NOTE_NEWLINE_ESCAPE_CHAR);
+
+        string entry = format_entry(key, value->password, escaped_note.c_str());
         memcpy(buf + pos, entry.c_str(), entry.length());
         pos += entry.length();
     }
@@ -495,10 +522,20 @@ size_t Pass_Store::load_buffer(char *buf, unsigned char format_version)
         const auto d = entry.find(delimiter);
 
         if (d != string::npos) {
+            string pass;
+            string note;
             string key = entry.substr(0, d);
-            string pass = entry.substr(d + 1, entry.length());
+            const auto d2 = entry.find(delimiter, d + 1);
 
-            if (insert(key, pass) != 0) {
+            if (d2 != string::npos) {
+                pass = entry.substr(d + 1, d2 - d - 1);
+                note = entry.substr(d2 + 1);
+                std::replace(note.begin(), note.end(), NOTE_NEWLINE_ESCAPE_CHAR, '\n');
+            } else {
+                pass = entry.substr(d + 1);
+            }
+
+            if (insert(key, pass, note) != 0) {
                 cerr << "Warning: Failed to load entry with key `" << key << "`" << endl;
                 continue;
             }
@@ -520,6 +557,7 @@ bool Pass_Store::delete_entry(const string &key)
 
     if (exists) {
         crypto_memunlock((unsigned char *) store.at(key)->password, sizeof(store.at(key)->password));
+        crypto_memunlock((unsigned char *) store.at(key)->note, sizeof(store.at(key)->note));
         free(store.at(key));
         store.erase(key);
     }

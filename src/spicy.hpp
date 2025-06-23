@@ -47,11 +47,16 @@ using namespace std;
 /* The minimum number of characters for a master password */
 #define MIN_MASTER_PASSWORD_SIZE  (8)
 
+/* The maximum number of characters for a pass store entry note */
+#define MAX_STORE_NOTE_SIZE   (256 * 50)
+
 /* Return code indicating that `idle_lock` is set to true */
 #define PASS_STORE_LOCKED (INT_MIN)
 
-/* The byte used to separate the key:value pairs in file format. Legacy delimiter is used for all versions <= 0.5.2 */
+/* The byte used to separate entry values in file format. */
 #define DELIMITER "\r"
+
+/* Legacy delimiter is used for all versions <= 0.5.2 */
 #define LEGACY_DELIMITER ":"
 
 /*
@@ -59,7 +64,8 @@ using namespace std;
  */
 enum {
     FILE_FORMAT_VERSION_1       = 0x88U,
-    FILE_FORMAT_VERSION_CURRENT = 0x89U
+    FILE_FORMAT_VERSION_2       = 0x89U,
+    FILE_FORMAT_VERSION_CURRENT = 0x90U
 };
 
 /*
@@ -68,6 +74,7 @@ enum {
  */
 struct Password {
     char password[MAX_STORE_PASSWORD_SIZE + 1];
+    char note[MAX_STORE_NOTE_SIZE + 1];
 };
 
 
@@ -123,14 +130,14 @@ public:
     void poll_idle(void);
 
     /*
-     * Inserts `key` into pass store with `value`. If key already exists it will
+     * Inserts `key` into pass store with `value` and `note`. If key already exists it will
      * be overwritten.
      *
      * Return 0 on sucess.
      * Return -1 on failure.
      * Return PASS_STORE_LOCKED if pass store is locked.
      */
-    int insert(const string &key, const string &value);
+    int insert(const string &key, const string &pass, const string &note);
 
     /*
      * Removes `key` from pass store.
@@ -149,7 +156,7 @@ public:
      * Return -2 if insert() fails.
      * Return PASS_STORE_LOCKED if pass store is locked.
      */
-    int replace(const string &old_key, const string &new_key, const string &value);
+    int replace(const string &old_key, const string &new_key, const string &password, const string &note);
 
     /*
      * Return 1 if `key` exists in pass store.
@@ -169,7 +176,7 @@ public:
      * Return 0 on succsess.
      * Return PASS_STORE_LOCKED if pass store is locked.
      */
-    int get_matches(const string &search_key, vector<tuple<string, const char *>> &result, bool exact);
+    int get_matches(const string &search_key, vector<tuple<string, const char *, const char *>> &result, bool exact);
 
     /*
      * Puts key salt in `buf`.
@@ -253,7 +260,7 @@ private:
     /*
      * Returns a string containing a key value entry in file format.
      */
-    string format_entry(const string &key, const char *value);
+    string format_entry(const string &key, const char *value, const char *note);
 
     /*
      * Returns the size of the store map in file format.

@@ -66,7 +66,7 @@ static void show_window(GtkApplication *app, GtkWidget *window)
 
 static int load_pass_store_entries(Pass_Store &p, struct List_Store &ls)
 {
-    vector<tuple<string, const char *>> result;
+    vector<tuple<string, const char *, const char *>> result;
     int matches = p.get_matches("", result, false);
 
     if (matches == PASS_STORE_LOCKED) {
@@ -257,6 +257,13 @@ static void on_addEntryButtonOk(GtkButton *button, gpointer data)
 
     GtkEntry *loginEntry = GTK_ENTRY(cb_data->widget1);
     GtkEntry *passEntry = GTK_ENTRY(cb_data->widget2);
+    GtkTextView *noteEntry = cb_data->widget4;
+
+    GtkTextBuffer *noteBuf = gtk_text_view_get_buffer(noteEntry);
+    GtkTextIter start, end;
+    gtk_text_buffer_get_start_iter(noteBuf, &start);
+    gtk_text_buffer_get_end_iter(noteBuf, &end);
+    gchar *noteText = gtk_text_buffer_get_text(noteBuf, &start, &end, false);
 
     const gchar *loginText = gtk_entry_get_text(loginEntry);
     const gchar *passText = gtk_entry_get_text(passEntry);
@@ -270,6 +277,11 @@ static void on_addEntryButtonOk(GtkButton *button, gpointer data)
 
     if (strlen(passText) > MAX_STORE_PASSWORD_SIZE) {  // byte size does not always match passlen
         snprintf(msg, sizeof(msg), "Password is too long");
+        goto on_exit;
+    }
+
+    if (strlen(noteText) > MAX_STORE_NOTE_SIZE) {
+        snprintf(msg, sizeof(msg), "Note is too long");
         goto on_exit;
     }
 
@@ -294,7 +306,7 @@ static void on_addEntryButtonOk(GtkButton *button, gpointer data)
         goto on_exit;
     }
 
-    if (p->insert(string(loginText), string(passText)) != 0) {
+    if (p->insert(string(loginText), string(passText), string(noteText)) != 0) {
         snprintf(msg, sizeof(msg), "Failed to add entry");
         goto on_exit;
     }
@@ -344,6 +356,8 @@ static void on_buttonAdd_clicked(GtkButton *button, gpointer data)
 
     GtkEntry *passEntry = GTK_ENTRY(gtk_builder_get_object(builder, "passEntry"));
 
+    GtkTextView *noteView = GTK_TEXT_VIEW(gtk_builder_get_object(builder, "noteEntry"));
+
     g_object_unref(builder);
 
     gtk_entry_set_max_length(loginEntry, MAX_STORE_KEY_SIZE);
@@ -353,6 +367,8 @@ static void on_buttonAdd_clicked(GtkButton *button, gpointer data)
     cb_data->widget1 = GTK_WIDGET(loginEntry);
 
     cb_data->widget2 = GTK_WIDGET(passEntry);
+
+    cb_data->widget4 = noteView;
 
     cb_data->window = window;
 
@@ -397,6 +413,13 @@ static void on_editEntryButtonOk(GtkButton *button, gpointer data)
 
     GtkEntry *loginEntry = GTK_ENTRY(cb_data->widget1);
     GtkEntry *passEntry = GTK_ENTRY(cb_data->widget2);
+    GtkTextView *noteEntry = cb_data->widget4;
+
+    GtkTextBuffer *noteBuf = gtk_text_view_get_buffer(noteEntry);
+    GtkTextIter start, end;
+    gtk_text_buffer_get_start_iter(noteBuf, &start);
+    gtk_text_buffer_get_end_iter(noteBuf, &end);
+    gchar *noteText = gtk_text_buffer_get_text(noteBuf, &start, &end, false);
 
     const gchar *loginText = gtk_entry_get_text(loginEntry);
     const gchar *passText = gtk_entry_get_text(passEntry);
@@ -411,6 +434,11 @@ static void on_editEntryButtonOk(GtkButton *button, gpointer data)
 
     if (strlen(passText) > MAX_STORE_PASSWORD_SIZE) {  // byte size does not always match passlen
         snprintf(msg, sizeof(msg), "Password is too long");
+        goto on_exit;
+    }
+
+    if (strlen(noteText) > MAX_STORE_NOTE_SIZE) {
+        snprintf(msg, sizeof(msg), "Note is too long");
         goto on_exit;
     }
 
@@ -439,9 +467,9 @@ static void on_editEntryButtonOk(GtkButton *button, gpointer data)
             goto on_exit;
         }
 
-        ret = p->replace(string(old_key), string(loginText), randPass);
+        ret = p->replace(string(old_key), string(loginText), randPass, string(noteText));
     } else {
-        ret = p->replace(string(old_key), string(loginText), string(passText));
+        ret = p->replace(string(old_key), string(loginText), string(passText), string(noteText));
     }
 
     g_free(old_key);
@@ -508,6 +536,8 @@ static void on_buttonEdit_clicked(GtkButton *button, gpointer data)
     GtkButton *cancelButton = GTK_BUTTON(gtk_builder_get_object(builder, "editEntryButtonCancel"));
     GtkEntry *loginEntry = GTK_ENTRY(gtk_builder_get_object(builder, "editEntryLogin"));
     GtkEntry *passEntry = GTK_ENTRY(gtk_builder_get_object(builder, "editEntryPass"));
+    GtkTextView *noteView = GTK_TEXT_VIEW(gtk_builder_get_object(builder, "editEntryNote"));
+    GtkTextBuffer *noteEntry = gtk_text_view_get_buffer(noteView);
 
     g_object_unref(builder);
 
@@ -516,6 +546,7 @@ static void on_buttonEdit_clicked(GtkButton *button, gpointer data)
 
     cb_data->widget1 = GTK_WIDGET(loginEntry);
     cb_data->widget2 = GTK_WIDGET(passEntry);
+    cb_data->widget4 = noteView;
     cb_data->window = window;
 
     g_signal_connect(okButton, "clicked", G_CALLBACK(on_editEntryButtonOk), cb_data);
@@ -531,9 +562,10 @@ static void on_buttonEdit_clicked(GtkButton *button, gpointer data)
     gchar *key = NULL;
     const gchar *loginText;
     const gchar *passwordText;
+    const gchar *noteText;
     int matches = 0;
-    vector<tuple<string, const char *>> result;
-    tuple<string, const char *> v_item;
+    vector<tuple<string, const char *, const char *>> result;
+    tuple<string, const char *, const char *> v_item;
     GtkTreeIter iter;
 
     if (!gtk_tree_selection_get_selected(selection, &model, &iter)) {
@@ -565,6 +597,9 @@ static void on_buttonEdit_clicked(GtkButton *button, gpointer data)
     p->s_lock();
     passwordText = get<1>(v_item);
     gtk_entry_set_text(passEntry, passwordText);
+
+    noteText = get<2>(v_item);
+    gtk_text_buffer_set_text(GTK_TEXT_BUFFER(noteEntry), noteText, -1);
     p->s_unlock();
 
     gtk_entry_set_text(loginEntry, loginText);
@@ -731,7 +766,7 @@ static void on_buttonCopy_clicked(GtkButton *button, gpointer data)
     gchar *key = NULL;
     gtk_tree_model_get(model, &iter, KEY_COLUMN, &key, -1);
 
-    vector<tuple<string, const char *>> result;
+    vector<tuple<string, const char *, const char *>> result;
     int matches = p->get_matches(key, result, true);
 
     g_free(key);
@@ -750,7 +785,7 @@ static void on_buttonCopy_clicked(GtkButton *button, gpointer data)
     }
 
     GtkClipboard *clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
-    tuple<string, const char *> v_item = result.at(0);
+    tuple<string, const char *, const char *> v_item = result.at(0);
 
     p->s_lock();
 

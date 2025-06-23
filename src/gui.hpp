@@ -32,6 +32,7 @@ struct Callback_Data {
     GtkWidget         *widget1;
     GtkWidget         *widget2;
     GtkWidget         *widget3;
+    GtkTextView       *widget4;
     GtkApplication    *app;
 
     Pass_Store        *p;
