@@ -45,6 +45,8 @@ using namespace std;
 /* Newlines in notes are converted to this char for file format */
 #define NOTE_NEWLINE_ESCAPE_CHAR '\v'
 
+static_assert (sizeof(NOTE_NEWLINE_ESCAPE_CHAR) == sizeof('\n'));
+
 Pass_Store::Pass_Store(void)
 {
     memset(encryption_key, 0, sizeof(encryption_key));
@@ -455,6 +457,7 @@ void Pass_Store::clear(void)
 
     for (const auto &[key, value] : store) {
         crypto_memunlock((unsigned char *) value->password, sizeof(value->password));
+        crypto_memunlock((unsigned char *) value->note, sizeof(value->note));
         free(store.at(key));
     }
 
