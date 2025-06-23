@@ -148,7 +148,7 @@ static int init_new_password(Pass_Store &p, unsigned char *password, size_t max_
 
     cout << "Generating new encryption key. This can take a while" << endl;
 
-    if (init_pass_hash(password, strlen((char *) password)) != 0) {
+    if (init_pass_hash(password, strlen((char *) password), p.get_save_file()) != 0) {
         cerr << "init_pass_hash() failed." << endl;
         return -1;
     }
@@ -586,8 +586,8 @@ static int export_entries(Pass_Store &p)
     }
 
     cout << "WARNING: You are about to create a file on your disk that contains all "
-            "of your passwords. The file will not be encrypted and can be viewed by "
-            "anyone with access to this device.\n" << endl;
+         "of your passwords. The file will not be encrypted and can be viewed by "
+         "anyone with access to this device.\n" << endl;
 
     unsigned char password[MAX_STORE_PASSWORD_SIZE + 2];
 
@@ -703,7 +703,7 @@ int cli_new_pass_store(Pass_Store &p)
 {
     unsigned char password[MAX_STORE_PASSWORD_SIZE + 2];
 
-    if (first_time_run()) {
+    if (first_time_run(p.get_save_file())) {
         cout << "Creating a new profile. " << endl;
 
         if (init_new_password(p, password, sizeof(password) - 1) != 0) {

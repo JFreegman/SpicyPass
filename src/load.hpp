@@ -77,7 +77,7 @@ int save_password_store(Pass_Store &p);
  * Return -1 if invalid path.
  * Return -2 if file cannot be opened.
  */
-int first_time_run(void);
+int first_time_run(const string &save_file);
 
 /*
  * Adds a header to the beginning of pass store file.
@@ -87,7 +87,7 @@ int first_time_run(void);
  * Return 0 on success.
  * Return -1 on failure.
  */
-int init_pass_hash(const unsigned char *password, size_t length);
+int init_pass_hash(const unsigned char *password, size_t length, const string &save_file);
 
 /*
  * Initializes `p` with a new encryption key derived from `password`, as well as a

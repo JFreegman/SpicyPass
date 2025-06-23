@@ -1224,7 +1224,7 @@ static void on_newPwButtonEnter_clicked(GtkEntry *button, gpointer data)
 
     int ret;
 
-    const string path = get_store_path(DEFAULT_FILENAME, false);
+    const string path = get_store_path(p->get_save_file(), false);
 
     char msg[1024];
 
@@ -1242,7 +1242,7 @@ static void on_newPwButtonEnter_clicked(GtkEntry *button, gpointer data)
     passBuff[passLen++] = '\n';
     passBuff[passLen] = 0;
 
-    if (init_pass_hash(passBuff, passLen) != 0) {
+    if (init_pass_hash(passBuff, passLen, p->get_save_file()) != 0) {
         snprintf(msg, sizeof(msg), "init_pass_hash() failed");
         goto on_exit;
     }
@@ -1510,7 +1510,7 @@ void GUI::run(Pass_Store &p)
 
     init_window(builder, cb_data);
 
-    if (first_time_run()) {
+    if (first_time_run(p.get_save_file())) {
         if (load_new(p, builder) != 0) {
             cerr << "load_new() failed in GUI::run()" << endl;
             return;

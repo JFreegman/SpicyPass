@@ -28,6 +28,7 @@
 #include <algorithm>
 #include <string>
 
+#include <getopt.h>
 #include <sys/stat.h>
 
 #include "crypto.hpp"
@@ -45,10 +46,13 @@ using namespace std;
 /* Newlines in notes are converted to this char for file format */
 #define NOTE_NEWLINE_ESCAPE_CHAR '\v'
 
-static_assert (sizeof(NOTE_NEWLINE_ESCAPE_CHAR) == sizeof('\n'));
+static_assert(sizeof(NOTE_NEWLINE_ESCAPE_CHAR) == sizeof('\n'));
 
 Pass_Store::Pass_Store(void)
 {
+    set_gui_status(true); // default to GUI
+    set_save_file(DEFAULT_FILENAME);
+
     memset(encryption_key, 0, sizeof(encryption_key));
     memset(key_salt, 0, sizeof(key_salt));
     memset(password_hash, 0, sizeof(password_hash));
@@ -270,7 +274,7 @@ int Pass_Store::key_exists(const string &key)
 }
 
 int Pass_Store::get_matches(const string &search_key, vector<tuple<string, const char *, const char *>> &result,
-        bool exact)
+                            bool exact)
 {
     if (check_lock()) {
         return PASS_STORE_LOCKED;
@@ -443,7 +447,7 @@ int Pass_Store::_export(ofstream &fp)
     }
 
     for (const auto &[key, value] : store) {
-        fp << key << endl << value->password << value->note << endl << endl;
+        fp << key << endl << value->password << endl << value->note << endl << endl;
     }
 
     return 0;
@@ -570,13 +574,15 @@ bool Pass_Store::delete_entry(const string &key)
     return exists;
 }
 
-#if GUI_SUPPORT
-static void print_usage_exit(void)
+void Pass_Store::set_save_file(const string &path)
 {
-    cout << "Usage: spicypass [--gui | --cli]" << endl;
-    exit(-1);
+    save_file = path;
 }
-#endif  // GUI_SUPPORT
+
+string Pass_Store::get_save_file(void)
+{
+    return save_file;
+}
 
 static void print_version(const char *binary_name)
 {
@@ -596,33 +602,63 @@ static void store_lock_loop(Pass_Store &p)
     }
 }
 
-/*
- * Return true if the --gui option is set.
- */
-#if GUI_SUPPORT
-static bool gui_enabled(int argc, char **argv)
-{
-    if (argc <= 1) {
-        return true;
-    }
-
-    if (strcmp(argv[1], "--cli") == 0) {
-        return false;
-    }
-
-    if (strcmp(argv[1], "--gui") != 0) {
-        print_usage_exit();
-    }
-
-    return true;
-}
-#endif // GUI_SUPPORT
-
 static void set_file_permissions(void)
 {
 #ifndef _WIN32
     umask(S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
 #endif
+}
+
+static void print_usage(const char *bin_name)
+{
+    cout << "Usage: " << bin_name << " [OPTION] [ARG ...]" << endl;
+    cout << "   -c, --cli         Use the command-line interface" << endl;
+    cout << "   -p, --profile     Use a non-default profile: Required [Profile Name]" << endl;
+    cout << "   -h, --help        Print this message and exit" << endl;
+}
+
+static void parse_args(int argc, char **argv, Pass_Store &p)
+{
+    static struct option long_opts[] = {
+        {"cli", no_argument, 0, 'c'},
+        {"help", no_argument, 0, 'h'},
+        {"profile", required_argument, 0, 'p'},
+        {NULL, no_argument, NULL, 0},
+    };
+
+    const char *opts_str = "chp:";
+    int opt = 0;
+    int indexptr = 0;
+
+    while ((opt = getopt_long(argc, argv, opts_str, long_opts, &indexptr)) != -1) {
+        switch (opt) {
+            case 'c': {
+                p.set_gui_status(false);
+                break;
+            }
+
+            case 'h': {
+                print_usage(argv[0]);
+                exit(0);
+            }
+
+            case 'p': {
+                if (optarg == NULL) {
+                    cerr << "Invalid argument for option -p" << endl;
+                    exit(-1);
+                }
+
+                p.set_save_file(optarg);
+
+                cout << "Using profile: `" << optarg << "`" << endl;
+                break;
+            }
+
+            default: {
+                break;
+            }
+        }
+    }
 }
 
 int main(int argc, char **argv)
@@ -637,18 +673,16 @@ SpicyPass already running you will need to delete the file." << endl;
         return -1;
     }
 
+    Pass_Store p;
+
+    parse_args(argc, argv, p);
+
     create_file_lock();
 
-    bool have_gui = false;
-
 #if GUI_SUPPORT
-    have_gui = gui_enabled(argc, argv);
     GUI ui;
 #else
-
-    if (argc > 1) {
-        cerr << "Warning: Unrecognized options" << endl;
-    }
+    p.set_gui_status(false);
 #endif // GUI_SUPPORT
 
     set_file_permissions();
@@ -659,12 +693,9 @@ SpicyPass already running you will need to delete the file." << endl;
         return -1;
     }
 
-    Pass_Store p;
-    p.set_gui_status(have_gui);
-
     int ret = -1;
 
-    if (have_gui) {
+    if (p.get_gui_status()) {
         ret = 0;
     } else {
         ret = cli_new_pass_store(p);
@@ -714,7 +745,7 @@ SpicyPass already running you will need to delete the file." << endl;
 
     thread t(store_lock_loop, ref(p));
 
-    if (have_gui) {
+    if (p.get_gui_status()) {
 #ifdef GUI_SUPPORT
         gtk_init(&argc, &argv);
         ui.run(p);

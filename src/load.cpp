@@ -74,9 +74,9 @@ const string get_store_path(const string &filename, bool temp)
  * Return -1 if invalid path.
  * Return -2 if file cannot be opened.
  */
-static int get_pass_store_if(ifstream &fp)
+static int get_pass_store_if(ifstream &fp, const string &save_file)
 {
-    const string path = get_store_path(DEFAULT_FILENAME, false);
+    const string path = get_store_path(save_file, false);
 
     if (path.empty()) {
         return -1;
@@ -101,9 +101,9 @@ static int get_pass_store_if(ifstream &fp)
  * Return -1 if invalid path.
  * Return -2 if file cannot be opened.
  */
-static int get_pass_store_of(ofstream &fp, bool temp)
+static int get_pass_store_of(ofstream &fp, const string &save_file, bool temp)
 {
-    const string path = get_store_path(DEFAULT_FILENAME, temp);
+    const string path = get_store_path(save_file, temp);
 
     if (path.empty()) {
         return -1;
@@ -183,7 +183,7 @@ static int read_header(ifstream &fp, unsigned char *format_version, unsigned cha
 int save_password_store(Pass_Store &p)
 {
     ofstream fp;
-    get_pass_store_of(fp, true);
+    get_pass_store_of(fp, p.get_save_file(), true);
 
     unsigned char salt[CRYPTO_SALT_SIZE];
     p.get_key_salt(salt);
@@ -202,8 +202,8 @@ int save_password_store(Pass_Store &p)
 
     fp.close();
 
-    string temp_path = get_store_path(DEFAULT_FILENAME, true);
-    string real_path = get_store_path(DEFAULT_FILENAME, false);
+    string temp_path = get_store_path(p.get_save_file(), true);
+    string real_path = get_store_path(p.get_save_file(), false);
 
     if (temp_path.empty() || real_path.empty()) {
         return -1;
@@ -290,7 +290,7 @@ int load_password_store(Pass_Store &p, const unsigned char *password, size_t len
 {
     ifstream fp;
 
-    if (get_pass_store_if(fp) != 0) {
+    if (get_pass_store_if(fp, p.get_save_file()) != 0) {
         return -1;
     }
 
@@ -338,7 +338,7 @@ int load_password_store(Pass_Store &p, const unsigned char *password, size_t len
 
     crypto_memwipe(encryption_key, sizeof(encryption_key));
 
-    const string path = get_store_path(DEFAULT_FILENAME, false);
+    const string path = get_store_path(p.get_save_file(), false);
     const off_t file_length = file_size(path.c_str());
 
     if (file_length < PASS_STORE_HEADER_SIZE) {
@@ -365,10 +365,10 @@ int load_password_store(Pass_Store &p, const unsigned char *password, size_t len
     return num_entries;
 }
 
-int first_time_run(void)
+int first_time_run(const string &save_file)
 {
     ifstream fp;
-    const int ret = get_pass_store_if(fp);
+    const int ret = get_pass_store_if(fp, save_file);
 
     if (ret != 0) {
         return ret;
@@ -380,7 +380,7 @@ int first_time_run(void)
     return empty;
 }
 
-int init_pass_hash(const unsigned char *password, size_t length)
+int init_pass_hash(const unsigned char *password, size_t length, const string &save_file)
 {
     unsigned char hash[CRYPTO_HASH_SIZE] = {0};
 
@@ -393,7 +393,7 @@ int init_pass_hash(const unsigned char *password, size_t length)
     crypto_gen_salt(salt);
 
     ofstream fp;
-    const int ret = get_pass_store_of(fp, false);
+    const int ret = get_pass_store_of(fp, save_file, false);
 
     if (ret != 0) {
         return ret;

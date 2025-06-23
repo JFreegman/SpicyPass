@@ -238,6 +238,16 @@ public:
     int _export(ofstream &fp);
 
     /*
+     * Sets the save file path to `save_file`.
+     */
+    void set_save_file(const string &save_file);
+
+    /*
+     * Returns the current save file path.
+     */
+    string get_save_file(void);
+
+    /*
      * Securely wipes all sensitive pass store data from memory.
      */
     void clear(void);
@@ -249,6 +259,8 @@ private:
     unsigned char encryption_key[CRYPTO_KEY_SIZE];
     unsigned char key_salt[CRYPTO_SALT_SIZE];
     unsigned char password_hash[CRYPTO_HASH_SIZE];
+
+    string save_file;
 
     /* This mutex is responsible for protecting all variables and data stored within the Pass_Store instance. */
     mutex store_m;
