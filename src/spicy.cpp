@@ -640,6 +640,7 @@ static void print_usage(const char *bin_name)
     cout << "Usage: " << bin_name << " [OPTION] [ARG ...]" << endl;
     cout << "   -c, --cli         Use the command-line interface" << endl;
     cout << "   -p, --profile     Use a non-default profile: Required [Profile Name]" << endl;
+    cout << "   -r, --readonly    Enable read-only mode" << endl;
     cout << "   -h, --help        Print this message and exit" << endl;
 }
 
@@ -649,10 +650,11 @@ static void parse_args(int argc, char **argv, Pass_Store &p)
         {"cli", no_argument, 0, 'c'},
         {"help", no_argument, 0, 'h'},
         {"profile", required_argument, 0, 'p'},
+        {"readonly", no_argument, 0, 'r'},
         {NULL, no_argument, NULL, 0},
     };
 
-    const char *opts_str = "chp:";
+    const char *opts_str = "chrp:";
     int opt = 0;
     int indexptr = 0;
 
@@ -677,6 +679,12 @@ static void parse_args(int argc, char **argv, Pass_Store &p)
                 p.set_save_file(optarg);
 
                 cout << "Using profile: `" << optarg << "`" << endl;
+                break;
+            }
+
+            case 'r': {
+                p.set_read_only(true);
+                cout << "Read-only mode enabled" << endl;
                 break;
             }
 
