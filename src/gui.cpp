@@ -58,6 +58,40 @@ static void on_menuPassGen_activate(GtkMenuItem *menuitem, gpointer data);
 static gboolean on_key_escape_ignore(GtkWidget *widget, GdkEventKey *event, gpointer data);
 
 
+static string get_save_store_error_msg(int ret)
+{
+    switch (ret) {
+        case 0: {
+            return "";
+        }
+
+        case -1: {
+            return "Failed to save pass store: file path is invalid";
+        }
+
+        case -2: {
+            return "Failed to save pass store: encryption error";
+        }
+
+        case -3: {
+            return "Failed to save pass store: File save error";
+        }
+
+        case -4: {
+            const string lock_path = get_store_path(LOCK_FILENAME, false);
+
+            const string msg = "Warning: Read-only mode is enabled. Another instance may be running "
+                               "or SpicyPass was not closed properly. To disable read-only mode, close all running "
+                               "instances of SpicyPass and delete the file: " + lock_path;
+            return msg;
+        }
+
+        default: {
+            return "Failed to save pass store: Unknown error";
+        }
+    }
+}
+
 static void show_window(GtkApplication *app, GtkWidget *window)
 {
     gtk_application_add_window(app, GTK_WINDOW(window));
@@ -269,7 +303,8 @@ static void on_addEntryButtonOk(GtkButton *button, gpointer data)
     const gchar *passText = gtk_entry_get_text(passEntry);
     gint keylen = gtk_entry_get_text_length(loginEntry);
 
-    char msg[128];
+    char msg[256];
+    string err_msg = "";
     bool has_err = true;
     int exists;
     int ret;
@@ -315,12 +350,13 @@ static void on_addEntryButtonOk(GtkButton *button, gpointer data)
 
     ret = save_password_store(*p);
 
-    if (ret != 0) {
-        snprintf(msg, sizeof(msg), "Failed to save pass store (error %d)", ret);
-        goto on_exit;
-    }
+    err_msg = get_save_store_error_msg(ret);
 
-    has_err = false;
+    if (err_msg.length() > 0) {
+        snprintf(msg, sizeof(msg), "%s", err_msg.c_str());
+    } else {
+        has_err = false;
+    }
 
 on_exit:
 
@@ -424,7 +460,8 @@ static void on_editEntryButtonOk(GtkButton *button, gpointer data)
     const gchar *passText = gtk_entry_get_text(passEntry);
     gint keylen = gtk_entry_get_text_length(loginEntry);
 
-    char msg[128];
+    char msg[256];
+    string err_msg = "";
     bool has_err = true;
     int ret;
     GtkTreeIter iter;
@@ -488,8 +525,10 @@ static void on_editEntryButtonOk(GtkButton *button, gpointer data)
 
     ret = save_password_store(*p);
 
-    if (ret != 0) {
-        snprintf(msg, sizeof(msg), "Failed to save pass store (error %d)", ret);
+    err_msg = get_save_store_error_msg(ret);
+
+    if (err_msg.length() > 0) {
+        snprintf(msg, sizeof(msg), "%s", err_msg.c_str());
         goto on_exit;
     }
 
@@ -616,6 +655,7 @@ static void on_deleteEntryButtonYes(GtkButton *button, gpointer data)
     GtkTreeSelection *selection = gtk_tree_view_get_selection(ls->view);
 
     char msg[MAX_STORE_KEY_SIZE + 128];
+    string err_msg = "";
     bool has_err = true;
     int removed;
     int ret;
@@ -649,8 +689,10 @@ static void on_deleteEntryButtonYes(GtkButton *button, gpointer data)
 
     ret = save_password_store(*p);
 
-    if (ret != 0) {
-        snprintf(msg, sizeof(msg), "Failed to save pass store (error %d)", ret);
+    err_msg = get_save_store_error_msg(ret);
+
+    if (err_msg.length() > 0) {
+        snprintf(msg, sizeof(msg), "%s", err_msg.c_str());
         goto on_exit;
     }
 

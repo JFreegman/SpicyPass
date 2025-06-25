@@ -248,9 +248,17 @@ public:
     string get_save_file(void);
 
     /*
+     * If read only mode is set to true we cannot write to file. This is set when
+     * the file lock exists.
+     */
+    void set_read_only(bool read_only);
+    bool get_read_only(void);
+
+    /*
      * Securely wipes all sensitive pass store data from memory.
      */
     void clear(void);
+
     ~Pass_Store(void);
 
 private:
@@ -267,6 +275,7 @@ private:
     bool gui_enabled = false;
     bool idle_lock = false;
     bool shutdown_signal = false;
+    bool read_only_mode = false;
     time_t last_active = get_time();
 
     /*

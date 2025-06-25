@@ -474,11 +474,6 @@ void Pass_Store::clear(void)
     s_unlock();
 }
 
-Pass_Store::~Pass_Store(void)
-{
-    clear();
-}
-
 string Pass_Store::format_entry(const string &key, const char *value, const char *note)
 {
     return key + DELIMITER + value + DELIMITER + note + '\n';
@@ -580,12 +575,39 @@ bool Pass_Store::delete_entry(const string &key)
 
 void Pass_Store::set_save_file(const string &path)
 {
+    s_lock();
     save_file = path;
+    s_unlock();
 }
 
 string Pass_Store::get_save_file(void)
 {
-    return save_file;
+    s_lock();
+    const string tmp = save_file;
+    s_unlock();
+
+    return tmp;
+}
+
+void Pass_Store::set_read_only(bool read_only)
+{
+    s_lock();
+    read_only_mode = read_only;
+    s_unlock();
+}
+
+bool Pass_Store::get_read_only(void)
+{
+    s_lock();
+    const bool tmp = read_only_mode;
+    s_unlock();
+
+    return tmp;
+}
+
+Pass_Store::~Pass_Store(void)
+{
+    clear();
 }
 
 static void print_version(const char *binary_name)
@@ -669,19 +691,8 @@ int main(int argc, char **argv)
 {
     print_version(argv[0]);
 
-    if (file_lock_exists()) {
-        const string lock_path = get_store_path(LOCK_FILENAME, false);
-
-        cerr << "The SpicyPass file lock exists at: '" << lock_path << "' If there isn't an instance of \
-SpicyPass already running you will need to delete the file." << endl;
-        return -1;
-    }
-
     Pass_Store p;
-
     parse_args(argc, argv, p);
-
-    create_file_lock();
 
 #if GUI_SUPPORT
     GUI ui;
@@ -689,11 +700,26 @@ SpicyPass already running you will need to delete the file." << endl;
     p.set_gui_status(false);
 #endif // GUI_SUPPORT
 
+    if (file_lock_exists()) {
+        if (!p.get_gui_status()) {
+            const string lock_path = get_store_path(LOCK_FILENAME, false);
+
+            cerr << "Warning: Read-only mode is enabled. Another instnace may be running "
+                 "or SpicyPass was not closed properly. To disable read-only mode, close all running "
+                 "instances of SpicyPass and delete the file:" << "'" << lock_path << "'" << endl;
+            return -1;
+        }
+
+        p.set_read_only(true);
+    }
+
+    create_file_lock(p);
+
     set_file_permissions();
 
     if (crypto_init() != 0) {
         cerr << "crypto_init() failed" << endl;
-        delete_file_lock();
+        delete_file_lock(p);
         return -1;
     }
 
@@ -712,37 +738,37 @@ SpicyPass already running you will need to delete the file." << endl;
 
         case -2: {
             cerr << "crypto_memlock() failed in new_pass_store()" << endl;
-            delete_file_lock();
+            delete_file_lock(p);
             return -1;
         }
 
         case -3: {
             cerr << "load_password_store() failed to open pass store file" << endl;
-            delete_file_lock();
+            delete_file_lock(p);
             return -1;
         }
 
         case -4: {
             cout << "Invalid password" << endl;
-            delete_file_lock();
+            delete_file_lock(p);
             return -1;
         }
 
         case -5: {
             cerr << "Failed to decrypt pass store file" << endl;
-            delete_file_lock();
+            delete_file_lock(p);
             return -1;
         }
 
         case -6: {
             cerr << "GUI failed to initialize" << endl;
-            delete_file_lock();
+            delete_file_lock(p);
             return -1;
         }
 
         default: {
             cerr << "Unknown error" << endl;
-            delete_file_lock();
+            delete_file_lock(p);
             return -1;
         }
     }
@@ -762,7 +788,7 @@ SpicyPass already running you will need to delete the file." << endl;
 
     t.join();
 
-    if (!delete_file_lock()) {
+    if (!delete_file_lock(p)) {
         cerr << "Failed to delete file lock" << endl;
     }
 

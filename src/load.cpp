@@ -182,6 +182,10 @@ static int read_header(ifstream &fp, unsigned char *format_version, unsigned cha
 
 int save_password_store(Pass_Store &p)
 {
+    if (p.get_read_only()) {
+        return -4;
+    }
+
     ofstream fp;
     get_pass_store_of(fp, p.get_save_file(), true);
 
@@ -410,6 +414,11 @@ int init_pass_hash(const unsigned char *password, size_t length, const string &s
 
 int update_crypto(Pass_Store &p, const unsigned char *password, size_t length)
 {
+    if (p.get_read_only()) {
+        cerr << "Cannot change the password in read-only mode." << endl;
+        return -4;
+    }
+
     unsigned char encryption_key[CRYPTO_KEY_SIZE];
     unsigned char salt[CRYPTO_SALT_SIZE];
     unsigned char hash[CRYPTO_HASH_SIZE] = {0};
@@ -495,8 +504,12 @@ int export_pass_store_to_plaintext(Pass_Store &p)
     return 0;
 }
 
-bool delete_file_lock(void)
+bool delete_file_lock(Pass_Store &p)
 {
+    if (p.get_read_only()) {
+        return true;
+    }
+
     const string lock_path = get_store_path(LOCK_FILENAME, false);
 
     if (lock_path.empty()) {
@@ -512,8 +525,12 @@ bool delete_file_lock(void)
     }
 }
 
-bool create_file_lock(void)
+bool create_file_lock(Pass_Store &p)
 {
+    if (p.get_read_only()) {
+        return true;
+    }
+
     const string lock_path = get_store_path(LOCK_FILENAME, false);
 
     if (lock_path.empty()) {

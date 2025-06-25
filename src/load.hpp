@@ -68,6 +68,7 @@ int load_password_store(Pass_Store &p, const unsigned char *password, size_t len
  * Return -1 if path is invalid.
  * Return -2 if file encryption fails.
  * Return -3 if file save operation fails.
+ * Return -4 if read only mode is enabled.
  */
 int save_password_store(Pass_Store &p);
 
@@ -97,6 +98,7 @@ int init_pass_hash(const unsigned char *password, size_t length, const string &s
  * Return -1 on crypto related error.
  * Return -2 if `p` fails to update.
  * Return -3 on save failure.
+ * Return -4 if read only mode is enabled.
  * Return PASS_STORE_LOCKED if pass store is locked.
  */
 int update_crypto(Pass_Store &p, const unsigned char *password, size_t length);
@@ -116,13 +118,17 @@ string get_export_path(void);
 
 /*
  * Deletes the file lock. Called on exit.
+ *
+ * Return false on error.
  */
-bool delete_file_lock(void);
+bool delete_file_lock(Pass_Store &p);
 
 /*
  * Creates file lock. Called before any other file operations.
+ *
+ * Return false on file creation error.
  */
-bool create_file_lock(void);
+bool create_file_lock(Pass_Store &p);
 
 /*
  * Return true if the spicypass file lock exists.

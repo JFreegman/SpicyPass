@@ -340,6 +340,11 @@ static int add(Pass_Store &p)
             return -1;
         }
 
+        case -4: {
+            cerr << "Failed to save password store: read-only mode is enabled" << endl;
+            return -1;
+        }
+
         default: {
             cerr << "Failed to save password store: Unknown error" << endl;
             return -1;
