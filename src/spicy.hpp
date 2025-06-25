@@ -48,7 +48,7 @@ using namespace std;
 #define MIN_MASTER_PASSWORD_SIZE  (8)
 
 /* The maximum number of characters for a pass store entry note */
-#define MAX_STORE_NOTE_SIZE   (256 * 50)
+#define MAX_STORE_NOTE_SIZE   (5000)
 
 /* Return code indicating that `idle_lock` is set to true */
 #define PASS_STORE_LOCKED (INT_MIN)

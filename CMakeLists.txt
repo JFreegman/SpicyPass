@@ -11,7 +11,7 @@ set(SpicyPass_LOGO_FILE_PATH ${SPICYPASS_INSTALL_DIRECTORY}/spicypass.svg)
 
 set(SpicyPass_VERSION_MAJOR "0")
 set(SpicyPass_VERSION_MINOR "10")
-set(SpicyPass_VERSION_PATCH "0")
+set(SpicyPass_VERSION_PATCH "1")
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)

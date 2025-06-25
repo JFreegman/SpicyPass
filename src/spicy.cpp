@@ -178,11 +178,15 @@ int Pass_Store::insert(const string &key, const string &value, const string &not
         return -1;
     }
 
-    memcpy(pass->password, value.c_str(), pass_length);
-    pass->password[pass_length] = '\0';
+    if (pass_length > 0) {
+        memcpy(pass->password, value.c_str(), pass_length);
+        pass->password[pass_length] = '\0';
+    }
 
-    memcpy(pass->note, note.c_str(), note_length);
-    pass->note[note_length] = '\0';
+    if (note_length > 0) {
+        memcpy(pass->note, note.c_str(), note_length);
+        pass->note[note_length] = '\0';
+    }
 
     if (crypto_memlock((unsigned char *) pass->password, sizeof(pass->password)) != 0) {
         free(pass);

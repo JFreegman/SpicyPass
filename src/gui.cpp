@@ -268,14 +268,13 @@ static void on_addEntryButtonOk(GtkButton *button, gpointer data)
     const gchar *loginText = gtk_entry_get_text(loginEntry);
     const gchar *passText = gtk_entry_get_text(passEntry);
     gint keylen = gtk_entry_get_text_length(loginEntry);
-    gint passlen = gtk_entry_get_text_length(passEntry);
 
     char msg[128];
     bool has_err = true;
     int exists;
     int ret;
 
-    if (strlen(passText) > MAX_STORE_PASSWORD_SIZE) {  // byte size does not always match passlen
+    if (strlen(passText) > MAX_STORE_PASSWORD_SIZE) {  // byte size does not always match `get_text_length()` value
         snprintf(msg, sizeof(msg), "Password is too long");
         goto on_exit;
     }
@@ -285,7 +284,7 @@ static void on_addEntryButtonOk(GtkButton *button, gpointer data)
         goto on_exit;
     }
 
-    if (keylen == 0 || passlen == 0) {
+    if (keylen == 0) {
         snprintf(msg, sizeof(msg), "Entry cannot be empty");
         goto on_exit;
     }
@@ -424,7 +423,6 @@ static void on_editEntryButtonOk(GtkButton *button, gpointer data)
     const gchar *loginText = gtk_entry_get_text(loginEntry);
     const gchar *passText = gtk_entry_get_text(passEntry);
     gint keylen = gtk_entry_get_text_length(loginEntry);
-    gint passlen = gtk_entry_get_text_length(passEntry);
 
     char msg[128];
     bool has_err = true;
@@ -432,7 +430,7 @@ static void on_editEntryButtonOk(GtkButton *button, gpointer data)
     GtkTreeIter iter;
     gchar *old_key = NULL;
 
-    if (strlen(passText) > MAX_STORE_PASSWORD_SIZE) {  // byte size does not always match passlen
+    if (strlen(passText) > MAX_STORE_PASSWORD_SIZE) {  // byte size does not always match `get_text_length()` value
         snprintf(msg, sizeof(msg), "Password is too long");
         goto on_exit;
     }
@@ -459,18 +457,7 @@ static void on_editEntryButtonOk(GtkButton *button, gpointer data)
 
     gtk_tree_model_get(model, &iter, KEY_COLUMN, &old_key, -1);
 
-    if (passlen == 0) {
-        string randPass = random_password(16U);
-
-        if (randPass.empty()) {
-            snprintf(msg, sizeof(msg), "Failed to generate random password");
-            goto on_exit;
-        }
-
-        ret = p->replace(string(old_key), string(loginText), randPass, string(noteText));
-    } else {
-        ret = p->replace(string(old_key), string(loginText), string(passText), string(noteText));
-    }
+    ret = p->replace(string(old_key), string(loginText), string(passText), string(noteText));
 
     g_free(old_key);
 
