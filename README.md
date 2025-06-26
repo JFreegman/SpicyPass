@@ -10,13 +10,14 @@
 [![Spicypass Screenshot](https://i.imgur.com/L7ezEJd.png "Main Window")](https://i.imgur.com/L7ezEJd.png)
 
 ## Features
-* Both a command-line and graphical interface to choose from
+* Both a command-line and graphical interface
 * An idle lock that prompts the user for their password after a period of inactivity
-* A cryptographically secure random password generator that maximizes entropy
-* The ability to copy passwords to the clipboard without revealing them on the screen
-* Data is automatically encrypted on disk - no setup required
-* Completely offline and free of any potential internet-facing attack vectors
-
+* A cryptographically secure random password generator
+* Arbitrary entry notes
+* Ability to copy passwords to the clipboard without revealing them on screen
+* Data is encrypted on disk automatically; no setup required beyond choosing a master password.
+* Multi-profile support (via the `--profile` run option)
+* Completely offline and free of internet-facing attack vectors
 
 ## Install
 ### Dependencies
@@ -52,10 +53,10 @@ On first run, a 256-bit secret key is derived from a master password along with 
 Data is encrypted with the [XChaCha20](https://en.wikipedia.org/wiki/Salsa20#ChaCha_variant) symmetric cipher and authenticated with the [Poly1305](https://en.wikipedia.org/wiki/Poly1305) message authentication code. When combined, these algorithms ensure both the security and integrity of the pass store file contents.
 
 ### Memory Safety
-All sensitive data, including passwords and private keys, are only held in memory when necessary. When SpicyPass is closed, all sensitive data is securely wiped from memory. If SpicyPass is left running idle, all sensitive data is securely wiped from memory, and the user will be prompted for their master password in order to continue their session. These features ensure that if intruders get access to your device they will be unable to access your information through a running session or by inspecting the device's memory.
+All sensitive data, including passwords, private keys, and notes are only held in memory when necessary. When SpicyPass is closed this data is securely wiped from memory. If SpicyPass is left running idle this data is securely wiped from memory, and the user will be prompted for their master password in order to continue their session. These features ensure that if intruders get access to your device they will be unable to access your information through a running session or by inspecting the device's memory.
 
 ### The Pass Store File
-All program data is stored in a single file named `.spicypass`. On Unix-like systems this file is located in the `$HOME` directory. On Windows it's located in `$HOMEPATH`. A plaintext header comprised of the hash of the master password and its associated salt is placed at the beginning of the file. This header does not need to be kept secret. However, if it is lost or corrupted (or if you forget the master password) all of your passwords will be lost in time, like tears in the rain. **IT IS CRITICALLY IMPORTANT TO BACK THIS FILE UP REGULARLY.**
+All program data is stored in a single file named `.spicypass` (unless otherwise specificed using the `profile` run option). On Unix-like systems this file is located in the `$HOME` directory. On Windows it's located in `$HOMEPATH`. A plaintext header comprised of the hash of the master password and its associated salt is placed at the beginning of the file. This header does not need to be kept secret. However, if it is lost or corrupted (or if you forget the master password) all of your passwords will be lost in time, like tears in the rain. **IT IS CRITICALLY IMPORTANT TO BACK THIS FILE UP REGULARLY.**
 
 ## Known Bugs
 On Windows systems spicypass has only been tested with `cmd.exe`. Other terminal emulators may be buggy or not work at all.
