@@ -53,6 +53,7 @@ static void on_buttonCopy_clicked(GtkButton *button, gpointer data);
 static void on_buttonDelete_clicked(GtkButton *button, gpointer data);
 static void on_buttonAdd_clicked(GtkButton *button, gpointer data);
 static void on_buttonEdit_clicked(GtkButton *button, gpointer data);
+static void on_buttonView_clicked(GtkButton *button, gpointer data);
 static void on_key_enter(GtkEntry *entry, gpointer data);
 static void on_menuPassGen_activate(GtkMenuItem *menuitem, gpointer data);
 static gboolean on_key_escape_ignore(GtkWidget *widget, GdkEventKey *event, gpointer data);
@@ -230,6 +231,11 @@ static gboolean on_special_key_press(GtkWidget *widget, GdkEventKey *event, gpoi
 
     if (ctrl_event && event->keyval == 'e') {
         on_buttonEdit_clicked(NULL, data);
+        return TRUE;
+    }
+
+    if (ctrl_event && event->keyval == 'v') {
+        on_buttonView_clicked(NULL, data);
         return TRUE;
     }
 
@@ -547,6 +553,20 @@ on_exit:
     }
 }
 
+static void on_viewEntryButtonClose(GtkButton *button, gpointer data)
+{
+    UNUSED_VAR(button);
+
+    if (!data) {
+        return;
+    }
+
+    struct Callback_Data *cb_data = (struct Callback_Data *) data;
+
+    GtkWidget *window = cb_data->window;
+    gtk_widget_destroy(window);
+}
+
 static void on_buttonEdit_clicked(GtkButton *button, gpointer data)
 {
     UNUSED_VAR(button);
@@ -590,6 +610,99 @@ static void on_buttonEdit_clicked(GtkButton *button, gpointer data)
     const gchar *passwordText;
     const gchar *noteText;
     int matches = 0;
+    vector<tuple<string, const char *, const char *>> result;
+    tuple<string, const char *, const char *> v_item;
+    GtkTreeIter iter;
+
+    if (!gtk_tree_selection_get_selected(selection, &model, &iter)) {
+        gtk_widget_destroy(window);
+        return;
+    }
+
+    gtk_tree_model_get(model, &iter, KEY_COLUMN, &key, -1);
+    matches = p->get_matches(key, result, true);
+
+    g_free(key);
+
+    if (matches == PASS_STORE_LOCKED) {
+        if (password_prompt(cb_data) != 0) {
+            dialog_box(cb_data->app, "Failed to unlock pass store", GTK_MESSAGE_ERROR, window);
+        }
+
+        return;
+    }
+
+    if (result.size() != 1) {
+        snprintf(msg, sizeof(msg), "Key not found");
+        goto on_exit;
+    }
+
+    v_item = result.at(0);
+    loginText = get<0>(v_item).c_str();
+
+    p->s_lock();
+    passwordText = get<1>(v_item);
+    gtk_entry_set_text(passEntry, passwordText);
+
+    noteText = get<2>(v_item);
+    gtk_text_buffer_set_text(GTK_TEXT_BUFFER(noteEntry), noteText, -1);
+    p->s_unlock();
+
+    gtk_entry_set_text(loginEntry, loginText);
+
+    show_window(cb_data->app, window);
+
+    has_err = false;
+
+on_exit:
+
+    if (has_err) {
+        dialog_box(cb_data->app, msg, GTK_MESSAGE_ERROR, window);
+        gtk_widget_destroy(window);
+    }
+}
+
+static void on_buttonView_clicked(GtkButton *button, gpointer data)
+{
+    UNUSED_VAR(button);
+
+    struct Callback_Data *cb_data = (struct Callback_Data *) data;
+    struct List_Store *ls = cb_data->ls;
+    Pass_Store *p = cb_data->p;
+
+    GtkBuilder *builder = gtk_builder_new_from_file(GLADE_FILE_PATH);
+    GtkWidget *window = GTK_WIDGET(gtk_builder_get_object(builder, "viewEntryWindow"));
+
+    GtkButton *closeButton = GTK_BUTTON(gtk_builder_get_object(builder, "viewEntryButtonClose"));
+
+    GtkEntry *loginEntry = GTK_ENTRY(gtk_builder_get_object(builder, "viewEntryLogin"));
+    GtkEntry *passEntry = GTK_ENTRY(gtk_builder_get_object(builder, "viewEntryPass"));
+    GtkTextView *noteView = GTK_TEXT_VIEW(gtk_builder_get_object(builder, "viewEntryNote"));
+    GtkTextBuffer *noteEntry = gtk_text_view_get_buffer(noteView);
+
+    g_object_unref(builder);
+
+    gtk_entry_set_max_length(loginEntry, MAX_STORE_KEY_SIZE);
+    gtk_entry_set_max_length(passEntry, MAX_STORE_PASSWORD_SIZE);
+
+    cb_data->widget1 = GTK_WIDGET(loginEntry);
+    cb_data->widget2 = GTK_WIDGET(passEntry);
+    cb_data->widget4 = noteView;
+    cb_data->window = window;
+
+    g_signal_connect(closeButton, "clicked", G_CALLBACK(on_viewEntryButtonClose), cb_data);
+
+    GtkTreeModel *model = GTK_TREE_MODEL(ls->store);
+    GtkTreeSelection *selection = gtk_tree_view_get_selection(ls->view);
+
+    char msg[128];
+    bool has_err = true;
+    gchar *key = NULL;
+    const gchar *loginText;
+    const gchar *passwordText;
+    const gchar *noteText;
+    int matches = 0;
+
     vector<tuple<string, const char *, const char *>> result;
     tuple<string, const char *, const char *> v_item;
     GtkTreeIter iter;
@@ -1301,14 +1414,17 @@ static void show_popup_menu(GdkEventButton *event, struct Callback_Data *cb_data
     GtkWidget *menu = gtk_menu_new();
     GtkWidget *menuCopy = gtk_menu_item_new_with_label("Copy");
     GtkWidget *menuEdit = gtk_menu_item_new_with_label("Edit");
+    GtkWidget *menuView = gtk_menu_item_new_with_label("View");
     GtkWidget *menuDelete = gtk_menu_item_new_with_label("Delete");
 
     g_signal_connect(menuCopy, "activate", G_CALLBACK(on_buttonCopy_clicked), cb_data);
     g_signal_connect(menuEdit, "activate", G_CALLBACK(on_buttonEdit_clicked), cb_data);
+    g_signal_connect(menuView, "activate", G_CALLBACK(on_buttonView_clicked), cb_data);
     g_signal_connect(menuDelete, "activate", G_CALLBACK(on_buttonDelete_clicked), cb_data);
 
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuCopy);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuEdit);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuView);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuDelete);
 
     gtk_widget_show_all(menu);
@@ -1556,6 +1672,7 @@ void GUI::run(Pass_Store &p)
     GtkButton *buttonDelete = GTK_BUTTON(gtk_builder_get_object(builder, "buttonDelete"));
     GtkButton *buttonCopy = GTK_BUTTON(gtk_builder_get_object(builder, "buttonCopy"));
     GtkButton *buttonEdit = GTK_BUTTON(gtk_builder_get_object(builder, "buttonEdit"));
+    GtkButton *buttonView = GTK_BUTTON(gtk_builder_get_object(builder, "buttonView"));
     GtkMenuItem *menuChangePass = GTK_MENU_ITEM(gtk_builder_get_object(builder, "menuChangePass"));
     GtkMenuItem *menuPassGen = GTK_MENU_ITEM(gtk_builder_get_object(builder, "menuPassGen"));
     GtkMenuItem *menuAbout = GTK_MENU_ITEM(gtk_builder_get_object(builder, "menuAbout"));
@@ -1567,6 +1684,7 @@ void GUI::run(Pass_Store &p)
     g_signal_connect(buttonDelete, "clicked", G_CALLBACK(on_buttonDelete_clicked), cb_data);
     g_signal_connect(buttonCopy, "clicked", G_CALLBACK(on_buttonCopy_clicked), cb_data);
     g_signal_connect(buttonEdit, "clicked", G_CALLBACK(on_buttonEdit_clicked), cb_data);
+    g_signal_connect(buttonView, "clicked", G_CALLBACK(on_buttonView_clicked), cb_data);
     g_signal_connect(menuChangePass, "activate", G_CALLBACK(on_menuChangePassword_activate), cb_data);
     g_signal_connect(menuPassGen, "activate", G_CALLBACK(on_menuPassGen_activate), cb_data);
     g_signal_connect(menuAbout, "activate", G_CALLBACK(on_menuAbout_activate), cb_data);
