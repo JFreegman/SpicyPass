@@ -53,7 +53,10 @@ using namespace std;
 /* Return code indicating that `idle_lock` is set to true */
 #define PASS_STORE_LOCKED (INT_MIN)
 
-/* The byte used to separate entry values in file format. */
+/* Seconds to wait since last activity before we prompt the user to enter their password again */
+#define DEFAULT_IDLE_LOCK_TIMEOUT (60U * 10U)
+
+/* The byte used to separate entry values in file format */
 #define DELIMITER "\r"
 
 /* Legacy delimiter is used for all versions <= 0.5.2 */
@@ -128,6 +131,16 @@ public:
      * all pass store functionality is disabled until `disable_lock()` is called.
      */
     void poll_idle(void);
+
+    /*
+     * Sets the idle lock timeout. If `timeout` is 0 the idle lock will be disabled.
+     */
+    void set_idle_timeout(int timeout);
+
+    /*
+     * Returns the idle lock timeout value.
+     */
+    size_t get_idle_timeout(void);
 
     /*
      * Inserts `key` into pass store with `value` and `note`. If key already exists it will
@@ -276,6 +289,7 @@ private:
     bool idle_lock = false;
     bool shutdown_signal = false;
     bool read_only_mode = false;
+    size_t idle_timeout = DEFAULT_IDLE_LOCK_TIMEOUT;
     time_t last_active = get_time();
 
     /*

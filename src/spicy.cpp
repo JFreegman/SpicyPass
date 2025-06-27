@@ -40,9 +40,6 @@
 
 using namespace std;
 
-/* Seconds to wait since last activity before we prompt the user to enter their password again */
-#define IDLE_LOCK_TIMEOUT (60U * 10U)
-
 /* Newlines in notes are converted to this char for file format */
 #define NOTE_NEWLINE_ESCAPE_CHAR '\v'
 
@@ -129,12 +126,12 @@ void Pass_Store::poll_idle(void)
 {
     s_lock();
 
-    if (idle_lock) {
+    if (idle_timeout == 0 || idle_lock) {
         s_unlock();
         return;
     }
 
-    if (!timed_out(last_active, IDLE_LOCK_TIMEOUT)) {
+    if (!timed_out(last_active, idle_timeout)) {
         s_unlock();
         return;
     }
@@ -149,6 +146,22 @@ void Pass_Store::poll_idle(void)
     }
 
     clear();
+}
+
+void Pass_Store::set_idle_timeout(int timeout)
+{
+    s_lock();
+    idle_timeout = timeout >= 0 ? timeout * 60 : DEFAULT_IDLE_LOCK_TIMEOUT;
+    s_unlock();
+}
+
+size_t Pass_Store::get_idle_timeout(void)
+{
+    s_lock();
+    const size_t tmp = idle_timeout;
+    s_unlock();
+
+    return tmp;
 }
 
 int Pass_Store::insert(const string &key, const string &value, const string &note)
@@ -638,10 +651,11 @@ static void set_file_permissions(void)
 static void print_usage(const char *bin_name)
 {
     cout << "Usage: " << bin_name << " [OPTION] [ARG ...]" << endl;
-    cout << "   -c, --cli         Use the command-line interface" << endl;
-    cout << "   -p, --profile     Use a non-default profile: Required [Profile Name]" << endl;
-    cout << "   -r, --readonly    Enable read-only mode" << endl;
-    cout << "   -h, --help        Print this message and exit" << endl;
+    cout << "   -c, --cli          Use the command-line interface" << endl;
+    cout << "   -p, --profile      Use a non-default profile: Required [Profile Name]" << endl;
+    cout << "   -r, --readonly     Enable read-only mode" << endl;
+    cout << "   -t, --idletimeout  Set idle lock timeout: Required [minutes]" << endl;
+    cout << "   -h, --help         Print this message and exit" << endl;
 }
 
 static void parse_args(int argc, char **argv, Pass_Store &p)
@@ -651,10 +665,11 @@ static void parse_args(int argc, char **argv, Pass_Store &p)
         {"help", no_argument, 0, 'h'},
         {"profile", required_argument, 0, 'p'},
         {"readonly", no_argument, 0, 'r'},
+        {"idletimeout", required_argument, 0, 't'},
         {NULL, no_argument, NULL, 0},
     };
 
-    const char *opts_str = "chrp:";
+    const char *opts_str = "chrp:t:";
     int opt = 0;
     int indexptr = 0;
 
@@ -688,6 +703,32 @@ static void parse_args(int argc, char **argv, Pass_Store &p)
                 break;
             }
 
+            case 't': {
+                int timeout = -1;
+
+                if (optarg == NULL) {
+                    cerr << "Invalid argument for option -t" << endl;
+                    exit(-1);
+                }
+
+                try {
+                    timeout = stoi(optarg);
+                } catch (const exception &e) {
+                    cerr << "Invalid idle timeout value. Using default idle lock timeout." << endl;
+                    break;
+                }
+
+                p.set_idle_timeout(timeout);
+
+                if (timeout == 0) {
+                    cout << "Idle lock disabled" << endl;
+                } else {
+                    cout << "Idle lock timeout set to " << p.get_idle_timeout() << " minutes" << endl;
+                }
+
+                break;
+            }
+
             default: {
                 break;
             }
@@ -712,8 +753,7 @@ int main(int argc, char **argv)
         if (!p.get_gui_status()) {
             const string lock_path = get_store_path(LOCK_FILENAME, false);
 
-            cerr << "Warning: Read-only mode is enabled. Another instnace may be running "
-                 "or SpicyPass was not closed properly. To disable read-only mode, close all running "
+            cerr << "Another instance may be running or SpicyPass was not closed properly. Close all running "
                  "instances of SpicyPass and delete the file:" << "'" << lock_path << "'" << endl;
             return -1;
         }
@@ -721,9 +761,8 @@ int main(int argc, char **argv)
         p.set_read_only(true);
     }
 
-    create_file_lock(p);
-
     set_file_permissions();
+    create_file_lock(p);
 
     if (crypto_init() != 0) {
         cerr << "crypto_init() failed" << endl;

@@ -11,7 +11,7 @@
 
 ## Features
 * Both a command-line and graphical interface
-* An idle lock that prompts the user for their password after a period of inactivity
+* An idle lock that prompts the user for their password after a period of inactivity (customize timeout via the `--idletimeout` run option)
 * A cryptographically secure random password generator
 * Arbitrary entry notes
 * Ability to copy passwords to the clipboard without revealing them on screen
