@@ -59,7 +59,7 @@ static void on_menuPassGen_activate(GtkMenuItem *menuitem, gpointer data);
 static gboolean on_key_escape_ignore(GtkWidget *widget, GdkEventKey *event, gpointer data);
 
 
-static string get_save_store_error_msg(int ret)
+static string get_save_store_error_msg(Pass_Store &p, int ret)
 {
     switch (ret) {
         case 0: {
@@ -79,7 +79,7 @@ static string get_save_store_error_msg(int ret)
         }
 
         case -4: {
-            const string lock_path = get_store_path(LOCK_FILENAME, false);
+            const string lock_path = get_store_path(LOCK_FILENAME, false, p.using_custom_profile());
 
             const string msg = "Warning: Read-only mode is enabled. Another instance may be running "
                                "or SpicyPass was not closed properly. To disable read-only mode, close all running "
@@ -356,7 +356,7 @@ static void on_addEntryButtonOk(GtkButton *button, gpointer data)
 
     ret = save_password_store(*p);
 
-    err_msg = get_save_store_error_msg(ret);
+    err_msg = get_save_store_error_msg(*p, ret);
 
     if (err_msg.length() > 0) {
         snprintf(msg, sizeof(msg), "%s", err_msg.c_str());
@@ -531,7 +531,7 @@ static void on_editEntryButtonOk(GtkButton *button, gpointer data)
 
     ret = save_password_store(*p);
 
-    err_msg = get_save_store_error_msg(ret);
+    err_msg = get_save_store_error_msg(*p, ret);
 
     if (err_msg.length() > 0) {
         snprintf(msg, sizeof(msg), "%s", err_msg.c_str());
@@ -564,6 +564,7 @@ static void on_viewEntryButtonClose(GtkButton *button, gpointer data)
     struct Callback_Data *cb_data = (struct Callback_Data *) data;
 
     GtkWidget *window = cb_data->window;
+
     gtk_widget_destroy(window);
 }
 
@@ -802,7 +803,7 @@ static void on_deleteEntryButtonYes(GtkButton *button, gpointer data)
 
     ret = save_password_store(*p);
 
-    err_msg = get_save_store_error_msg(ret);
+    err_msg = get_save_store_error_msg(*p, ret);
 
     if (err_msg.length() > 0) {
         snprintf(msg, sizeof(msg), "%s", err_msg.c_str());
@@ -1366,8 +1367,6 @@ static void on_newPwButtonEnter_clicked(GtkEntry *button, gpointer data)
 
     int ret;
 
-    const string path = get_store_path(p->get_save_file(), false);
-
     char msg[1024];
 
     if (text1_len < MIN_MASTER_PASSWORD_SIZE) {
@@ -1384,7 +1383,7 @@ static void on_newPwButtonEnter_clicked(GtkEntry *button, gpointer data)
     passBuff[passLen++] = '\n';
     passBuff[passLen] = 0;
 
-    if (init_pass_hash(passBuff, passLen, p->get_save_file()) != 0) {
+    if (init_pass_hash(*p, passBuff, passLen) != 0) {
         snprintf(msg, sizeof(msg), "init_pass_hash() failed");
         goto on_exit;
     }
@@ -1655,7 +1654,7 @@ void GUI::run(Pass_Store &p)
 
     init_window(builder, cb_data);
 
-    if (first_time_run(p.get_save_file())) {
+    if (first_time_run(p)) {
         if (load_new(p, builder) != 0) {
             cerr << "load_new() failed in GUI::run()" << endl;
             return;

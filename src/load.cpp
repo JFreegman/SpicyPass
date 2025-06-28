@@ -38,33 +38,45 @@ static bool valid_format_version(unsigned char format_version)
     return format_version >= FILE_FORMAT_VERSION_1 && format_version <= FILE_FORMAT_VERSION_CURRENT;
 }
 
-const string get_store_path(const string &filename, bool temp)
+const string get_store_path(const string &filename, bool temp, bool custom_path)
 {
+    string path;
+
+    if (!custom_path) {
 #if defined(_WIN32)
-    string homedir = getenv("HOMEPATH");
-    string path = homedir + "\\" + filename;
+        const string homedir = getenv("HOMEPATH");
+        path = homedir + "\\" + filename;
 #else
-    char buf[1024];
-    struct passwd pwd;
-    struct passwd *result;
+        char buf[1024];
+        struct passwd pwd;
+        struct passwd *result;
 
-    const int ret = getpwuid_r(getuid(), &pwd, buf, sizeof(buf), &result);
+        const int ret = getpwuid_r(getuid(), &pwd, buf, sizeof(buf), &result);
 
-    if (ret != 0) {
-        cerr << "getpwuid_r() failed with error code: " << to_string(ret) << endl;
-        return "";
-    };
+        if (ret != 0) {
+            cerr << "getpwuid_r() failed with error code: " << to_string(ret) << endl;
+            return "";
+        };
 
-    string homedir = string(pwd.pw_dir);
+        const string homedir = string(pwd.pw_dir);
 
-    string path = homedir + "/" + filename;
+        path = homedir + "/" + filename;
 
 #endif // _WIN_32
+    } else {
+        path = filename;
+    }
+
     if (temp) {
         path += ".tmp";
     }
 
     return path;
+}
+
+const string get_lock_path(void)
+{
+    return get_store_path(LOCK_FILENAME, false, false);
 }
 
 /*
@@ -74,9 +86,9 @@ const string get_store_path(const string &filename, bool temp)
  * Return -1 if invalid path.
  * Return -2 if file cannot be opened.
  */
-static int get_pass_store_if(ifstream &fp, const string &save_file)
+static int get_pass_store_if(Pass_Store &p, ifstream &fp, const string &save_file)
 {
-    const string path = get_store_path(save_file, false);
+    const string path = get_store_path(save_file, false, p.using_custom_profile());
 
     if (path.empty()) {
         return -1;
@@ -101,9 +113,9 @@ static int get_pass_store_if(ifstream &fp, const string &save_file)
  * Return -1 if invalid path.
  * Return -2 if file cannot be opened.
  */
-static int get_pass_store_of(ofstream &fp, const string &save_file, bool temp)
+static int get_pass_store_of(Pass_Store &p, ofstream &fp, bool temp)
 {
-    const string path = get_store_path(save_file, temp);
+    const string path = get_store_path(p.get_save_file(), temp, p.using_custom_profile());
 
     if (path.empty()) {
         return -1;
@@ -187,7 +199,7 @@ int save_password_store(Pass_Store &p)
     }
 
     ofstream fp;
-    get_pass_store_of(fp, p.get_save_file(), true);
+    get_pass_store_of(p, fp, true);
 
     unsigned char salt[CRYPTO_SALT_SIZE];
     p.get_key_salt(salt);
@@ -206,8 +218,8 @@ int save_password_store(Pass_Store &p)
 
     fp.close();
 
-    string temp_path = get_store_path(p.get_save_file(), true);
-    string real_path = get_store_path(p.get_save_file(), false);
+    string temp_path = get_store_path(p.get_save_file(), true, p.using_custom_profile());
+    string real_path = get_store_path(p.get_save_file(), false, p.using_custom_profile());
 
     if (temp_path.empty() || real_path.empty()) {
         return -1;
@@ -294,7 +306,7 @@ int load_password_store(Pass_Store &p, const unsigned char *password, size_t len
 {
     ifstream fp;
 
-    if (get_pass_store_if(fp, p.get_save_file()) != 0) {
+    if (get_pass_store_if(p, fp, p.get_save_file()) != 0) {
         return -1;
     }
 
@@ -342,7 +354,7 @@ int load_password_store(Pass_Store &p, const unsigned char *password, size_t len
 
     crypto_memwipe(encryption_key, sizeof(encryption_key));
 
-    const string path = get_store_path(p.get_save_file(), false);
+    const string path = get_store_path(p.get_save_file(), false, p.using_custom_profile());
     const off_t file_length = file_size(path.c_str());
 
     if (file_length < PASS_STORE_HEADER_SIZE) {
@@ -369,10 +381,10 @@ int load_password_store(Pass_Store &p, const unsigned char *password, size_t len
     return num_entries;
 }
 
-int first_time_run(const string &save_file)
+int first_time_run(Pass_Store &p)
 {
     ifstream fp;
-    const int ret = get_pass_store_if(fp, save_file);
+    const int ret = get_pass_store_if(p, fp, p.get_save_file());
 
     if (ret != 0) {
         return ret;
@@ -384,7 +396,7 @@ int first_time_run(const string &save_file)
     return empty;
 }
 
-int init_pass_hash(const unsigned char *password, size_t length, const string &save_file)
+int init_pass_hash(Pass_Store &p, const unsigned char *password, size_t length)
 {
     unsigned char hash[CRYPTO_HASH_SIZE] = {0};
 
@@ -397,7 +409,7 @@ int init_pass_hash(const unsigned char *password, size_t length, const string &s
     crypto_gen_salt(salt);
 
     ofstream fp;
-    const int ret = get_pass_store_of(fp, save_file, false);
+    const int ret = get_pass_store_of(p, fp, false);
 
     if (ret != 0) {
         return ret;
@@ -469,17 +481,15 @@ int update_crypto(Pass_Store &p, const unsigned char *password, size_t length)
  * Return -1 if invalid path.
  * Return -2 if file cannot be opened.
  */
-static int get_export_of(ofstream &fp)
+static int get_export_of(const string &export_path, ofstream &fp)
 {
-    const string path = get_store_path(EXPORT_FILENAME, false);
-
-    if (path.empty()) {
-        cerr << "Error: Failed to find export path." << endl;
+    if (export_path.empty()) {
+        cerr << "Error: Export path is empty." << endl;
         return -1;
     }
 
     try {
-        fp.open(path);
+        fp.open(export_path);
         return 0;
     } catch (const exception &e) {
         cerr << "Caught exception in get_export_of(): " << e.what() << endl;
@@ -487,11 +497,11 @@ static int get_export_of(ofstream &fp)
     }
 }
 
-int export_pass_store_to_plaintext(Pass_Store &p)
+int export_pass_store_to_plaintext(Pass_Store &p, const string &export_path)
 {
     ofstream fp;
 
-    if (get_export_of(fp) != 0) {
+    if (get_export_of(export_path, fp) != 0) {
         return -1;
     }
 
@@ -510,7 +520,7 @@ bool delete_file_lock(Pass_Store &p)
         return true;
     }
 
-    const string lock_path = get_store_path(LOCK_FILENAME, false);
+    const string lock_path = get_lock_path();
 
     if (lock_path.empty()) {
         return false;
@@ -531,7 +541,7 @@ bool create_file_lock(Pass_Store &p)
         return true;
     }
 
-    const string lock_path = get_store_path(LOCK_FILENAME, false);
+    const string lock_path = get_lock_path();
 
     if (lock_path.empty()) {
         return false;
@@ -551,7 +561,7 @@ bool create_file_lock(Pass_Store &p)
 
 bool file_lock_exists(void)
 {
-    const string lock_path = get_store_path(LOCK_FILENAME, false);
+    const string lock_path = get_lock_path();
 
     if (lock_path.empty()) {
         return false;

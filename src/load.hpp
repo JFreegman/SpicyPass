@@ -37,16 +37,17 @@
 #define PASS_STORE_HEADER_SIZE (CRYPTO_HASH_SIZE + CRYPTO_SALT_SIZE + 1)
 
 #define DEFAULT_FILENAME ".spicypass"
-#define EXPORT_FILENAME  ".export_spicypass_plaintext"
 #define LOCK_FILENAME    ".~spicylock~"
+#define EXPORT_FILE_EXTENTION ".spicy_export"
 
 /*
  * Returns a string containing the file path for `filename`
  * in the home directory.
  *
- * Set `temp` to true for temp file path instead.
+ * If `custom_path` is true we don't use the home directory as the path base.
+ * If `temp` is true we append a tmp file extention to the file name.
  */
-const string get_store_path(const string &filename, bool temp);
+const string get_store_path(const string &filename, bool temp, bool custom_path);
 
 /*
  * Attempts to validate password, decrypt password store, and load it into `p`.
@@ -78,17 +79,17 @@ int save_password_store(Pass_Store &p);
  * Return -1 if invalid path.
  * Return -2 if file cannot be opened.
  */
-int first_time_run(const string &save_file);
+int first_time_run(Pass_Store &p);
 
 /*
  * Adds a header to the beginning of pass store file.
  *
- * This funciton should only be called when the pass store file is empty.
+ * This function should only be called when the pass store file is empty.
  *
  * Return 0 on success.
  * Return -1 on failure.
  */
-int init_pass_hash(const unsigned char *password, size_t length, const string &save_file);
+int init_pass_hash(Pass_Store &p, const unsigned char *password, size_t length);
 
 /*
  * Initializes `p` with a new encryption key derived from `password`, as well as a
@@ -104,12 +105,12 @@ int init_pass_hash(const unsigned char *password, size_t length, const string &s
 int update_crypto(Pass_Store &p, const unsigned char *password, size_t length);
 
 /*
- * Writes contents of pass store to a plaintext file.
+ * Writes contents of pass store to a plaintext file at `export_path`.
  *
  * Return 0 on success.
  * Return -1 on failure.
  */
-int export_pass_store_to_plaintext(Pass_Store &p);
+int export_pass_store_to_plaintext(Pass_Store &p, const string &export_path);
 
 /*
  * Returns a string containing export file path.
@@ -134,5 +135,8 @@ bool create_file_lock(Pass_Store &p);
  * Return true if the spicypass file lock exists.
  */
 bool file_lock_exists(void);
+
+/* Returns the file lock path. */
+const string get_lock_path(void);
 
 #endif // LOAD_H

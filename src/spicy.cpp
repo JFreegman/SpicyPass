@@ -48,7 +48,7 @@ static_assert(sizeof(NOTE_NEWLINE_ESCAPE_CHAR) == sizeof('\n'));
 Pass_Store::Pass_Store(void)
 {
     set_gui_status(true); // default to GUI
-    set_save_file(DEFAULT_FILENAME);
+    set_save_file(DEFAULT_FILENAME, false);
 
     memset(encryption_key, 0, sizeof(encryption_key));
     memset(key_salt, 0, sizeof(key_salt));
@@ -158,10 +158,10 @@ void Pass_Store::set_idle_timeout(int timeout)
 size_t Pass_Store::get_idle_timeout(void)
 {
     s_lock();
-    const size_t tmp = idle_timeout;
+    const size_t ret = idle_timeout;
     s_unlock();
 
-    return tmp;
+    return ret;
 }
 
 int Pass_Store::insert(const string &key, const string &value, const string &note)
@@ -586,20 +586,30 @@ bool Pass_Store::delete_entry(const string &key)
     return exists;
 }
 
-void Pass_Store::set_save_file(const string &path)
+void Pass_Store::set_save_file(const string &path, bool set_custom_path)
 {
     s_lock();
     save_file = path;
+    custom_profile_set = set_custom_path;
     s_unlock();
 }
 
 string Pass_Store::get_save_file(void)
 {
     s_lock();
-    const string tmp = save_file;
+    const string ret = save_file;
     s_unlock();
 
-    return tmp;
+    return ret;
+}
+
+bool Pass_Store::using_custom_profile(void)
+{
+    s_lock();
+    const bool ret = custom_profile_set;
+    s_unlock();
+
+    return ret;
 }
 
 void Pass_Store::set_read_only(bool read_only)
@@ -612,10 +622,10 @@ void Pass_Store::set_read_only(bool read_only)
 bool Pass_Store::get_read_only(void)
 {
     s_lock();
-    const bool tmp = read_only_mode;
+    const bool ret = read_only_mode;
     s_unlock();
 
-    return tmp;
+    return ret;
 }
 
 Pass_Store::~Pass_Store(void)
@@ -652,9 +662,9 @@ static void print_usage(const char *bin_name)
 {
     cout << "Usage: " << bin_name << " [OPTION] [ARG ...]" << endl;
     cout << "   -c, --cli          Use the command-line interface" << endl;
-    cout << "   -p, --profile      Use a non-default profile: Required [Profile Name]" << endl;
+    cout << "   -p, --profile      Use a non-default profile: Requires [file path]" << endl;
     cout << "   -r, --readonly     Enable read-only mode" << endl;
-    cout << "   -t, --idletimeout  Set idle lock timeout: Required [minutes]" << endl;
+    cout << "   -t, --idletimeout  Set idle lock timeout: Requires [minutes]" << endl;
     cout << "   -h, --help         Print this message and exit" << endl;
 }
 
@@ -691,9 +701,9 @@ static void parse_args(int argc, char **argv, Pass_Store &p)
                     exit(-1);
                 }
 
-                p.set_save_file(optarg);
-
-                cout << "Using profile: `" << optarg << "`" << endl;
+                p.set_save_file(optarg, true);
+                const string path = get_store_path(p.get_save_file(), false, true);
+                cout << "Using profile: `" << path << "`" << endl;
                 break;
             }
 
@@ -714,7 +724,7 @@ static void parse_args(int argc, char **argv, Pass_Store &p)
                 try {
                     timeout = stoi(optarg);
                 } catch (const exception &e) {
-                    cerr << "Invalid idle timeout value. Using default idle lock timeout." << endl;
+                    cerr << "Invalid timeout value. Using default. (error: " << e.what() << ")" << endl;
                     break;
                 }
 
@@ -751,7 +761,7 @@ int main(int argc, char **argv)
 
     if (file_lock_exists()) {
         if (!p.get_gui_status()) {
-            const string lock_path = get_store_path(LOCK_FILENAME, false);
+            const string lock_path = get_lock_path();
 
             cerr << "Another instance may be running or SpicyPass was not closed properly. Close all running "
                  "instances of SpicyPass and delete the file:" << "'" << lock_path << "'" << endl;

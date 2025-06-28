@@ -148,7 +148,7 @@ static int init_new_password(Pass_Store &p, unsigned char *password, size_t max_
 
     cout << "Generating new encryption key. This can take a while" << endl;
 
-    if (init_pass_hash(password, strlen((char *) password), p.get_save_file()) != 0) {
+    if (init_pass_hash(p, password, strlen((char *) password)) != 0) {
         cerr << "init_pass_hash() failed." << endl;
         return -1;
     }
@@ -583,7 +583,8 @@ static int export_entries(Pass_Store &p)
         return PASS_STORE_LOCKED;
     }
 
-    string export_path = get_store_path(EXPORT_FILENAME, false);
+    const string export_filename = p.get_save_file() + EXPORT_FILE_EXTENTION;
+    const string export_path = get_store_path(export_filename, false, p.using_custom_profile());
 
     if (export_path.size() == 0) {
         cerr << "Failed to export pass store." << endl;
@@ -614,7 +615,7 @@ static int export_entries(Pass_Store &p)
 
     cout << "Exported pass store entries to plaintext file: " << export_path << endl;
 
-    if (export_pass_store_to_plaintext(p) != 0) {
+    if (export_pass_store_to_plaintext(p, export_path) != 0) {
         cerr << "Failed to export pass store." << endl;
         return -1;
     }
@@ -708,7 +709,7 @@ int cli_new_pass_store(Pass_Store &p)
 {
     unsigned char password[MAX_STORE_PASSWORD_SIZE + 2];
 
-    if (first_time_run(p.get_save_file())) {
+    if (first_time_run(p)) {
         cout << "Creating a new profile. " << endl;
 
         if (init_new_password(p, password, sizeof(password) - 1) != 0) {

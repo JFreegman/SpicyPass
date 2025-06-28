@@ -251,14 +251,20 @@ public:
     int _export(ofstream &fp);
 
     /*
-     * Sets the save file path to `save_file`.
+     * Sets the save file path to `save_file`. `set_custom_path` should be true
+     * if we're using a user-specified path (i.e. non-default).
      */
-    void set_save_file(const string &save_file);
+    void set_save_file(const string &save_file, bool set_custom_path);
 
     /*
      * Returns the current save file path.
      */
     string get_save_file(void);
+
+    /*
+     * Return true if a custom save file has been set by the user.
+     */
+    bool using_custom_profile(void);
 
     /*
      * If read only mode is set to true we cannot write to file. This is set when
@@ -282,9 +288,11 @@ private:
     unsigned char password_hash[CRYPTO_HASH_SIZE];
 
     string save_file;
+    bool custom_profile_set = false;
 
-    /* This mutex is responsible for protecting all variables and data stored within the Pass_Store instance. */
+    // This mutex is responsible for protecting all variables and data stored within the Pass_Store instance.
     mutex store_m;
+
     bool gui_enabled = false;
     bool idle_lock = false;
     bool shutdown_signal = false;
