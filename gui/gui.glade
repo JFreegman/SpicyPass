@@ -256,14 +256,14 @@
     <property name="skip-taskbar-hint">True</property>
     <property name="transient-for">window</property>
     <property name="program-name">SpicyPass</property>
-    <property name="copyright" translatable="yes">Copyright © 2020-2024 Jfreegman</property>
+    <property name="copyright" translatable="yes">Copyright © 2020-2025 Jfreegman</property>
     <property name="comments" translatable="yes">SpicyPass is a light-weight password manager that utilizes state of the art cryptography and minimalist design principles for secure and simple password storage. </property>
     <property name="website">https://github.com/Jfreegman/SpicyPass</property>
     <property name="website-label" translatable="yes">Source Code</property>
     <property name="authors">Jfreegman &lt;Jfreegman@gmail.com&gt;</property>
     <property name="artists">smashicons at flaticon.com</property>
     <property name="logo-icon-name">help-about</property>
-    <property name="license-type">gpl-3-0</property>
+    <property name="license-type">gpl-3-0-only</property>
     <child internal-child="vbox">
       <object class="GtkBox">
         <property name="can-focus">False</property>
