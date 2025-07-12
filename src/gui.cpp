@@ -1676,6 +1676,14 @@ void GUI::run(Pass_Store &p)
     g_signal_connect(tray_icon, "activate", G_CALLBACK(on_tray_icon_left_click), cb_data);
     g_signal_connect(tray_icon, "button-press-event", G_CALLBACK(on_tray_icon_right_click), cb_data);
 
+    // Display warning on startup if lock exists
+    if (p.get_read_only()) {
+        char msg[256];
+        string err_msg = get_save_store_error_msg(p, -4);  // -4 is the error code for the read-only warning
+        snprintf(msg, sizeof(msg), "%s", err_msg.c_str());
+        dialog_box(cb_data->app, msg, GTK_MESSAGE_ERROR, cb_data->window);
+    }
+
     gtk_main();
 }
 
