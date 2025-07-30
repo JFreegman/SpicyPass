@@ -719,7 +719,8 @@ static void parse_args(int argc, char **argv, Pass_Store &p)
                 if (timeout == 0) {
                     cout << "Idle lock disabled" << endl;
                 } else {
-                    cout << "Idle lock timeout set to " << p.get_idle_timeout() << " minutes" << endl;
+                    const size_t timeout = p.get_idle_timeout() / 60;
+                    cout << "Idle lock timeout set to " << timeout << " minutes" << endl;
                 }
 
                 break;
