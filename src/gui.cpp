@@ -306,11 +306,6 @@ static void on_addEntryButtonOk(GtkButton *button, gpointer data)
         goto on_exit;
     }
 
-    if (strlen(noteText) > MAX_STORE_NOTE_SIZE) {
-        snprintf(msg, sizeof(msg), "Note is too long");
-        goto on_exit;
-    }
-
     if (keylen == 0) {
         snprintf(msg, sizeof(msg), "Entry cannot be empty");
         goto on_exit;
@@ -461,11 +456,6 @@ static void on_editEntryButtonOk(GtkButton *button, gpointer data)
 
     if (strlen(passText) > MAX_STORE_PASSWORD_SIZE) {  // byte size does not always match `get_text_length()` value
         snprintf(msg, sizeof(msg), "Password is too long");
-        goto on_exit;
-    }
-
-    if (strlen(noteText) > MAX_STORE_NOTE_SIZE) {
-        snprintf(msg, sizeof(msg), "Note is too long");
         goto on_exit;
     }
 

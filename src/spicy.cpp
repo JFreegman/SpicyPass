@@ -150,6 +150,47 @@ size_t Pass_Store::get_idle_timeout(void)
     return ret;
 }
 
+/*
+ * Inserts a note of size `note_length` into the pass struct.
+ *
+ * Returns true on success.
+ */
+static bool insert_note(struct Password *pass, const char *note, size_t note_length)
+{
+    if (note == NULL || note_length == 0) {
+        return true;
+    }
+
+    pass->note = (char *) malloc(note_length + 1);
+
+    if (pass->note == NULL) {
+        return false;
+    }
+
+    memcpy(pass->note, note, note_length);
+    pass->note[note_length] = '\0';
+    pass->note_size = note_length + 1;
+
+    if (crypto_memlock((unsigned char *) pass->note, pass->note_size) != 0) {
+        cerr << "Insert_note failed: cryto_memlock failed." << endl;
+        return false;
+    }
+
+    return true;
+}
+
+static void free_pass(struct Password *pass)
+{
+    crypto_memunlock((unsigned char *) pass->password, sizeof(pass->password));
+
+    if (pass->note_size > 0) {
+        crypto_memunlock((unsigned char *) pass->note, pass->note_size);
+        free(pass->note);
+    }
+
+    free(pass);
+}
+
 int Pass_Store::insert(const string &key, const string &value, const string &note)
 {
     if (check_lock()) {
@@ -166,14 +207,8 @@ int Pass_Store::insert(const string &key, const string &value, const string &not
     const size_t note_length = note.size();
 
     if (pass_length >= sizeof(pass->password)) {
-        free(pass);
+        free_pass(pass);
         cerr << "Insert failed: Pass length exceeds buffer size" << endl;
-        return -1;
-    }
-
-    if (note_length >= sizeof(pass->note)) {
-        free(pass);
-        cerr << "Insert failed: note length exceeds buffer size" << endl;
         return -1;
     }
 
@@ -182,19 +217,14 @@ int Pass_Store::insert(const string &key, const string &value, const string &not
         pass->password[pass_length] = '\0';
     }
 
-    if (note_length > 0) {
-        memcpy(pass->note, note.c_str(), note_length);
-        pass->note[note_length] = '\0';
-    }
-
-    if (crypto_memlock((unsigned char *) pass->password, sizeof(pass->password)) != 0) {
-        free(pass);
-        cerr << "Insert failed: cryto_memlock failed." << endl;
+    if (!insert_note(pass, note.c_str(), note_length)) {
+        free_pass(pass);
+        cerr << "insert_note failed." << endl;
         return -1;
     }
 
-    if (crypto_memlock((unsigned char *) pass->note, sizeof(pass->note)) != 0) {
-        free(pass);
+    if (crypto_memlock((unsigned char *) pass->password, sizeof(pass->password)) != 0) {
+        free_pass(pass);
         cerr << "Insert failed: cryto_memlock failed." << endl;
         return -1;
     }
@@ -207,7 +237,7 @@ int Pass_Store::insert(const string &key, const string &value, const string &not
     try {
         store.insert({key, pass});
     } catch (const exception &e) {
-        free(pass);
+        free_pass(pass);
         s_unlock();
         cerr << "Caught exception in insert(): " << e.what() << endl;
         return -1;
@@ -562,7 +592,8 @@ bool Pass_Store::delete_entry(const string &key)
 
     if (exists) {
         crypto_memunlock((unsigned char *) store.at(key)->password, sizeof(store.at(key)->password));
-        crypto_memunlock((unsigned char *) store.at(key)->note, sizeof(store.at(key)->note));
+        crypto_memunlock((unsigned char *) store.at(key)->note, store.at(key)->note_size);
+        free(store.at(key)->note);
         free(store.at(key));
         store.erase(key);
     }

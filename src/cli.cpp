@@ -273,11 +273,6 @@ static int add(Pass_Store &p)
     cout << "Enter note (optional): ";
     getline(cin, note);
 
-    if (note.length() > MAX_STORE_NOTE_SIZE) {
-        cout << "Note must not exceed " << to_string(MAX_STORE_NOTE_SIZE) << " characters" << endl;
-        return -1;
-    }
-
     const int exists = p.key_exists(key);
 
     if (exists == PASS_STORE_LOCKED) {

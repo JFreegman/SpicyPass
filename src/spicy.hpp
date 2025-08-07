@@ -33,9 +33,6 @@ using namespace std;
 /* The minimum number of characters for a master password */
 #define MIN_MASTER_PASSWORD_SIZE  (8)
 
-/* The maximum number of characters for a pass store entry note */
-#define MAX_STORE_NOTE_SIZE   (5000)
-
 /* Return code indicating that `idle_lock` is set to true */
 #define PASS_STORE_LOCKED (INT_MIN)
 
@@ -63,7 +60,8 @@ enum {
  */
 struct Password {
     char password[MAX_STORE_PASSWORD_SIZE + 1];
-    char note[MAX_STORE_NOTE_SIZE + 1];
+    char *note;
+    size_t note_size; // includes null byte
 };
 
 
