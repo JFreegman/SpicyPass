@@ -172,6 +172,9 @@ static bool insert_note(struct Password *pass, const char *note, size_t note_len
     pass->note_size = note_length + 1;
 
     if (crypto_memlock((unsigned char *) pass->note, pass->note_size) != 0) {
+        free(pass->note);
+        pass->note = NULL;
+        pass->note_size = 0;
         cerr << "Insert_note failed: cryto_memlock failed." << endl;
         return false;
     }
@@ -182,12 +185,8 @@ static bool insert_note(struct Password *pass, const char *note, size_t note_len
 static void free_pass(struct Password *pass)
 {
     crypto_memunlock((unsigned char *) pass->password, sizeof(pass->password));
-
-    if (pass->note_size > 0) {
-        crypto_memunlock((unsigned char *) pass->note, pass->note_size);
-        free(pass->note);
-    }
-
+    crypto_memunlock((unsigned char *) pass->note, pass->note_size);
+    free(pass->note);
     free(pass);
 }
 
@@ -494,7 +493,7 @@ void Pass_Store::clear(void)
 
     for (const auto &[key, value] : store) {
         crypto_memunlock((unsigned char *) value->password, sizeof(value->password));
-        crypto_memunlock((unsigned char *) value->note, sizeof(value->note));
+        crypto_memunlock((unsigned char *) value->note, value->note_size);
         free(store.at(key));
     }
 
@@ -505,7 +504,11 @@ void Pass_Store::clear(void)
 
 string Pass_Store::format_entry(const string &key, const char *value, const char *note)
 {
-    return key + DELIMITER + value + DELIMITER + note + '\n';
+    if (note != NULL) {
+        return key + DELIMITER + value + DELIMITER + note + '\n';
+    } else {
+        return key + DELIMITER + value + DELIMITER + '\n';
+    }
 }
 
 size_t Pass_Store::size(void)
@@ -531,7 +534,8 @@ size_t Pass_Store::copy(char *buf)
     s_lock();
 
     for (const auto &[key, value] : store) {
-        string escaped_note = value->note;
+        string escaped_note = value->note != NULL ? value->note : "";
+
         std::replace(escaped_note.begin(), escaped_note.end(), '\n', NOTE_NEWLINE_ESCAPE_CHAR);
         std::replace(escaped_note.begin(), escaped_note.end(), '\r', NOTE_NEWLINE_ESCAPE_CHAR);
 

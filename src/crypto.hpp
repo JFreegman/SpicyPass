@@ -49,11 +49,14 @@ uint32_t crypto_random_number(const uint32_t upper_limit);
 
 /*
  * Securely zeros `length` bytes from memory pointed to by `buf`.
+ *
+ * If `length` is zero this function has no effect.
  */
 void crypto_memwipe(const unsigned char *buf, size_t length);
 
 /*
- * Locks `length` bytes in memory pointed to by `buf`.
+ * Locks `length` bytes in memory pointed to by `buf`. If `length` is 0
+ * this function has no effect.
  *
  * Return 0 on success.
  * Return -1 on failure.
@@ -64,6 +67,8 @@ int crypto_memlock(const unsigned char *buf, size_t length);
  * Unlocks `length` bytes in memory pointed to by `buf`.
  *
  * This function also securely wipes the memory block.
+ *
+ * If `length` is zero this function has no effect.
  *
  * Return 0 on success.
  * Return -1 on failure.
