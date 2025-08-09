@@ -258,6 +258,25 @@ static gboolean on_key_escape_ignore(GtkWidget *widget, GdkEventKey *event, gpoi
     return FALSE;
 }
 
+/*
+ * Resets idle timer whenever a key is pressed.
+ */
+static gboolean on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer data)
+{
+    UNUSED_VAR(widget);
+    UNUSED_VAR(event);
+
+    if (!data) {
+        return FALSE;
+    }
+
+    struct Callback_Data *cb_data = (struct Callback_Data *) data;
+    Pass_Store *p = cb_data->p;
+    p->check_lock();
+
+    return FALSE;
+}
+
 static void on_key_enter(GtkEntry *entry, gpointer data)
 {
     UNUSED_VAR(entry);
@@ -401,6 +420,8 @@ static void on_buttonAdd_clicked(GtkButton *button, gpointer data)
     g_signal_connect(loginEntry, "activate", G_CALLBACK(on_key_enter), okButton);
 
     g_signal_connect(passEntry, "activate", G_CALLBACK(on_key_enter), okButton);
+
+    g_signal_connect(window, "key-press-event", G_CALLBACK(on_key_press), cb_data);
 
     string password = random_password(16U);
 
@@ -576,6 +597,7 @@ static void on_buttonEdit_clicked(GtkButton *button, gpointer data)
     g_signal_connect(cancelButton, "clicked", G_CALLBACK(on_buttonCancel_clicked), cb_data);
     g_signal_connect(passEntry, "activate", G_CALLBACK(on_key_enter), okButton);
     g_signal_connect(loginEntry, "activate", G_CALLBACK(on_key_enter), okButton);
+    g_signal_connect(window, "key-press-event", G_CALLBACK(on_key_press), cb_data);
 
     GtkTreeModel *model = GTK_TREE_MODEL(ls->store);
     GtkTreeSelection *selection = gtk_tree_view_get_selection(ls->view);
