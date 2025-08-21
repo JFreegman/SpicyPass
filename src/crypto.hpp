@@ -52,7 +52,7 @@ uint32_t crypto_random_number(const uint32_t upper_limit);
  *
  * If `length` is zero this function has no effect.
  */
-void crypto_memwipe(const unsigned char *buf, size_t length);
+void crypto_memwipe(unsigned char *buf, size_t length);
 
 /*
  * Locks `length` bytes in memory pointed to by `buf`. If `length` is 0
@@ -83,7 +83,7 @@ int crypto_memunlock(const unsigned char *buf, size_t length);
  * Return 0 on success.
  * Return -1 on failure.
  */
-int crypto_make_pass_hash(const unsigned char *hash, const unsigned char *password, size_t length);
+int crypto_make_pass_hash(unsigned char *hash, const unsigned char *password, size_t length);
 
 /*
  * Returns true if password matches hash.
@@ -103,7 +103,7 @@ bool crypto_verify_pass_hash(const unsigned char *hash, const unsigned char *pas
  * Return 0 on success.
  * Return -1 on failure.
  */
-int crypto_derive_key_from_pass(const unsigned char *key, size_t keylen, const unsigned char *password,
+int crypto_derive_key_from_pass(unsigned char *key, size_t keylen, const unsigned char *password,
                                 size_t pwlen, const unsigned char *salt, Hash_Parameters *params);
 
 /*

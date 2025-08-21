@@ -25,7 +25,7 @@ int crypto_init(void)
     return 0;
 }
 
-int crypto_make_pass_hash(const unsigned char *hash, const unsigned char *password, size_t length)
+int crypto_make_pass_hash(unsigned char *hash, const unsigned char *password, size_t length)
 {
     assert(length <= crypto_pwhash_PASSWD_MAX);
 
@@ -37,7 +37,7 @@ int crypto_make_pass_hash(const unsigned char *hash, const unsigned char *passwo
     return 0;
 }
 
-void crypto_memwipe(const unsigned char *buf, size_t length)
+void crypto_memwipe(unsigned char *buf, size_t length)
 {
     sodium_memzero((void *) buf, length);
 }
@@ -75,7 +75,7 @@ uint32_t crypto_random_number(const uint32_t upper_limit)
     return randombytes_uniform(upper_limit);
 }
 
-int crypto_derive_key_from_pass(const unsigned char *key, size_t keylen, const unsigned char *password,
+int crypto_derive_key_from_pass(unsigned char *key, size_t keylen, const unsigned char *password,
                                 size_t pwlen, const unsigned char *salt, Hash_Parameters *params)
 {
     assert(pwlen <= crypto_pwhash_PASSWD_MAX);
@@ -83,7 +83,7 @@ int crypto_derive_key_from_pass(const unsigned char *key, size_t keylen, const u
     assert(params->ops_limit >= crypto_pwhash_OPSLIMIT_MIN && params->ops_limit <= crypto_pwhash_OPSLIMIT_MAX);
     assert(params->memory_limit >= crypto_pwhash_MEMLIMIT_MIN && params->memory_limit <= crypto_pwhash_MEMLIMIT_MAX);
 
-    if (crypto_pwhash((unsigned char *) key, keylen, (const char *) password, pwlen, salt,
+    if (crypto_pwhash(key, keylen, (const char *) password, pwlen, salt,
                       params->ops_limit, params->memory_limit, params->algorithm) != 0) {
         return -1;
     }
