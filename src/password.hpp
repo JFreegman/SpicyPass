@@ -16,16 +16,26 @@
 #define NUM_RAND_PASS_MIN_CHARS (10)
 
 /*
- * Returns a cryptographically secure randomly generated password.
+ * Returns a cryptographically secure randomly generated password on success.
  *
  * `size` must be greater than or equal to the number of guaranteed characters (4)
- * and less than or equal to the total number of ASCII printable characters.
+ * and less than or equal to the total number of ASCII printable characters. If `size`
+ * is invalid, a vector containing a single null byte is returned.
  *
  * Password is guaranteed to meet minimum requirements as follows:
  * - At least one lower-case and upper-case letter
  * - At least one digit
  * - At least one symbol
+ *
+ * Use `password_invalid()` to ensure that the returned password is valid.
  */
-std::string random_password(unsigned int size);
+std::vector<char> random_password(unsigned int size);
+
+/*
+ * Returns true if `pass` is either empty, or contains a null byte at index 0.
+ *
+ * This function should be called to ensure that `random_password` succeeded.
+ */
+bool password_invalid(const std::vector<char> &pass);
 
 #endif // PASSWORD_H

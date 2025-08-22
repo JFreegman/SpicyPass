@@ -273,7 +273,15 @@ static int add(Pass_Store &p)
     }
 
     if (password.empty()) {
-        password = random_password(16U);
+        vector<char> rand_pass = random_password(16U);
+
+        if (password_invalid(rand_pass)) {
+            cout << "Failed to generate random password" << endl;
+            return -1;
+        }
+
+        password = string(rand_pass.begin(), rand_pass.end());
+        crypto_memwipe((unsigned char *) rand_pass.data(), rand_pass.size());
 
         if (password.empty()) {
             cout << "Failed to generate random password" << endl;
@@ -482,14 +490,18 @@ static int generate(Pass_Store &p)
                  NUM_RAND_PASS_MAX_CHARS) << " characters in length" << endl;
     }
 
-    string pass = random_password(size);
+    vector<char> pass = random_password(size);
 
-    if (pass.empty()) {
+    if (password_invalid(pass)) {
         cout << "Failed to generate password" << endl;
         return -1;
     }
 
-    cout << pass << endl;
+    const char *pass_str = pass.data();
+
+    cout << pass_str << endl;
+
+    crypto_memwipe((unsigned char *) pass.data(), pass.size());
 
     return 0;
 }

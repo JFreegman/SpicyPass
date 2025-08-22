@@ -423,10 +423,12 @@ static void on_buttonAdd_clicked(GtkButton *button, gpointer data)
 
     g_signal_connect(window, "key-press-event", G_CALLBACK(on_key_press), cb_data);
 
-    string password = random_password(16U);
+    vector<char> password = random_password(16U);
 
-    if (!password.empty()) {
-        gtk_entry_set_text(passEntry, password.c_str());
+    if (!password_invalid(password)) {
+        const char *pass_str = password.data();
+        gtk_entry_set_text(passEntry, pass_str);
+        crypto_memwipe((unsigned char *) password.data(), password.size());
     }
 
     if (p->check_lock()) {
@@ -1124,7 +1126,9 @@ static void on_menuPassGenGenerate_clicked(GtkButton *button, gpointer data)
     char msg[128];
     snprintf(msg, sizeof(msg), "Length must be a value between %d and %d", NUM_RAND_PASS_MIN_CHARS,
              NUM_RAND_PASS_MAX_CHARS);
-    string password;
+
+    vector<char> password;
+    const char *pass_str = NULL;
 
     if (text_length > RAND_PASS_ENTRY_MAX_LENGTH || text_length < 1) {
         goto on_exit;
@@ -1142,11 +1146,15 @@ static void on_menuPassGenGenerate_clicked(GtkButton *button, gpointer data)
 
     password = random_password(length);
 
-    if (password.empty()) {
+    if (password_invalid(password)) {
         goto on_exit;
     }
 
-    gtk_entry_set_text(entry2, password.c_str());
+    pass_str = password.data();
+
+    gtk_entry_set_text(entry2, pass_str);
+
+    crypto_memwipe((unsigned char *) password.data(), password.size());
 
     has_err = false;
 

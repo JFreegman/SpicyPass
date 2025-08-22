@@ -124,7 +124,16 @@ static void shuffle_vec(vector<char> &vec)
     }
 }
 
-string random_password(unsigned int size)
+bool password_invalid(const vector<char> &pass)
+{
+    if (pass.size() == 0) {
+        return true;
+    }
+
+    return pass[0] == '\0';
+}
+
+vector<char> random_password(unsigned int size)
 {
     vector<char> result;
     vector<char> char_vec = string_to_vec(string(PRINTABLE_CHARS));
@@ -132,7 +141,8 @@ string random_password(unsigned int size)
 
     if (size < NUM_RAND_PASS_MIN_CHARS || size > NUM_RAND_PASS_MAX_CHARS) {
         cerr << "random_password() error: invalid size value" << endl;
-        return "";
+        result.push_back('\0');
+        return result;
     }
 
     bool have_lower = false;
@@ -157,5 +167,7 @@ string random_password(unsigned int size)
 
     shuffle_vec(result);
 
-    return vec_to_string(result);
+    result.push_back('\0');
+
+    return result;
 }
