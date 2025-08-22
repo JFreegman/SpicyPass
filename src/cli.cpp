@@ -438,7 +438,12 @@ static int fetch(Pass_Store &p)
     for (const auto &item : result) {
         cout << "Key: " << get<0>(item) << endl;
         cout << "Pass: " << get<1>(item) << endl;
-        cout << "Note: " << get<2>(item) << "\n" << endl;
+
+        const char *note = get<2>(item);
+
+        if (note != NULL) {
+            cout << "Note: " << note << "\n" << endl;
+        }
     }
 
     p.s_unlock();
