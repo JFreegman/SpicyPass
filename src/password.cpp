@@ -112,13 +112,15 @@ static bool good_char(const char c, bool *have_lower, bool *have_upper,
  */
 static void shuffle_vec(vector<char> &vec)
 {
-    auto vec_size = vec.size();
+    const size_t vec_size = vec.size();
 
-    for (size_t i = 0; i < vec_size; ++i) {
-        const auto index = crypto_random_number(vec_size);
-        const auto a = vec.at(i);
-        vec.at(i) = vec.at(index);
-        vec.at(index) = a;
+    if (vec_size == 0) {
+        return;
+    }
+
+    for (size_t i = vec_size - 1; i > 0; --i) {
+        const auto index = crypto_random_number(i + 1);
+        swap(vec[i], vec[index]);
     }
 }
 
