@@ -594,12 +594,12 @@ static int export_entries(Pass_Store &p)
         return -1;
     }
 
-    cout << "Exported pass store entries to plaintext file: " << export_path << endl;
-
     if (export_pass_store_to_plaintext(p, export_path) != 0) {
         cerr << "Failed to export pass store." << endl;
         return -1;
     }
+
+    cout << "Exported pass store entries to plaintext file: " << export_path << endl;
 
     return 0;
 }
@@ -655,7 +655,7 @@ static int execute(const int option, Pass_Store &p)
         }
 
         case OPT_EXPORT: {
-            export_entries(p);
+            ret = export_entries(p);
             break;
         }
 

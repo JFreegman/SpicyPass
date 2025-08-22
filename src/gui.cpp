@@ -8,8 +8,6 @@
 
 #ifdef GUI_SUPPORT
 
-#include <cassert>
-
 #include "spicy.hpp"
 #include "gui.hpp"
 #include "load.hpp"
@@ -971,13 +969,15 @@ static void on_changePassButtonOk_clicked(GtkButton *button, gpointer data)
     gint old_pass_len = gtk_entry_get_text_length(entry1);
     gint new_pass1_len = gtk_entry_get_text_length(entry2);
 
-#ifdef debug
-    assert(old_pass_len <= MAX_STORE_PASSWORD_SIZE && new_pass1_len <= MAX_STORE_PASSWORD_SIZE);
-#endif
-
     bool has_err = true;
     int ret;
     char msg[128];
+
+    if (old_pass_len > MAX_STORE_PASSWORD_SIZE || new_pass1_len > MAX_STORE_PASSWORD_SIZE) {
+        snprintf(msg, sizeof(msg), "Password is too long.");
+        goto on_exit;
+    }
+
     snprintf(msg, sizeof(msg), "Successfully updated password");
 
     unsigned char old_pass_buf[MAX_STORE_PASSWORD_SIZE + 2];
@@ -1010,6 +1010,7 @@ static void on_changePassButtonOk_clicked(GtkButton *button, gpointer data)
     ret = update_crypto(*p, new_pass_buf, new_pass1_len);
 
     crypto_memwipe(new_pass_buf, sizeof(new_pass_buf));
+    crypto_memwipe(old_pass_buf, sizeof(old_pass_buf));
 
     if (ret == PASS_STORE_LOCKED) {
         if (password_prompt(cb_data) != 0) {
@@ -1256,13 +1257,16 @@ static void on_pwButtonEnter_clicked(GtkButton *button, gpointer data)
 
     gint length = gtk_entry_get_text_length(entry);
 
-    assert(length <= MAX_STORE_PASSWORD_SIZE);
-
     char msg[128];
 
     bool has_err = true;
 
-    int ret;
+    int ret = -2;
+
+    if (length > MAX_STORE_PASSWORD_SIZE) {
+        snprintf(msg, sizeof(msg), "Password is too long.");
+        goto on_exit;
+    }
 
     unsigned char password[MAX_STORE_PASSWORD_SIZE + 2];
 
@@ -1333,6 +1337,12 @@ static void on_newPwButtonEnter_clicked(GtkEntry *button, gpointer data)
         return;
     }
 
+    bool has_err = true;
+
+    char msg[1024];
+
+    int ret;
+
     struct Callback_Data *cb_data = (struct Callback_Data *) data;
 
     Pass_Store *p = cb_data->p;
@@ -1349,23 +1359,16 @@ static void on_newPwButtonEnter_clicked(GtkEntry *button, gpointer data)
 
     gint text1_len = gtk_entry_get_text_length(entry1);
 
-#ifdef DEBUG
-
     gint text2_len = gtk_entry_get_text_length(entry2);
-
-    assert(text1_len <= MAX_STORE_PASSWORD_SIZE && text2_len <= MAX_STORE_PASSWORD_SIZE);
-
-#endif
-
-    unsigned char passBuff[MAX_STORE_PASSWORD_SIZE + 2];
 
     size_t passLen = text1_len;
 
-    bool has_err = true;
+    if (text1_len > MAX_STORE_PASSWORD_SIZE || text2_len > MAX_STORE_PASSWORD_SIZE) {
+        snprintf(msg, sizeof(msg), "Password is too long.");
+        goto on_exit;
+    }
 
-    int ret;
-
-    char msg[1024];
+    unsigned char passBuff[MAX_STORE_PASSWORD_SIZE + 2];
 
     if (text1_len < MIN_MASTER_PASSWORD_SIZE) {
         snprintf(msg, sizeof(msg), "Password must be at least %d characters long", MIN_MASTER_PASSWORD_SIZE);

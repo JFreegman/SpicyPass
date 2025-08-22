@@ -61,7 +61,7 @@ void crypto_memwipe(unsigned char *buf, size_t length);
  * Return 0 on success.
  * Return -1 on failure.
  */
-int crypto_memlock(const unsigned char *buf, size_t length);
+int crypto_memlock(unsigned char *buf, size_t length);
 
 /*
  * Unlocks `length` bytes in memory pointed to by `buf`.
@@ -73,7 +73,7 @@ int crypto_memlock(const unsigned char *buf, size_t length);
  * Return 0 on success.
  * Return -1 on failure.
  */
-int crypto_memunlock(const unsigned char *buf, size_t length);
+int crypto_memunlock(unsigned char *buf, size_t length);
 
 /*
  * Creates a hash of `password` and puts it in `hash`.

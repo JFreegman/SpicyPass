@@ -42,7 +42,7 @@ void crypto_memwipe(unsigned char *buf, size_t length)
     sodium_memzero((void *) buf, length);
 }
 
-int crypto_memlock(const unsigned char *buf, size_t length)
+int crypto_memlock(unsigned char *buf, size_t length)
 {
     if (sodium_mlock((void *) buf, length) != 0) {
         return -1;
@@ -51,7 +51,7 @@ int crypto_memlock(const unsigned char *buf, size_t length)
     return 0;
 }
 
-int crypto_memunlock(const unsigned char *buf, size_t length)
+int crypto_memunlock(unsigned char *buf, size_t length)
 {
     if (sodium_munlock((void *) buf, length) != 0) {  // this will wipe the memory even if it fails
         return -1;

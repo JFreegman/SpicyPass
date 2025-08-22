@@ -175,7 +175,7 @@ static bool insert_note(struct Password *pass, const char *note, size_t note_len
         free(pass->note);
         pass->note = NULL;
         pass->note_size = 0;
-        cerr << "Insert_note failed: cryto_memlock failed." << endl;
+        cerr << "Insert_note failed: crypto_memlock failed." << endl;
         return false;
     }
 
