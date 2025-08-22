@@ -39,12 +39,14 @@ static int prompt_password(unsigned char *password, size_t max_length)
 
     if (input == NULL) {
         cout << "Invalid input." << endl;
+        crypto_memwipe((unsigned char *) pass_buf, sizeof(pass_buf));
         return -1;
     }
 
     const size_t pass_length = strlen(pass_buf);
 
     if (pass_length > max_length) {
+        crypto_memwipe((unsigned char *) pass_buf, sizeof(pass_buf));
         return -1;
     }
 
@@ -69,11 +71,13 @@ static int new_password_prompt(Pass_Store &p, unsigned char *password, size_t ma
         cout << endl;
 
         if (p.check_lock()) {
+            crypto_memwipe((unsigned char *) pass1, sizeof(pass1));
             return PASS_STORE_LOCKED;
         }
 
         if (input1 == NULL) {
             cout << "Invalid input" << endl;
+            crypto_memwipe((unsigned char *) pass1, sizeof(pass1));
             continue;
         }
 
@@ -91,16 +95,22 @@ static int new_password_prompt(Pass_Store &p, unsigned char *password, size_t ma
         cout << endl;
 
         if (p.check_lock()) {
+            crypto_memwipe((unsigned char *) pass1, sizeof(pass1));
+            crypto_memwipe((unsigned char *) pass2, sizeof(pass2));
             return PASS_STORE_LOCKED;
         }
 
         if (input2 == NULL) {
             cout << "Invalid input" << endl;
+            crypto_memwipe((unsigned char *) pass1, sizeof(pass1));
+            crypto_memwipe((unsigned char *) pass2, sizeof(pass2));
             continue;
         }
 
         if (strcmp(pass1, pass2) != 0) {
             cout << "New passwords don't match" << endl;
+            crypto_memwipe((unsigned char *) pass1, sizeof(pass1));
+            crypto_memwipe((unsigned char *) pass2, sizeof(pass2));
             continue;
         }
 
@@ -163,15 +173,18 @@ static int change_password_prompt(Pass_Store &p)
         cout << endl;
 
         if (p.check_lock()) {
+            crypto_memwipe((unsigned char *) old_pass, sizeof(old_pass));
             return PASS_STORE_LOCKED;
         }
 
         if (input1 == NULL) {
             cout << "Invalid input" << endl;
+            crypto_memwipe((unsigned char *) old_pass, sizeof(old_pass));
             continue;
         }
 
         if (strcmp(old_pass, "q\n") == 0) {
+            crypto_memwipe((unsigned char *) old_pass, sizeof(old_pass));
             return -1;
         }
 
@@ -181,6 +194,7 @@ static int change_password_prompt(Pass_Store &p)
 
         if (!p.validate_password((unsigned char *) old_pass, pass_length)) {
             cout << "Invalid password" << endl;
+            crypto_memwipe((unsigned char *) old_pass, sizeof(old_pass));
             continue;
         }
 
@@ -490,6 +504,7 @@ static bool unlock_prompt(Pass_Store &p)
 
     if (input == NULL) {
         cout << "Invalid input" << endl;
+        crypto_memwipe(pass, sizeof(pass));
         return false;
     }
 

@@ -269,7 +269,9 @@ static gboolean on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer dat
     }
 
     struct Callback_Data *cb_data = (struct Callback_Data *) data;
+
     Pass_Store *p = cb_data->p;
+
     p->check_lock();
 
     return FALSE;
@@ -999,6 +1001,7 @@ static void on_changePassButtonOk_clicked(GtkButton *button, gpointer data)
 
     if (!p->validate_password(old_pass_buf, old_pass_len)) {
         snprintf(msg, sizeof(msg), "Invalid password");
+        crypto_memwipe(old_pass_buf, sizeof(old_pass_buf));
         goto on_exit;
     }
 
@@ -1362,13 +1365,12 @@ static void on_newPwButtonEnter_clicked(GtkEntry *button, gpointer data)
     gint text2_len = gtk_entry_get_text_length(entry2);
 
     size_t passLen = text1_len;
+    unsigned char passBuff[MAX_STORE_PASSWORD_SIZE + 2];
 
     if (text1_len > MAX_STORE_PASSWORD_SIZE || text2_len > MAX_STORE_PASSWORD_SIZE) {
         snprintf(msg, sizeof(msg), "Password is too long.");
         goto on_exit;
     }
-
-    unsigned char passBuff[MAX_STORE_PASSWORD_SIZE + 2];
 
     if (text1_len < MIN_MASTER_PASSWORD_SIZE) {
         snprintf(msg, sizeof(msg), "Password must be at least %d characters long", MIN_MASTER_PASSWORD_SIZE);
@@ -1397,14 +1399,15 @@ static void on_newPwButtonEnter_clicked(GtkEntry *button, gpointer data)
     }
 
     has_err = false;
+    crypto_memwipe(passBuff, sizeof(passBuff));
 
 on_exit:
 
     if (!has_err) {
         gtk_widget_destroy(window);
-        crypto_memwipe(passBuff, sizeof(passBuff));
         free(cb_data);
     } else {
+        crypto_memwipe(passBuff, sizeof(passBuff));
         dialog_box(cb_data->app, msg, GTK_MESSAGE_ERROR, window);
     }
 }
