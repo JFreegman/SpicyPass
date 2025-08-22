@@ -30,7 +30,13 @@ const string get_store_path(const string &filename, bool temp, bool custom_path)
 
     if (!custom_path) {
 #if defined(_WIN32)
-        const string homedir = getenv("HOMEPATH");
+        const char *s = getenv("HOMEPATH");
+        string homedir = "";
+
+        if (s != NULL) {
+            homedir = string(s);
+        }
+
         path = homedir + "\\" + filename;
 #else
         char buf[1024];
@@ -185,7 +191,10 @@ int save_password_store(Pass_Store &p)
     }
 
     ofstream fp;
-    get_pass_store_of(p, fp, true);
+
+    if (get_pass_store_of(p, fp, true) != 0) {
+        return -1;
+    }
 
     unsigned char salt[CRYPTO_SALT_SIZE];
     p.get_key_salt(salt);

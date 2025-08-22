@@ -52,7 +52,7 @@ int load_password_store(Pass_Store &p, const unsigned char *password, size_t len
  * This function is atomic: changes will only be made to the pass store file upon success.
  *
  * Return 0 on success.
- * Return -1 if path is invalid.
+ * Return -1 if pass store path could not be opened.
  * Return -2 if file encryption fails.
  * Return -3 if file save operation fails.
  * Return -4 if read only mode is enabled.
