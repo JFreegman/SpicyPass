@@ -58,5 +58,11 @@ All sensitive data, including passwords, private keys, and notes are only held i
 ### The Pass Store File
 All program data is stored in a single file named `.spicypass` (unless otherwise specificed using the `profile` run option). On Unix-like systems this file is located in the `$HOME` directory. On Windows it's located in `$HOMEPATH`. A plaintext header comprised of the hash of the master password and its associated salt is placed at the beginning of the file. This header does not need to be kept secret. However, if it is lost or corrupted (or if you forget the master password) all of your passwords will be lost in time, like tears in the rain. **IT IS CRITICALLY IMPORTANT TO BACK THIS FILE UP REGULARLY.**
 
+## Exporting Entries to Plaintext
+You can export the contents of your pass store to a serialized plaintext (unencrypted) file via the command line interface. Open your terminal emulator, run `spicypass --cli`, and select the option `7`. You will be prompted to enter your password again, after which all pass store entries (including passwords) will be dumped into a file named `${your_store_file_name}_plaintext_export`. (TODO: Import functionality)
+
+### File Format
+Each entry in the plaintext file contains three colon-separated fields: The key, the password, and the note. Preceding each field is the number of characters that it contains. For example, if an entry contains: `key:cat, password:dadada, note:this is a great password!`, the corresponding line will look like: `3cat:6dadada:25this is a great password!`
+
 ## Known Bugs
 On Windows systems spicypass has only been tested with `cmd.exe`. Other terminal emulators may be buggy or not work at all.

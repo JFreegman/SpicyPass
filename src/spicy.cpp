@@ -479,7 +479,10 @@ int Pass_Store::_export(ofstream &fp)
     }
 
     for (const auto &[key, value] : store) {
-        fp << key << endl << value->password << endl << value->note << endl << endl;
+        write_field(fp, key);
+        write_field(fp, value->password[0] ? value->password : "");
+        write_field(fp, value->note_size ? value->note : "");
+        fp << endl;
     }
 
     return 0;

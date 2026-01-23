@@ -162,3 +162,8 @@ bool string_printable(const std::string &s)
 
     return true;
 }
+
+void write_field(std::ofstream &fp, const std::string &s)
+{
+    fp << s.size() << ":" << s;
+}

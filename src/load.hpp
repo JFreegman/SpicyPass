@@ -24,7 +24,7 @@
 
 #define DEFAULT_FILENAME ".spicypass"
 #define LOCK_FILENAME    ".~spicylock~"
-#define EXPORT_FILE_EXTENTION ".spicy_export"
+#define EXPORT_FILE_EXTENTION "_plaintext_export"
 
 /*
  * Returns a string containing the file path for `filename`

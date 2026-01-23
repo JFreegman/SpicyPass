@@ -75,4 +75,9 @@ std::vector<char> string_to_vec(const std::string &s);
  */
 bool string_printable(const std::string &s);
 
+/*
+ * Writes the size of string `s` and `s` with a colon separator to `fp`.
+ */
+void write_field(std::ofstream &fp, const std::string &s);
+
 #endif // UTIL_H
