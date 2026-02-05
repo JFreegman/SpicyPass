@@ -6,6 +6,8 @@
  *  under the GNU General Public License 3.0.
  */
 
+#include <limits.h>
+
 #include "load.hpp"
 #include "password.hpp"
 #include "util.hpp"
@@ -21,6 +23,7 @@ typedef enum {
     OPT_GENERATE,
     OPT_PASSWORD,
     OPT_EXPORT,
+    OPT_IMPORT,
     OPT_PRINT,
 } Options;
 
@@ -585,6 +588,7 @@ static void print_menu(void)
     cout << "[" << to_string(OPT_GENERATE)   << "] Generate password" << endl;
     cout << "[" << to_string(OPT_PASSWORD)   << "] Change master password" << endl;
     cout << "[" << to_string(OPT_EXPORT)     << "] Export entries to plaintext file" << endl;
+    cout << "[" << to_string(OPT_IMPORT)     << "] Import entries from plaintext file" << endl;
     cout << "[" << to_string(OPT_PRINT)      << "] Print menu" << endl;
     cout << "[" << to_string(OPT_EXIT)       << "] Exit" << endl;
 }
@@ -605,8 +609,8 @@ static int export_entries(Pass_Store &p)
     }
 
     cout << "WARNING: You are about to create a file on your disk that contains all "
-         "of your passwords. The file will not be encrypted and can be viewed by "
-         "anyone with access to this device.\n" << endl;
+            "of your passwords. The file will not be encrypted and can be viewed by "
+            "anyone with access to this device.\n" << endl;
 
     unsigned char password[MAX_STORE_PASSWORD_SIZE + 2];
 
@@ -632,6 +636,55 @@ static int export_entries(Pass_Store &p)
     }
 
     cout << "Exported pass store entries to plaintext file: " << export_path << endl;
+
+    return 0;
+}
+
+static int import_entries(Pass_Store &p)
+{
+    if (p.check_lock()) {
+        return PASS_STORE_LOCKED;
+    }
+
+    cout << "Enter file path: ";
+
+    char path[PATH_MAX + 2];
+    const char *input = fgets(path, sizeof(path), stdin);
+
+    size_t path_len = strlen(path);
+
+    if (input == NULL || path_len <= 1) {
+        cout << "Invalid input." << endl;
+        return -1;
+    }
+
+    --path_len;
+    path[path_len] = '\0';  // remove newline
+
+    if (file_size(path) == 0) {
+        cout << "File " << "`" << path << "`" << " is empty or does not exist." << endl;
+        return -1;
+    }
+
+    int ret = p._import(string(path));
+
+    if (ret == PASS_STORE_LOCKED) {
+        return PASS_STORE_LOCKED;
+    }
+
+    if (ret < 0) {
+        cout << "File format is invalid." << endl;
+        return -1;
+    }
+
+    cout << "Successfully loaded " << ret << " entries to pass store." << endl;
+
+    ret = save_password_store(p);
+
+    if (ret != 0) {
+        cerr << "Failed to save password store (error code: " << to_string(ret) << ")" << endl;
+        return -1;
+    }
 
     return 0;
 }
@@ -688,6 +741,11 @@ static int execute(const int option, Pass_Store &p)
 
         case OPT_EXPORT: {
             ret = export_entries(p);
+            break;
+        }
+
+        case OPT_IMPORT: {
+            ret = import_entries(p);
             break;
         }
 

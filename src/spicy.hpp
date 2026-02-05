@@ -235,6 +235,15 @@ public:
     int _export(ofstream &fp);
 
     /*
+     * Loads entries contained in plaintext file pointed to by `path` into the pass store.
+     *
+     * Return number of entries loaded on success.
+     * Return -1 on failure.
+     * Return PASS_STORE_LOCKED if pass store is locked.
+     */
+    int _import(const string &path);
+
+    /*
      * Sets the save file path to `save_file`. `set_custom_path` should be true
      * if we're using a user-specified path (i.e. non-default).
      */

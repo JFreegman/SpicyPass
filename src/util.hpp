@@ -77,7 +77,16 @@ bool string_printable(const std::string &s);
 
 /*
  * Writes the size of string `s` and `s` with a colon separator to `fp`.
+ * For example, if s == "cat" the field will be written as `3cat:`
  */
 void write_field(std::ofstream &fp, const std::string &s);
+
+/*
+ * Reads fields in a single entry from `fp`.
+ *
+ * Return false if `fp` is empty or the entry contains a line that is not
+ * properly formatted.
+ */
+bool read_entry_fields(std::ifstream &fp, std::string &key, std::string &pass, std::string &note);
 
 #endif // UTIL_H

@@ -167,3 +167,75 @@ void write_field(std::ofstream &fp, const std::string &s)
 {
     fp << s.size() << ":" << s;
 }
+
+static bool get_field_length(std::ifstream &fp, std::string &len_str)
+{
+    char c;
+
+    while (fp.get(c)) {
+        if (c == ':') {  // all chars prior to colon are the length of the field
+            break;
+        }
+
+        if (c == '\n' || c == '\r') {
+            continue;
+        }
+
+        if (!std::isdigit(c)) {
+            std::cerr << "Not a digit: " << c << std::endl;
+            return false;
+        }
+
+        len_str.push_back(c);
+    }
+
+    return true;
+}
+
+static bool read_field(std::ifstream &fp, std::string &field)
+{
+    std::string len_str = "";
+
+    if (!get_field_length(fp, len_str)) {
+        return false;
+    }
+
+    if (len_str.length() == 0 || len_str == "0") { // empty field
+        return true;
+    }
+
+    size_t field_len = 0;
+
+    try {
+        field_len = std::stoul(len_str);
+    } catch (std::exception &e) {
+        std::cerr << "Failed to convert string to integer: " << len_str << std::endl;
+        return false;
+    }
+
+    field.resize(field_len);
+
+    if (field_len > field.max_size()) {
+        return false;
+    }
+
+    fp.read(field.data(), field_len);
+
+    if (!fp) {
+        std::cerr << "read_field failed on field: " << field << " (len: " << field_len << ")" << std::endl;
+        return false;
+    }
+
+    return true;
+}
+
+bool read_entry_fields(std::ifstream &fp, std::string &key, std::string &pass, std::string &note)
+{
+    if (!fp) {
+        return false;
+    }
+
+    return read_field(fp, key)
+           && read_field(fp, pass)
+           && read_field(fp, note);
+}

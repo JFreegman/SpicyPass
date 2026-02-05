@@ -196,6 +196,10 @@ int Pass_Store::insert(const string &key, const string &value, const string &not
         return PASS_STORE_LOCKED;
     }
 
+    if (key.empty()) {
+        return 0;
+    }
+
     struct Password *pass = (struct Password *) calloc(1, sizeof(struct Password));
 
     if (pass == NULL) {
@@ -486,6 +490,47 @@ int Pass_Store::_export(ofstream &fp)
     }
 
     return 0;
+}
+
+int Pass_Store::_import(const string &path)
+{
+    if (check_lock()) {
+        return PASS_STORE_LOCKED;
+    }
+
+    ifstream fp;
+
+    try {
+        fp.open(path);
+    } catch (const exception &e) {
+        cerr << "Caught exception in _import(): " << e.what() << endl;
+        return -1;
+    }
+
+    int entries = 0;
+
+    string key = "";
+    string pass = "";
+    string note = "";
+
+    while (read_entry_fields(fp, key, pass, note)) {
+        if (insert(key, pass, note) != 0) {
+            cerr << "Insert failed for " << "key: " << key << " pass: " << pass << " note: " << note << endl;
+            break;
+        }
+
+        if (!key.empty()) {
+            ++entries;
+        }
+
+        key.clear();
+        pass.clear();
+        note.clear();
+    }
+
+    fp.close();
+
+    return entries;
 }
 
 void Pass_Store::clear(void)
@@ -789,7 +834,7 @@ int main(int argc, char **argv)
             const string lock_path = get_lock_path();
 
             cerr << "Another instance may be running or SpicyPass was not closed properly. Close all running "
-                 "instances of SpicyPass and delete the file:" << "'" << lock_path << "'" << endl;
+                    "instances of SpicyPass and delete the file:" << "'" << lock_path << "'" << endl;
             return -1;
         }
 
