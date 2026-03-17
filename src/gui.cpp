@@ -132,7 +132,7 @@ static int password_prompt(struct Callback_Data *cb_data)
     g_signal_connect(pwButtonEnter, "clicked", G_CALLBACK(on_pwButtonEnter_clicked), new_cb_data);
     g_signal_connect(pwButtonQuit, "clicked", G_CALLBACK(on_quit), new_cb_data);
     g_signal_connect(pwEntry, "activate", G_CALLBACK(on_key_enter), pwButtonEnter);
-    g_signal_connect(pwWindow, "key-press-event", G_CALLBACK(on_key_escape_ignore), pwButtonEnter);
+    g_signal_connect(pwWindow, "key-press-event", G_CALLBACK(on_key_escape_ignore), NULL);
 
     show_window(cb_data->app, pwWindow);
 
@@ -423,6 +423,8 @@ static void on_buttonAdd_clicked(GtkButton *button, gpointer data)
 
     g_signal_connect(window, "key-press-event", G_CALLBACK(on_key_press), cb_data);
 
+    g_signal_connect(window, "key-press-event", G_CALLBACK(on_key_escape_ignore), NULL);
+
     vector<char> password = random_password(16U);
 
     if (!password_invalid(password)) {
@@ -600,6 +602,7 @@ static void on_buttonEdit_clicked(GtkButton *button, gpointer data)
     g_signal_connect(passEntry, "activate", G_CALLBACK(on_key_enter), okButton);
     g_signal_connect(loginEntry, "activate", G_CALLBACK(on_key_enter), okButton);
     g_signal_connect(window, "key-press-event", G_CALLBACK(on_key_press), cb_data);
+    g_signal_connect(window, "key-press-event", G_CALLBACK(on_key_escape_ignore), NULL);
 
     GtkTreeModel *model = GTK_TREE_MODEL(ls->store);
     GtkTreeSelection *selection = gtk_tree_view_get_selection(ls->view);
@@ -1635,7 +1638,7 @@ int GUI::load_new(Pass_Store &p, GtkBuilder *builder)
     g_signal_connect(newPwButtonQuit, "clicked", G_CALLBACK(on_quit), cb_data);
     g_signal_connect(newPwEntry1, "activate", G_CALLBACK(on_key_enter), newPwButtonEnter);
     g_signal_connect(newPwEntry2, "activate", G_CALLBACK(on_key_enter), newPwButtonEnter);
-    g_signal_connect(newPwWindow, "key-press-event", G_CALLBACK(on_key_escape_ignore), newPwButtonEnter);
+    g_signal_connect(newPwWindow, "key-press-event", G_CALLBACK(on_key_escape_ignore), NULL);
 
     show_window(app, newPwWindow);
 
